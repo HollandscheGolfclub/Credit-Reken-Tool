@@ -62,6 +62,30 @@
 .hgc-calculator .field-row { display: grid; grid-template-columns: 1.35fr .65fr; gap: 18px; }
 .hgc-calculator select { width: 100%; height: 54px; padding: 0 45px 0 16px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; outline: 0; }
 .hgc-calculator select:focus, .hgc-calculator input:focus-visible { border-color: var(--green); box-shadow: 0 0 0 3px rgba(149,193,32,.18); }
+.hgc-calculator .course-select-native { display: none !important; }
+.hgc-calculator .course-picker { position: relative; z-index: 12; }
+.hgc-calculator .course-picker-button { width: 100%; min-height: 60px; padding: 10px 12px 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; text-align: left; cursor: pointer; transition: border-color .18s, box-shadow .18s, background .18s; }
+.hgc-calculator .course-picker-button:hover { border-color: #a8bc78; background: #fcfdf9; }
+.hgc-calculator .course-picker-button:focus-visible, .hgc-calculator .course-picker.is-open .course-picker-button { outline: 0; border-color: var(--green); box-shadow: 0 0 0 3px rgba(149,193,32,.18); }
+.hgc-calculator .course-picker-value { min-width: 0; display: block; }
+.hgc-calculator .course-picker-value strong, .hgc-calculator .course-picker-value small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hgc-calculator .course-picker-value strong { font-size: 14px; font-weight: 700; }
+.hgc-calculator .course-picker-value small { margin-top: 3px; color: var(--ink-soft); font-size: 12px; }
+.hgc-calculator .course-picker-chevron { flex: 0 0 34px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: #587816; background: var(--green-light); font-size: 22px; line-height: 1; transition: transform .2s; }
+.hgc-calculator .course-picker.is-open .course-picker-chevron { transform: rotate(180deg); }
+.hgc-calculator .course-picker-menu { position: absolute; top: calc(100% + 8px); right: 0; left: 0; max-height: 330px; padding: 7px; overflow-y: auto; border: 1px solid #cfdabc; border-radius: 8px; background: white; box-shadow: 0 18px 42px rgba(48, 62, 40, .18); }
+.hgc-calculator .course-picker-option { width: 100%; min-height: 56px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 0; border-radius: 6px; color: var(--ink); background: transparent; text-align: left; cursor: pointer; }
+.hgc-calculator .course-picker-option + .course-picker-option { margin-top: 2px; }
+.hgc-calculator .course-picker-option:hover, .hgc-calculator .course-picker-option:focus-visible { outline: 0; background: #f3f7e9; }
+.hgc-calculator .course-picker-option[aria-selected="true"] { color: #405d0f; background: #eaf3cf; }
+.hgc-calculator .course-picker-option strong, .hgc-calculator .course-picker-option small { display: block; }
+.hgc-calculator .course-picker-option strong { font-size: 13px; font-weight: 700; }
+.hgc-calculator .course-picker-option small { margin-top: 3px; color: var(--ink-soft); font-size: 11px; }
+.hgc-calculator .course-picker-check { flex: 0 0 25px; width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; color: white; background: #7fa719; font-size: 12px; font-weight: 800; opacity: 0; }
+.hgc-calculator .course-picker-option[aria-selected="true"] .course-picker-check { opacity: 1; }
+.hgc-calculator .course-picker-menu::-webkit-scrollbar { width: 10px; }
+.hgc-calculator .course-picker-menu::-webkit-scrollbar-track { background: #f3f5ef; }
+.hgc-calculator .course-picker-menu::-webkit-scrollbar-thumb { border: 3px solid #f3f5ef; border-radius: 10px; background: #a9bd75; }
 .hgc-calculator .field-help, .hgc-calculator .cost-panel p { margin: 8px 0 0; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .toggle-row { padding: 18px; margin-bottom: 36px; display: flex; align-items: center; gap: 13px; border-radius: 6px; background: #f8f8f8; cursor: pointer; }
 .hgc-calculator .toggle-row input { position: absolute; opacity: 0; }
@@ -172,6 +196,7 @@
   .hgc-calculator .choice-grid--two, .hgc-calculator .choice-grid--three { grid-template-columns: 1fr; }
   .hgc-calculator .choice-card { min-height: 70px; }
   .hgc-calculator .field-row { grid-template-columns: 1fr; gap: 0; }
+  .hgc-calculator .course-picker-menu { max-height: 280px; }
   .hgc-calculator .segmented-control { grid-template-columns: 1fr; }
   .hgc-calculator .cost-panel { padding: 22px; }
   .hgc-calculator .currency-input input { font-size: 36px; }

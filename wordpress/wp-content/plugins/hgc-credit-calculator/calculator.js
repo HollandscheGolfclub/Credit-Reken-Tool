@@ -21,6 +21,96 @@ const resultContent = calculatorRoot.querySelector("#result-content");
 
 let currentStep = 1;
 
+const courseLabel = calculatorRoot.querySelector("#course-label");
+const coursePicker = document.createElement("div");
+coursePicker.className = "course-picker";
+coursePicker.innerHTML = `
+  <button class="course-picker-button" id="course-picker-button" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="course-label course-picker-value">
+    <span id="course-picker-value" class="course-picker-value"></span>
+    <span class="course-picker-chevron" aria-hidden="true">⌄</span>
+  </button>
+  <div class="course-picker-menu" role="listbox" aria-labelledby="course-label" hidden></div>
+`;
+courseSelect.classList.add("course-select-native");
+courseSelect.tabIndex = -1;
+courseSelect.setAttribute("aria-hidden", "true");
+courseSelect.insertAdjacentElement("afterend", coursePicker);
+courseLabel.htmlFor = "course-picker-button";
+
+const coursePickerButton = coursePicker.querySelector(".course-picker-button");
+const coursePickerValue = coursePicker.querySelector(".course-picker-value");
+const coursePickerMenu = coursePicker.querySelector(".course-picker-menu");
+
+function closeCoursePicker({ restoreFocus = false } = {}) {
+  coursePicker.classList.remove("is-open");
+  coursePickerButton.setAttribute("aria-expanded", "false");
+  coursePickerMenu.hidden = true;
+  if (restoreFocus) coursePickerButton.focus();
+}
+
+function openCoursePicker() {
+  coursePicker.classList.add("is-open");
+  coursePickerButton.setAttribute("aria-expanded", "true");
+  coursePickerMenu.hidden = false;
+  coursePickerMenu.querySelector('[aria-selected="true"]')?.focus();
+}
+
+function renderCoursePicker() {
+  const availableCourses = [...courseSelect.options]
+    .map((option) => hgcConfig.courses.find((course) => course.id === option.value))
+    .filter(Boolean);
+  const selectedCourse = availableCourses.find((course) => course.id === courseSelect.value) || availableCourses[0];
+
+  if (!selectedCourse) return;
+
+  coursePickerValue.innerHTML = `<strong>${selectedCourse.name}</strong><small>${selectedCourse.location}</small>`;
+  coursePickerMenu.innerHTML = availableCourses.map((course) => `
+    <button class="course-picker-option" type="button" role="option" data-course-id="${course.id}" aria-selected="${course.id === selectedCourse.id}">
+      <span><strong>${course.name}</strong><small>${course.location}</small></span>
+      <span class="course-picker-check" aria-hidden="true">✓</span>
+    </button>
+  `).join("");
+}
+
+coursePickerButton.addEventListener("click", () => {
+  if (coursePicker.classList.contains("is-open")) closeCoursePicker();
+  else openCoursePicker();
+});
+
+coursePickerButton.addEventListener("keydown", (event) => {
+  if (["ArrowDown", "Enter", " "].includes(event.key)) {
+    event.preventDefault();
+    openCoursePicker();
+  }
+});
+
+coursePickerMenu.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-course-id]");
+  if (!option) return;
+  courseSelect.value = option.dataset.courseId;
+  courseSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  closeCoursePicker({ restoreFocus: true });
+});
+
+coursePickerMenu.addEventListener("keydown", (event) => {
+  const options = [...coursePickerMenu.querySelectorAll(".course-picker-option")];
+  const currentIndex = options.indexOf(document.activeElement);
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    options[(currentIndex + 1) % options.length]?.focus();
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    options[(currentIndex - 1 + options.length) % options.length]?.focus();
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    closeCoursePicker({ restoreFocus: true });
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!coursePicker.contains(event.target)) closeCoursePicker();
+});
+
 function parseMoney(value) {
   const cleaned = String(value).replace(/\s/g, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", ".").replace(/[^\d.]/g, "");
   return Number.parseFloat(cleaned);
@@ -54,6 +144,7 @@ function populateCourses() {
 
   courseSelect.innerHTML = available.map((course) => `<option value="${course.id}">${course.name} — ${course.location}</option>`).join("");
   if (available.some((course) => course.id === previous)) courseSelect.value = previous;
+  renderCoursePicker();
   updateCourseHelp();
 }
 
@@ -499,7 +590,10 @@ roundsRange.addEventListener("input", () => { roundsNumber.value = roundsRange.v
 roundsNumber.addEventListener("input", () => { roundsRange.value = normaliseRounds(roundsNumber.value); updateRangeFill(); });
 roundsNumber.addEventListener("blur", () => { roundsNumber.value = normaliseRounds(roundsNumber.value); roundsRange.value = roundsNumber.value; updateRangeFill(); });
 form.querySelectorAll('input[name="round-format"]').forEach((input) => input.addEventListener("change", populateCourses));
-courseSelect.addEventListener("change", updateCourseHelp);
+courseSelect.addEventListener("change", () => {
+  renderCoursePicker();
+  updateCourseHelp();
+});
 
 form.querySelectorAll('input[name="cost-type"]').forEach((input) => input.addEventListener("change", () => {
   const greenfee = selectedValue("cost-type") === "greenfee";
