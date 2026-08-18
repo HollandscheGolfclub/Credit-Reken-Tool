@@ -1,7 +1,8 @@
+(() => {
 const euro = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" });
 const decimal = new Intl.NumberFormat("nl-NL", { maximumFractionDigits: 2 });
 
-const calculatorRoot = document.querySelector(".hgc-calculator");
+const calculatorRoot = document.querySelector('[data-calculator-mode="choice"]');
 const form = calculatorRoot.querySelector("#calculator-form");
 const steps = [...calculatorRoot.querySelectorAll(".form-step")];
 const currentStepLabel = calculatorRoot.querySelector("#current-step");
@@ -557,3 +558,4 @@ updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
 track("calculator_opened");
+})();

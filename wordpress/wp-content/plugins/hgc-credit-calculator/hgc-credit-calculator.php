@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
- * Description: Keuzehulp voor speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
- * Version: 1.1.0
+ * Description: Speelrechtkeuzehulp en kostenvergelijker van de Hollandsche Golfclub.
+ * Version: 1.2.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.1.0');
+define('HGC_CALCULATOR_VERSION', '1.2.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -71,14 +71,20 @@ if (is_admin()) {
 /**
  * Laadt de assets pas zodra de shortcode daadwerkelijk op een pagina staat.
  */
-function hgc_calculator_shortcode(): string
+function hgc_calculator_shortcode(array $atts = array()): string
 {
-    static $rendered = false;
+    static $rendered_modes = array();
 
-    if ($rendered) {
+    $atts = shortcode_atts(array('mode' => 'keuzehulp'), $atts, 'hgc_calculator');
+    $requested_mode = sanitize_key((string) ($atts['mode'] ?? 'keuzehulp'));
+    $mode = in_array($requested_mode, array('vergelijking', 'comparison', 'besparing'), true)
+        ? 'comparison'
+        : 'choice';
+
+    if (!empty($rendered_modes[$mode])) {
         return '';
     }
-    $rendered = true;
+    $rendered_modes[$mode] = true;
 
     wp_enqueue_style(
         'hgc-calculator-font',
@@ -105,18 +111,33 @@ function hgc_calculator_shortcode(): string
         'after'
     );
     wp_enqueue_script(
-        'hgc-calculator',
-        HGC_CALCULATOR_URL . 'calculator.js',
+        'hgc-calculator-' . $mode,
+        HGC_CALCULATOR_URL . ($mode === 'comparison' ? 'comparison.js' : 'calculator.js'),
         array('hgc-calculator-config'),
-        (string) filemtime(HGC_CALCULATOR_DIR . 'calculator.js'),
+        (string) filemtime(HGC_CALCULATOR_DIR . ($mode === 'comparison' ? 'comparison.js' : 'calculator.js')),
         true
     );
 
     ob_start();
-    include HGC_CALCULATOR_DIR . 'templates/calculator.php';
+    include HGC_CALCULATOR_DIR . ($mode === 'comparison' ? 'templates/comparison.php' : 'templates/calculator.php');
     return (string) ob_get_clean();
 }
 add_shortcode('hgc_calculator', 'hgc_calculator_shortcode');
+
+function hgc_choice_helper_shortcode(array $atts = array()): string
+{
+    $atts['mode'] = 'keuzehulp';
+    return hgc_calculator_shortcode($atts);
+}
+
+function hgc_comparison_shortcode(array $atts = array()): string
+{
+    $atts['mode'] = 'vergelijking';
+    return hgc_calculator_shortcode($atts);
+}
+
+add_shortcode('hgc_keuzehulp', 'hgc_choice_helper_shortcode');
+add_shortcode('hgc_besparingscalculator', 'hgc_comparison_shortcode');
 
 /**
  * Maakt een blok beschikbaar in de klassieke editor en pagebuilders via de shortcode.
@@ -191,7 +212,7 @@ final class HGC_Calculator_GitHub_Updater
         $information->requires_php = '7.4';
         $information->download_link = $release['package'];
         $information->sections = array(
-            'description' => 'Ontdek welk speelrecht, LoyalTee-lidmaatschap of welke handicapregistratie bij jouw golfgedrag past.',
+            'description' => 'Speelrechtkeuzehulp en vergelijking met huidige golfkosten voor de Hollandsche Golfclub.',
             'changelog' => nl2br(esc_html($release['notes'] ?: 'Bekijk de GitHub Release voor de wijzigingen.')),
         );
 

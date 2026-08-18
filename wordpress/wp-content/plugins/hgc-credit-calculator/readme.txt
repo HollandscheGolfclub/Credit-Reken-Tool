@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 
 1. Upload `hgc-credit-calculator.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
 2. Activeer Hollandsche Golfclub Credit Calculator.
-3. Plaats `[hgc_calculator]` in een pagina of shortcodeblok.
+3. Plaats `[hgc_calculator mode="keuzehulp"]` of `[hgc_calculator mode="vergelijking"]` in een pagina of shortcodeblok.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.2.0 =
+* De speelrechtkeuzehulp en eerdere kostenvergelijking zijn beide beschikbaar.
+* Nieuwe shortcodes voor iedere variant en losse lokale voorbeeldpagina voor de vergelijking.
 
 = 1.1.0 =
 * Omgebouwd van kostenvergelijker naar speelrechtkeuzehulp.

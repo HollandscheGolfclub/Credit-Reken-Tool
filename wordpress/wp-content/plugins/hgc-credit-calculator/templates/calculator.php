@@ -1,5 +1,5 @@
 <?php defined('ABSPATH') || exit; ?>
-<div class="hgc-calculator">
+<div class="hgc-calculator" data-calculator-mode="choice">
   <section class="calculator-shell" id="calculator" aria-labelledby="calculator-title">
     <div class="calculator-topbar">
       <div>

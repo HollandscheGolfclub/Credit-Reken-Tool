@@ -11,9 +11,20 @@ De live site gebruikt `DISALLOW_FILE_MODS = true`. De plugin staat daarom direct
 1. Push of merge de plugin naar de branch die de live site deployt.
 2. Wacht tot de automatische Git-deploy klaar is.
 3. Ga in WordPress naar **Plugins** en activeer **Hollandsche Golfclub Credit Calculator**.
-4. Plaats `[hgc_calculator]` in de gewenste WordPress-pagina.
+4. Plaats de gewenste shortcode in een WordPress-pagina.
 
-De beveiligingsinstelling hoeft niet aangepast te worden. Als alternatief kan de map uit `dist/hgc-credit-calculator.zip` via SFTP naar `wp-content/plugins/` worden geüpload. De alternatieve shortcode `[hgc_rekentool]` werkt ook.
+De beveiligingsinstelling hoeft niet aangepast te worden. Als alternatief kan de map uit `dist/hgc-credit-calculator.zip` via SFTP naar `wp-content/plugins/` worden geüpload.
+
+## Twee varianten plaatsen
+
+Gebruik bij voorkeur twee aparte WordPress-pagina's:
+
+- `[hgc_calculator mode="keuzehulp"]` of `[hgc_keuzehulp]` voor de huidige speelrechtkeuze.
+- `[hgc_calculator mode="vergelijking"]` of `[hgc_besparingscalculator]` voor de vergelijking met huidige golfkosten.
+
+`[hgc_calculator]` en `[hgc_rekentool]` blijven voor bestaande pagina's standaard de keuzehulp tonen. Link vanuit social media of een knop rechtstreeks naar de betreffende WordPress-pagina.
+
+Een iframe via een pagina-URL is alleen nodig wanneer de calculator op een andere website of een ander domein moet worden geplaatst. Controleer dan eerst `X-Frame-Options`, de Content Security Policy, cookie-instellingen en de automatische iframehoogte.
 
 ## Beheer in WordPress
 
@@ -37,7 +48,7 @@ Voor een nieuwe WordPress-versie:
 1. Verhoog `Version` en `HGC_CALCULATOR_VERSION` in `hgc-credit-calculator.php`.
 2. Verhoog `Stable tag` in `readme.txt`.
 3. Commit en push de wijzigingen naar GitHub.
-4. Maak en push een tag, bijvoorbeeld `v1.1.0`.
+4. Maak en push een tag, bijvoorbeeld `v1.2.0`.
 
 De workflow `.github/workflows/release.yml` verpakt de deploymap automatisch als `hgc-credit-calculator.zip` en plaatst dit bestand bij een GitHub Release. Op de beveiligde live site blijft Git-deploy de primaire updater, omdat dashboardupdates door `DISALLOW_FILE_MODS` zijn geblokkeerd.
 
@@ -48,6 +59,9 @@ node dev-server.mjs
 ```
 
 Open daarna `http://localhost:8000`.
+
+- `http://localhost:8000/` toont de keuzehulp.
+- `http://localhost:8000/vergelijking.html` toont de kostenvergelijking.
 
 - `HGC Calculator.exe` start een ingebouwde lokale webserver en opent de keuzehulp in de standaardbrowser. Hiervoor is Node.js niet nodig.
 - `Start HGC Calculator.cmd` doet hetzelfde via `dev-server.mjs` en vereist Node.js.

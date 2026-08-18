@@ -71,6 +71,23 @@ final class HGC_Calculator_Admin
                 <div class="notice notice-success is-dismissible"><p>De standaardinstellingen zijn hersteld.</p></div>
             <?php endif; ?>
 
+            <section class="hgc-admin-panel">
+                <h2>Plaatsen op de website</h2>
+                <p>Maak bij voorkeur voor iedere variant een eigen WordPress-pagina en plaats daar de bijbehorende shortcode.</p>
+                <div class="hgc-admin-grid hgc-admin-grid--two">
+                    <article class="hgc-shortcode-card">
+                        <h3>Speelrechtkeuzehulp</h3>
+                        <p>Adviseert een speelrecht op basis van grote en kleine baanrondes.</p>
+                        <code>[hgc_calculator mode="keuzehulp"]</code>
+                    </article>
+                    <article class="hgc-shortcode-card">
+                        <h3>Kostenvergelijking</h3>
+                        <p>Vergelijkt de huidige kosten van de bezoeker met het aanbod.</p>
+                        <code>[hgc_calculator mode="vergelijking"]</code>
+                    </article>
+                </div>
+            </section>
+
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="hgc_calculator_save" />
                 <?php wp_nonce_field('hgc_calculator_save'); ?>
