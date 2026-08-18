@@ -36,7 +36,11 @@ function selectedValue(name) {
 }
 
 function brandText(value) {
-  return String(value).replace(/\bHGC\b/g, "Hollandsche Golfclub");
+  const branded = String(value).replace(/\bHGC\b/g, "Hollandsche Golfclub");
+  return branded.replace(
+    /^Spelen op aangesloten (?:Hollandsche Golfclub-)?golfparken(?: van Hollandsche Golfclub)? door heel Nederland$/,
+    "Spelen op alle golfparken van de Hollandsche Golfclub door heel Nederland"
+  );
 }
 
 function getFormat() {
@@ -387,16 +391,24 @@ function renderResult(result) {
     : result.best.kind === "handicap"
       ? hgcConfig.links.handicapRegistration
       : hgcConfig.links.webshop;
-  const productButton = "Geïnteresseerd? Klik hier voor meer informatie";
+  const isPlayingRight = !["loyaltee", "handicap"].includes(result.best.kind);
+  const playingRightsLink = hgcConfig.links.playingRights || "https://www.hollandschegolfclub.nl/hgc-speelrechten/";
+  const productButton = result.best.kind === "loyaltee" ? "Bekijk LoyalTee" : "Meer over handicapregistratie";
   const recommendationLabel = hasAddedHandicap
     ? `${brandText(result.best.label)} + handicapregistratie`
     : brandText(result.best.label);
-  const productActionsHtml = hasAddedHandicap
+  const productActionsHtml = isPlayingRight
     ? `<div class="recommendation-actions">
-        <a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>
-        <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Meer over handicapregistratie <span>→</span></a>
+        <a class="button button--primary button--cta" href="${hgcConfig.links.webshop}" target="_blank" rel="noopener">Kies dit speelrecht in de webshop <span>→</span></a>
+        <a class="button button--secondary" href="${playingRightsLink}" target="_blank" rel="noopener">Meer over speelrechten <span>→</span></a>
+        ${hasAddedHandicap ? `<a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Meer over handicapregistratie <span>→</span></a>` : ""}
       </div>`
-    : `<a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>`;
+    : hasAddedHandicap
+      ? `<div class="recommendation-actions">
+          <a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>
+          <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Meer over handicapregistratie <span>→</span></a>
+        </div>`
+      : `<a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>`;
   const nextOptionHasAddedHandicap = Boolean(result.nextOption && result.forceHandicap && !result.nextOption.plan.includesHandicap);
   const nextOptionLabel = nextOptionHasAddedHandicap
     ? `${brandText(result.nextOption.plan.label)} + handicapregistratie`

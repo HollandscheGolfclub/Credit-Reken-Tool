@@ -100,7 +100,7 @@ final class HGC_Calculator_Admin
                 <section class="hgc-admin-panel">
                     <h2>Links</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--two">
-                        <?php foreach (array('webshop' => 'Webshop', 'loyalTee' => 'LoyalTee', 'handicapRegistration' => 'Handicapregistratie', 'terms' => 'Voorwaarden') as $key => $label) : ?>
+                        <?php foreach (array('webshop' => 'Webshop', 'playingRights' => 'Speelrechten', 'loyalTee' => 'LoyalTee', 'handicapRegistration' => 'Handicapregistratie', 'terms' => 'Voorwaarden') as $key => $label) : ?>
                             <label class="hgc-admin-field"><span><?php echo esc_html($label); ?></span><input class="large-text" type="url" name="config[links][<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($config['links'][$key] ?? ''); ?>" /></label>
                         <?php endforeach; ?>
                     </div>
@@ -189,7 +189,7 @@ final class HGC_Calculator_Admin
             $config['loyalTee'][$key] = $this->number($raw['loyalTee'][$key] ?? 0);
         }
 
-        foreach (array('webshop', 'loyalTee', 'handicapRegistration', 'terms') as $key) {
+        foreach (array('webshop', 'playingRights', 'loyalTee', 'handicapRegistration', 'terms') as $key) {
             $config['links'][$key] = esc_url_raw($raw['links'][$key] ?? '');
         }
 

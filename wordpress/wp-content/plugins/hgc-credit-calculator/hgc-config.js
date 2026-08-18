@@ -36,6 +36,7 @@ window.hgcConfig = {
 
   links: {
     webshop: "https://www.hollandschegolfclub.nl/webshop/",
+    playingRights: "https://www.hollandschegolfclub.nl/hgc-speelrechten/",
     loyalTee: "https://www.hollandschegolfclub.nl/hgc-loyaltee-lidmaatschap/",
     handicapRegistration: "https://www.hollandschegolfclub.nl/ngf-handicapregistratie-2/",
     terms: "https://www.hollandschegolfclub.nl/wp-content/uploads/2026/01/HGC-Voorwaarden-Speelrechten-2026.pdf",
@@ -113,7 +114,7 @@ window.hgcConfig = {
   ],
 
   benefits: [
-    "Spelen op aangesloten golfparken van Hollandsche Golfclub door heel Nederland",
+    "Spelen op alle golfparken van de Hollandsche Golfclub door heel Nederland",
     "Onbeperkt introducees meenemen tegen gereduceerd greenfeetarief",
     "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub",
     "Na opgebruikte credits spelen tegen gereduceerd greenfeetarief",
