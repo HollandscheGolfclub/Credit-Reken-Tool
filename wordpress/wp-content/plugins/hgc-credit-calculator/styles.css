@@ -49,6 +49,7 @@
 .hgc-calculator .range::-webkit-slider-thumb { appearance: none; width: 27px; height: 27px; border: 5px solid white; border-radius: 50%; background: var(--green); box-shadow: 0 2px 9px rgba(0,0,0,.18); cursor: pointer; }
 .hgc-calculator .range-scale { display: flex; justify-content: space-between; color: #839189; font-size: 12px; }
 .hgc-calculator .choice-grid { display: grid; gap: 12px; }
+.hgc-calculator .choice-grid--two { grid-template-columns: repeat(2, 1fr); }
 .hgc-calculator .choice-grid--three { grid-template-columns: repeat(3, 1fr); }
 .hgc-calculator .choice-card { min-height: 84px; margin: 0 !important; padding: 15px; border: 1px solid var(--line); border-radius: 6px; display: flex !important; align-items: center; gap: 13px; cursor: pointer; transition: .2s ease; }
 .hgc-calculator .choice-card:hover { border-color: #9bb6a7; transform: translateY(-1px); }
@@ -126,7 +127,7 @@
 .hgc-calculator .recommendation-main > p:not(.eyebrow) { margin-bottom: 13px; color: var(--ink-soft); line-height: 1.55; }
 .hgc-calculator .recommendation ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .recommendation li + li { margin-top: 4px; }
-.hgc-calculator .button--cta { white-space: nowrap; background: var(--orange); }
+.hgc-calculator .button--cta { max-width: 330px; min-height: 58px; white-space: normal; text-align: center; background: var(--orange); }
 .hgc-calculator .button--cta:hover { background: #ff6600; }
 .hgc-calculator .button--secondary { border: 1px solid #8bb327; color: #567619; background: white; white-space: nowrap; }
 .hgc-calculator .button--secondary:hover { background: #f6f9ee; }
@@ -138,11 +139,12 @@
 .hgc-calculator .next-option-link { color: #527417; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; }
 .hgc-calculator .next-option-link:hover { text-decoration: underline; }
 .hgc-calculator .next-option-actions { display: grid; justify-items: end; gap: 9px; }
-.hgc-calculator .included-benefits { padding: 34px 0 24px; }
-.hgc-calculator .included-benefits h4 { margin-bottom: 18px; font-size: 18px; }
+.hgc-calculator .included-benefits { margin-top: 22px; padding: 30px; border: 2px solid #cadd98; border-radius: 8px; background: linear-gradient(135deg, #fbfdf6 0%, #f0f6df 100%); box-shadow: 0 10px 28px rgba(86, 118, 25, .08); }
+.hgc-calculator .included-benefits .eyebrow { margin-bottom: 6px; color: #5a7d19; }
+.hgc-calculator .included-benefits h4 { margin-bottom: 22px; color: var(--ink); font-size: 24px; }
 .hgc-calculator .included-benefits ul { margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 13px 24px; list-style: none; }
-.hgc-calculator .included-benefits li { display: flex; gap: 10px; color: var(--ink-soft); font-size: 14px; }
-.hgc-calculator .included-benefits li span { flex: 0 0 22px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; color: #5a7d19; background: var(--green-light); font-size: 12px; font-weight: 800; }
+.hgc-calculator .included-benefits li { display: flex; align-items: flex-start; gap: 11px; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.45; }
+.hgc-calculator .included-benefits li span { flex: 0 0 24px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: white; background: #7fa719; font-size: 12px; font-weight: 800; }
 .hgc-calculator .result-disclaimer { margin: 0; padding-top: 18px; border-top: 1px solid var(--line); color: #76847e; font-size: 11px; line-height: 1.55; }
 .hgc-calculator .result-disclaimer a { color: #5a7d19; }
 .hgc-calculator .form-actions--result { padding-top: 30px; }
@@ -167,7 +169,7 @@
   .hgc-calculator .step-heading h3 { font-size: 21px; }
   .hgc-calculator .field-label-row { align-items: flex-start; }
   .hgc-calculator .field-label-row > label { max-width: 180px; }
-  .hgc-calculator .choice-grid--three { grid-template-columns: 1fr; }
+  .hgc-calculator .choice-grid--two, .hgc-calculator .choice-grid--three { grid-template-columns: 1fr; }
   .hgc-calculator .choice-card { min-height: 70px; }
   .hgc-calculator .field-row { grid-template-columns: 1fr; gap: 0; }
   .hgc-calculator .segmented-control { grid-template-columns: 1fr; }
@@ -177,6 +179,7 @@
   .hgc-calculator .form-actions--end { align-items: stretch; }
   .hgc-calculator .button { width: 100%; }
   .hgc-calculator .recommendation-actions { width: 100%; }
+  .hgc-calculator .recommendation-actions .button { max-width: 100%; white-space: normal; text-align: center; }
   .hgc-calculator .result-step { padding-top: 0; }
   .hgc-calculator .result-hero { margin: 0 -22px; padding: 38px 22px 35px; }
   .hgc-calculator .comparison { grid-template-columns: 1fr; gap: 10px; }
@@ -184,6 +187,7 @@
   .hgc-calculator .difference-card { align-items: flex-start; flex-direction: column; gap: 8px; }
   .hgc-calculator .recommendation { padding: 22px; }
   .hgc-calculator .included-benefits ul { grid-template-columns: 1fr; }
+  .hgc-calculator .included-benefits { padding: 24px 20px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

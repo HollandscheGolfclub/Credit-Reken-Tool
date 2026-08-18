@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: HGC Credit Calculator
+ * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
- * Description: Besparingscalculator voor speelrechten, LoyalTee en HGC-handicapregistratie.
- * Version: 1.0.1
+ * Description: Besparingscalculator voor speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
+ * Version: 1.0.2
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.0.1');
+define('HGC_CALCULATOR_VERSION', '1.0.2');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -157,7 +157,7 @@ final class HGC_Calculator_GitHub_Updater
         }
 
         $information = new stdClass();
-        $information->name = 'HGC Credit Calculator';
+        $information->name = 'Hollandsche Golfclub Credit Calculator';
         $information->slug = self::SLUG;
         $information->version = $release['version'];
         $information->author = '<a href="https://www.hollandschegolfclub.nl/">Hollandsche Golfclub</a>';
@@ -166,7 +166,7 @@ final class HGC_Calculator_GitHub_Updater
         $information->requires_php = '7.4';
         $information->download_link = $release['package'];
         $information->sections = array(
-            'description' => 'Bereken en vergelijk HGC-speelrechten, LoyalTee en handicapregistratie.',
+            'description' => 'Bereken en vergelijk speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.',
             'changelog' => nl2br(esc_html($release['notes'] ?: 'Bekijk de GitHub Release voor de wijzigingen.')),
         );
 

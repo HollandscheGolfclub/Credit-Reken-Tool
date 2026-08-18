@@ -18,8 +18,8 @@ final class HGC_Calculator_Admin
     public function register_page(): void
     {
         add_options_page(
-            'HGC Calculator',
-            'HGC Calculator',
+            'Hollandsche Golfclub Calculator',
+            'Hollandsche Golfclub Calculator',
             'manage_options',
             self::PAGE_SLUG,
             array($this, 'render_page')
@@ -62,7 +62,7 @@ final class HGC_Calculator_Admin
         );
         ?>
         <div class="wrap hgc-admin">
-            <h1>HGC Calculator</h1>
+            <h1>Hollandsche Golfclub Calculator</h1>
             <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
 
             <?php if (isset($_GET['updated'])) : ?>

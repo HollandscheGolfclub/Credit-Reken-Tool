@@ -1,24 +1,24 @@
-=== HGC Credit Calculator ===
+=== Hollandsche Golfclub Credit Calculator ===
 Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Vergelijkt de huidige golfkosten met HGC-speelrechten, LoyalTee en handicapregistratie.
+Vergelijkt de huidige golfkosten met speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
 
 == Installatie ==
 
 1. Upload `hgc-credit-calculator.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
-2. Activeer HGC Credit Calculator.
+2. Activeer Hollandsche Golfclub Credit Calculator.
 3. Plaats `[hgc_calculator]` in een pagina of shortcodeblok.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
 
 Beheer banen, greenfees, credits, pakketten, voordelen en links via
-Instellingen > HGC Calculator.
+Instellingen > Hollandsche Golfclub Calculator.
 
 == GitHub-updates ==
 
@@ -32,9 +32,15 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 == Changelog ==
 
+= 1.0.2 =
+* Alle zichtbare merkvermeldingen uitgeschreven naar Hollandsche Golfclub.
+* Invoer vereenvoudigd naar 9-holesrondes op een grote of kleine baan.
+* Handicapregistratie wordt standaard in ieder advies meegenomen.
+* Aanbeveling, call-to-action en inbegrepen voordelen duidelijker vormgegeven.
+
 = 1.0.1 =
 * Plugin geschikt gemaakt voor Git-deploy vanuit wordpress/wp-content/plugins.
-* Speelrechten met credits en LoyalTee kunnen expliciet met HGC-handicapregistratie worden gecombineerd.
+* Speelrechten met credits en LoyalTee kunnen expliciet met handicapregistratie van Hollandsche Golfclub worden gecombineerd.
 
 = 1.0.0 =
 * Eerste WordPress-pluginversie.

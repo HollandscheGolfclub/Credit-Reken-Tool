@@ -16,8 +16,6 @@ const greenfeePanel = calculatorRoot.querySelector("#greenfee-panel");
 const annualPanel = calculatorRoot.querySelector("#annual-panel");
 const greenfeeInput = calculatorRoot.querySelector("#greenfee");
 const annualInput = calculatorRoot.querySelector("#annual-cost");
-const includeHandicap = calculatorRoot.querySelector("#include-handicap");
-const handicapCopy = calculatorRoot.querySelector("#handicap-copy");
 const costError = calculatorRoot.querySelector("#cost-error");
 const resultContent = calculatorRoot.querySelector("#result-content");
 
@@ -35,6 +33,10 @@ function formatInputMoney(input) {
 
 function selectedValue(name) {
   return form.querySelector(`input[name="${name}"]:checked`)?.value;
+}
+
+function brandText(value) {
+  return String(value).replace(/\bHGC\b/g, "Hollandsche Golfclub");
 }
 
 function getFormat() {
@@ -177,11 +179,11 @@ function candidatePlans({ course, format, rounds, youth, canPlayOffPeak }) {
       price: handicapRegistrationPrice + extraRounds * handicapExtraGreenFee,
       basePrice: handicapRegistrationPrice,
       credits: null,
-      label: "HGC Handicapregistratie",
+      label: "Hollandsche Golfclub Handicapregistratie",
       count: 1,
       requiredCredits: null,
-      family: "HGC Handicapregistratie",
-      scope: "twee persoonlijke greenfees op HGC-golfparken",
+      family: "Hollandsche Golfclub Handicapregistratie",
+      scope: "twee persoonlijke greenfees op golfparken van Hollandsche Golfclub",
       unit: "greenfees",
       isLocal: false,
       kind: "handicap",
@@ -193,31 +195,31 @@ function candidatePlans({ course, format, rounds, youth, canPlayOffPeak }) {
   }
 
   if (youth) {
-    const youthPlan = packagePlan(hgcConfig.youthPackages, standardCredits, "HGC Jeugd-speelrecht", {
+    const youthPlan = packagePlan(hgcConfig.youthPackages, standardCredits, "Hollandsche Golfclub Jeugd-speelrecht", {
       rounds,
       creditRate: standardRate,
       greenFee: 10,
     });
-    candidates.push({ ...youthPlan, requiredCredits: standardCredits, family: "Jeugd-speelrecht", scope: "alle HGC-golfbanen", unit: "credits", isLocal: false, includesHandicap: false });
+    candidates.push({ ...youthPlan, requiredCredits: standardCredits, family: "Jeugd-speelrecht", scope: "alle golfbanen van Hollandsche Golfclub", unit: "credits", isLocal: false, includesHandicap: false });
     return candidates;
   }
 
   const basePackages = format === "short" ? hgcConfig.shortGolfPackages : hgcConfig.standardPackages;
-  const baseName = format === "short" ? "HGC Shortgolf-speelrecht" : "HGC Speelrecht";
+  const baseName = format === "short" ? "Hollandsche Golfclub Shortgolf-speelrecht" : "Hollandsche Golfclub Speelrecht";
   const basePlan = packagePlan(basePackages, standardCredits, baseName, {
     rounds,
     creditRate: standardRate,
     greenFee: reducedGreenFee,
   });
-  candidates.push({ ...basePlan, requiredCredits: standardCredits, family: baseName, scope: format === "short" ? "alle HGC-shortgolfbanen" : "alle HGC-golfbanen", unit: "credits", isLocal: false, includesHandicap: false });
+  candidates.push({ ...basePlan, requiredCredits: standardCredits, family: baseName, scope: format === "short" ? "alle shortgolfbanen van Hollandsche Golfclub" : "alle golfbanen van Hollandsche Golfclub", unit: "credits", isLocal: false, includesHandicap: false });
 
   if (canPlayOffPeak) {
-    const plan = packagePlan(hgcConfig.offPeakPackages, standardCredits, "HGC Daluren-speelrecht", {
+    const plan = packagePlan(hgcConfig.offPeakPackages, standardCredits, "Hollandsche Golfclub Daluren-speelrecht", {
       rounds,
       creditRate: standardRate,
       greenFee: reducedGreenFee,
     });
-    candidates.push({ ...plan, requiredCredits: standardCredits, family: "HGC Daluren-speelrecht", scope: "alle HGC-golfbanen in daluren", unit: "credits", isLocal: false, includesHandicap: false });
+    candidates.push({ ...plan, requiredCredits: standardCredits, family: "Hollandsche Golfclub Daluren-speelrecht", scope: "alle golfbanen van Hollandsche Golfclub in daluren", unit: "credits", isLocal: false, includesHandicap: false });
   }
 
   const local = hgcConfig.localPackages[course.id];
@@ -252,7 +254,7 @@ function candidatePlans({ course, format, rounds, youth, canPlayOffPeak }) {
       count: 1,
       requiredCredits: null,
       family: hgcConfig.loyalTee.name,
-      scope: "reguliere greenfees op HGC-golfparken",
+      scope: "reguliere greenfees op golfparken van Hollandsche Golfclub",
       unit: "greenfees",
       isLocal: false,
       kind: "loyaltee",
@@ -324,15 +326,15 @@ function calculate() {
   const currentAnnualCost = costType === "greenfee" ? enteredCost * rounds : enteredCost;
   const currentRoundCost = currentAnnualCost / rounds;
   const registrationPrice = youth ? hgcConfig.handicapRegistration.youthPrice : hgcConfig.handicapRegistration.adultPrice;
-  const planContext = { course, format, rounds, youth, canPlayOffPeak: offPeak.checked, forceHandicap: includeHandicap.checked };
+  const planContext = { course, format, rounds, youth, canPlayOffPeak: offPeak.checked, forceHandicap: true };
   const best = sortedPlans(planContext)[0];
   const nextOption = findNextOption({ ...planContext, currentBest: best });
-  const handicapPrice = includeHandicap.checked && !best.includesHandicap ? registrationPrice : 0;
+  const handicapPrice = !best.includesHandicap ? registrationPrice : 0;
   const hgcAnnualCost = best.price + handicapPrice;
   const hgcRoundCost = hgcAnnualCost / rounds;
   const difference = currentAnnualCost - hgcAnnualCost;
 
-  return { rounds, format, course, youth, forceHandicap: includeHandicap.checked, currentAnnualCost, currentRoundCost, best, nextOption, handicapPrice, hgcAnnualCost, hgcRoundCost, difference };
+  return { rounds, format, course, youth, forceHandicap: true, currentAnnualCost, currentRoundCost, best, nextOption, handicapPrice, hgcAnnualCost, hgcRoundCost, difference };
 }
 
 function resultMessage(difference) {
@@ -344,10 +346,10 @@ function resultMessage(difference) {
 
 function renderResult(result) {
   const message = resultMessage(result.difference);
-  const formatLabel = result.format === "short" ? "shortgolfrondes" : result.format === "eighteen" ? "rondes van 18 holes" : "baanrondes";
+  const formatLabel = result.format === "short" ? "9-holesrondes op de kleine baan" : "9-holesrondes op de grote baan";
   const differenceValue = Math.abs(result.difference);
   const handicapLine = result.best.includesHandicap
-    ? "<li>Inclusief HGC-handicapregistratie</li>"
+    ? "<li>Inclusief handicapregistratie bij Hollandsche Golfclub</li>"
     : result.handicapPrice
       ? `<li>Inclusief handicapregistratie: ${euro.format(result.handicapPrice)}</li>`
       : "";
@@ -367,12 +369,12 @@ function renderResult(result) {
     ? [...new Set([...baseBenefits, ...hgcConfig.handicapBenefits])]
     : baseBenefits;
   const recommendationExplanation = result.best.kind === "loyaltee"
-    ? `${euro.format(hgcConfig.loyalTee.membershipPrice)} lidmaatschap plus ${result.rounds} greenfees van ${euro.format(result.best.perRoundGreenFee)}.${isLoyalTeeHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor HGC-handicapregistratie bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""} Het ballentegoed van ${euro.format(hgcConfig.loyalTee.ballCredit)} is een extra voordeel en is niet van de golfkosten afgetrokken.`
+    ? `${euro.format(hgcConfig.loyalTee.membershipPrice)} lidmaatschap plus ${result.rounds} greenfees van ${euro.format(result.best.perRoundGreenFee)}.${isLoyalTeeHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor handicapregistratie van Hollandsche Golfclub bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""} Het ballentegoed van ${euro.format(hgcConfig.loyalTee.ballCredit)} is een extra voordeel en is niet van de golfkosten afgetrokken.`
     : result.best.kind === "handicap"
       ? `${euro.format(result.best.basePrice)} voor handicapregistratie inclusief ${result.best.includedRounds} persoonlijke ${result.best.includedRounds === 1 ? "greenfee" : "greenfees"}.${result.best.extraRounds > 0 ? ` De overige ${result.best.extraRounds} ${result.best.extraRounds === 1 ? "ronde is" : "rondes zijn"} meegerekend tegen het reguliere tarief van ${euro.format(result.best.topUpGreenFee)} per ronde.` : ""}`
     : result.best.extraRounds > 0
-      ? `Het speelrecht zelf kost ${euro.format(result.best.basePrice)} en dekt naar verwachting ${result.best.includedRounds} van je ${result.rounds} rondes. De overige ${result.best.extraRounds} rondes zijn meegerekend tegen het gereduceerde tarief van ${euro.format(result.best.topUpGreenFee)} per ronde.${isCreditHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor HGC-handicapregistratie bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""}`
-    : `Je gebruikt naar verwachting ${decimal.format(result.best.requiredCredits)} ${result.best.unit} en krijgt met dit advies ruimte voor ${decimal.format(result.best.credits)}. Geldig voor ${result.best.scope}.${isCreditHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor HGC-handicapregistratie bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""}`;
+      ? `Het speelrecht zelf kost ${euro.format(result.best.basePrice)} en dekt naar verwachting ${result.best.includedRounds} van je ${result.rounds} rondes. De overige ${result.best.extraRounds} rondes zijn meegerekend tegen het gereduceerde tarief van ${euro.format(result.best.topUpGreenFee)} per ronde.${isCreditHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor handicapregistratie van Hollandsche Golfclub bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""}`
+    : `Je gebruikt naar verwachting ${decimal.format(result.best.requiredCredits)} ${result.best.unit} en krijgt met dit advies ruimte voor ${decimal.format(result.best.credits)}. Geldig voor ${brandText(result.best.scope)}.${isCreditHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor handicapregistratie van Hollandsche Golfclub bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""}`;
   const validityLine = result.best.kind === "loyaltee"
     ? isLoyalTeeHandicapCombo ? "LoyalTee en handicapregistratie lopen per kalenderjaar" : "LoyalTee loopt per kalenderjaar"
     : result.best.kind === "handicap"
@@ -385,24 +387,20 @@ function renderResult(result) {
     : result.best.kind === "handicap"
       ? hgcConfig.links.handicapRegistration
       : hgcConfig.links.webshop;
-  const productButton = result.best.kind === "loyaltee"
-    ? "Bekijk HGC LoyalTee"
-    : result.best.kind === "handicap"
-      ? "Bekijk handicapregistratie"
-      : "Bekijk jouw speelrecht";
+  const productButton = "Geïnteresseerd? Klik hier voor meer informatie";
   const recommendationLabel = hasAddedHandicap
-    ? `${result.best.label} + handicapregistratie`
-    : result.best.label;
+    ? `${brandText(result.best.label)} + handicapregistratie`
+    : brandText(result.best.label);
   const productActionsHtml = hasAddedHandicap
     ? `<div class="recommendation-actions">
         <a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>
-        <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Bekijk handicapregistratie <span>→</span></a>
+        <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Meer over handicapregistratie <span>→</span></a>
       </div>`
     : `<a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>`;
   const nextOptionHasAddedHandicap = Boolean(result.nextOption && result.forceHandicap && !result.nextOption.plan.includesHandicap);
   const nextOptionLabel = nextOptionHasAddedHandicap
-    ? `${result.nextOption.plan.label} + handicapregistratie`
-    : result.nextOption?.plan.label;
+    ? `${brandText(result.nextOption.plan.label)} + handicapregistratie`
+    : result.nextOption ? brandText(result.nextOption.plan.label) : "";
   const nextOptionLink = result.nextOption?.plan.kind === "loyaltee"
     ? hgcConfig.links.loyalTee
     : result.nextOption?.plan.kind === "handicap"
@@ -411,12 +409,12 @@ function renderResult(result) {
   const nextOptionHtml = result.nextOption
     ? `<div class="next-option">
         <div class="next-option-copy">
-          <p class="eyebrow">${result.nextOption.requestedCombination ? "Flexibele combinatie" : result.nextOption.fromRounds ? "Slim alternatief als je vaker speelt" : "Andere HGC-optie"}</p>
+          <p class="eyebrow">${result.nextOption.requestedCombination ? "Flexibele combinatie" : result.nextOption.fromRounds ? "Slim alternatief als je vaker speelt" : "Andere optie van Hollandsche Golfclub"}</p>
           <h4>${nextOptionLabel}</h4>
           <p>${result.nextOption.requestedCombination
             ? `Liever zonder vast aantal credits spelen? Met LoyalTee, de greenfees voor jouw ${result.rounds} ${formatLabel} en handicapregistratie betaal je circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`
             : result.nextOption.fromRounds
-            ? `Speel je ongeveer <strong>${result.nextOption.fromRounds} ${formatLabel}</strong> per jaar? Dan wordt dit volgens de berekening de voordeligste HGC-keuze, voor circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`
+            ? `Speel je ongeveer <strong>${result.nextOption.fromRounds} ${formatLabel}</strong> per jaar? Dan wordt dit volgens de berekening de voordeligste keuze van Hollandsche Golfclub, voor circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`
             : `Dit is bij jouw huidige speelgedrag de eerstvolgende optie, voor circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`}</p>
         </div>
         ${result.nextOption.requestedCombination
@@ -435,7 +433,7 @@ function renderResult(result) {
       <p>Gebaseerd op ${result.rounds} ${formatLabel} per jaar bij ${result.course.name}.</p>
     </div>
 
-    <div class="comparison" aria-label="Vergelijking huidige kosten en HGC-kosten">
+    <div class="comparison" aria-label="Vergelijking huidige kosten en kosten bij Hollandsche Golfclub">
       <article>
         <p>Jouw situatie nu</p>
         <strong>${euro.format(result.currentAnnualCost)}</strong>
@@ -444,7 +442,7 @@ function renderResult(result) {
       </article>
       <div class="comparison-arrow" aria-hidden="true">→</div>
       <article class="comparison-hgc">
-        <p>Met HGC</p>
+        <p>Met Hollandsche Golfclub</p>
         <strong>${euro.format(result.hgcAnnualCost)}</strong>
         <span>per jaar</span>
         <b>${euro.format(result.hgcRoundCost)} per ronde</b>
@@ -458,7 +456,7 @@ function renderResult(result) {
 
     <div class="recommendation">
       <div class="recommendation-main">
-        <p class="eyebrow">Jouw beste HGC-optie</p>
+        <p class="eyebrow">Kies jouw speelrecht</p>
         <h4>${recommendationLabel}</h4>
         <p>${recommendationExplanation}</p>
         <ul>${handicapLine}<li>${validityLine}</li>${result.best.kind === "loyaltee" || result.best.kind === "handicap" ? "" : "<li>Prijzen zijn exclusief maandbetalingstoeslag</li>"}</ul>
@@ -469,11 +467,12 @@ function renderResult(result) {
     ${nextOptionHtml}
 
     <div class="included-benefits">
+      <p class="eyebrow">Inbegrepen voordelen</p>
       <h4>Dit krijg je er ook bij</h4>
-      <ul>${benefits.map((benefit) => `<li><span>✓</span>${benefit}</li>`).join("")}</ul>
+      <ul>${benefits.map((benefit) => `<li><span>✓</span>${brandText(benefit)}</li>`).join("")}</ul>
     </div>
 
-    <p class="result-disclaimer">Indicatieve berekening. De voorwaarden, beschikbaarheid en actuele productinformatie van HGC zijn leidend. <a href="${hgcConfig.links.terms}" target="_blank" rel="noopener">Bekijk de voorwaarden</a>.</p>
+    <p class="result-disclaimer">Indicatieve berekening. De voorwaarden, beschikbaarheid en actuele productinformatie van Hollandsche Golfclub zijn leidend. <a href="${hgcConfig.links.terms}" target="_blank" rel="noopener">Bekijk de voorwaarden</a>.</p>
   `;
 
   track("calculator_result_viewed", {
@@ -496,11 +495,6 @@ form.querySelectorAll('input[name="cost-type"]').forEach((input) => input.addEve
   annualPanel.hidden = greenfee;
   costError.hidden = true;
 }));
-
-ageCategory.addEventListener("change", () => {
-  const price = ageCategory.value === "youth" ? hgcConfig.handicapRegistration.youthPrice : hgcConfig.handicapRegistration.adultPrice;
-  handicapCopy.textContent = `We voegen ${euro.format(price)} toe aan speelrechten met credits én LoyalTee. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
-});
 
 [greenfeeInput, annualInput].forEach((input) => input.addEventListener("blur", () => formatInputMoney(input)));
 
@@ -534,7 +528,6 @@ calculatorRoot.addEventListener("click", (event) => {
 });
 
 populateCourses();
-handicapCopy.textContent = `We voegen ${euro.format(hgcConfig.handicapRegistration.adultPrice)} toe aan speelrechten met credits én LoyalTee. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
 progressBar.style.width = "33.333%";
 updateRangeFill();
 track("calculator_opened");
