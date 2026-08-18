@@ -128,12 +128,16 @@
 .hgc-calculator .recommendation li + li { margin-top: 4px; }
 .hgc-calculator .button--cta { white-space: nowrap; background: var(--orange); }
 .hgc-calculator .button--cta:hover { background: #ff6600; }
+.hgc-calculator .button--secondary { border: 1px solid #8bb327; color: #567619; background: white; white-space: nowrap; }
+.hgc-calculator .button--secondary:hover { background: #f6f9ee; }
+.hgc-calculator .recommendation-actions { display: grid; gap: 9px; }
 .hgc-calculator .next-option { margin-top: 14px; padding: 23px 25px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 24px; border: 1px solid #d9e5bd; border-radius: 6px; background: #f6f9ee; }
 .hgc-calculator .next-option .eyebrow { margin-bottom: 7px; }
 .hgc-calculator .next-option h4 { margin-bottom: 7px; font-size: 18px; }
 .hgc-calculator .next-option p:last-child { margin-bottom: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
 .hgc-calculator .next-option-link { color: #527417; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; }
 .hgc-calculator .next-option-link:hover { text-decoration: underline; }
+.hgc-calculator .next-option-actions { display: grid; justify-items: end; gap: 9px; }
 .hgc-calculator .included-benefits { padding: 34px 0 24px; }
 .hgc-calculator .included-benefits h4 { margin-bottom: 18px; font-size: 18px; }
 .hgc-calculator .included-benefits ul { margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 13px 24px; list-style: none; }
@@ -146,7 +150,9 @@
 @media (max-width: 850px) {
   .hgc-calculator .calculator-shell { margin-left: 18px; margin-right: 18px; }
   .hgc-calculator .recommendation { grid-template-columns: 1fr; }
+  .hgc-calculator .recommendation-actions { justify-items: start; }
   .hgc-calculator .next-option { grid-template-columns: 1fr; gap: 14px; }
+  .hgc-calculator .next-option-actions { justify-items: start; }
   .hgc-calculator .button--cta { justify-self: start; }
 }
 
@@ -170,6 +176,7 @@
   .hgc-calculator .form-actions { align-items: stretch; flex-direction: column-reverse; }
   .hgc-calculator .form-actions--end { align-items: stretch; }
   .hgc-calculator .button { width: 100%; }
+  .hgc-calculator .recommendation-actions { width: 100%; }
   .hgc-calculator .result-step { padding-top: 0; }
   .hgc-calculator .result-hero { margin: 0 -22px; padding: 38px 22px 35px; }
   .hgc-calculator .comparison { grid-template-columns: 1fr; gap: 10px; }

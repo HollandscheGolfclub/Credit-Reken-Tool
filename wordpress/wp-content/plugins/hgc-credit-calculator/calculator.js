@@ -283,6 +283,16 @@ function sortedPlans({ course, format, rounds, youth, canPlayOffPeak, forceHandi
 function findNextOption({ course, format, rounds, youth, canPlayOffPeak, forceHandicap, currentBest }) {
   const maximumRounds = Number(roundsRange.max);
 
+  // Wanneer handicapregistratie gewenst is, blijft LoyalTee ook als expliciete
+  // flexibele combinatie beschikbaar, zelfs als een speelrecht goedkoper is.
+  if (forceHandicap && currentBest.kind !== "loyaltee") {
+    const loyalTeeCombo = sortedPlans({ course, format, rounds, youth, canPlayOffPeak, forceHandicap })
+      .find((plan) => plan.kind === "loyaltee");
+    if (loyalTeeCombo) {
+      return { plan: loyalTeeCombo, fromRounds: null, annualCost: loyalTeeCombo.comparisonPrice, requestedCombination: true };
+    }
+  }
+
   // Zoek het eerste punt waarop een ander product werkelijk de voordeligste
   // keuze wordt. Zo tonen we een bruikbaar doorgroeipad in plaats van een upsell.
   for (let futureRounds = rounds + 1; futureRounds <= maximumRounds; futureRounds += 1) {
@@ -322,7 +332,7 @@ function calculate() {
   const hgcRoundCost = hgcAnnualCost / rounds;
   const difference = currentAnnualCost - hgcAnnualCost;
 
-  return { rounds, format, course, youth, currentAnnualCost, currentRoundCost, best, nextOption, handicapPrice, hgcAnnualCost, hgcRoundCost, difference };
+  return { rounds, format, course, youth, forceHandicap: includeHandicap.checked, currentAnnualCost, currentRoundCost, best, nextOption, handicapPrice, hgcAnnualCost, hgcRoundCost, difference };
 }
 
 function resultMessage(difference) {
@@ -341,7 +351,8 @@ function renderResult(result) {
     : result.handicapPrice
       ? `<li>Inclusief handicapregistratie: ${euro.format(result.handicapPrice)}</li>`
       : "";
-  const benefits = result.best.kind === "handicap"
+  const isLoyalTeeHandicapCombo = result.best.kind === "loyaltee" && result.handicapPrice > 0;
+  const baseBenefits = result.best.kind === "handicap"
     ? hgcConfig.handicapBenefits
     : result.best.kind === "loyaltee"
     ? hgcConfig.loyalTeeBenefits
@@ -350,15 +361,18 @@ function renderResult(result) {
     : result.format === "short"
       ? hgcConfig.shortGolfBenefits
       : hgcConfig.benefits;
+  const benefits = isLoyalTeeHandicapCombo
+    ? [...new Set([...hgcConfig.loyalTeeBenefits, ...hgcConfig.handicapBenefits])]
+    : baseBenefits;
   const recommendationExplanation = result.best.kind === "loyaltee"
-    ? `${euro.format(hgcConfig.loyalTee.membershipPrice)} lidmaatschap plus ${result.rounds} greenfees van ${euro.format(result.best.perRoundGreenFee)}. Het ballentegoed van ${euro.format(hgcConfig.loyalTee.ballCredit)} is een extra voordeel en is niet van de golfkosten afgetrokken.`
+    ? `${euro.format(hgcConfig.loyalTee.membershipPrice)} lidmaatschap plus ${result.rounds} greenfees van ${euro.format(result.best.perRoundGreenFee)}.${isLoyalTeeHandicapCombo ? ` Daar komt ${euro.format(result.handicapPrice)} voor HGC-handicapregistratie bij, inclusief ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.` : ""} Het ballentegoed van ${euro.format(hgcConfig.loyalTee.ballCredit)} is een extra voordeel en is niet van de golfkosten afgetrokken.`
     : result.best.kind === "handicap"
       ? `${euro.format(result.best.basePrice)} voor handicapregistratie inclusief ${result.best.includedRounds} persoonlijke ${result.best.includedRounds === 1 ? "greenfee" : "greenfees"}.${result.best.extraRounds > 0 ? ` De overige ${result.best.extraRounds} ${result.best.extraRounds === 1 ? "ronde is" : "rondes zijn"} meegerekend tegen het reguliere tarief van ${euro.format(result.best.topUpGreenFee)} per ronde.` : ""}`
     : result.best.extraRounds > 0
       ? `Het speelrecht zelf kost ${euro.format(result.best.basePrice)} en dekt naar verwachting ${result.best.includedRounds} van je ${result.rounds} rondes. De overige ${result.best.extraRounds} rondes zijn meegerekend tegen het gereduceerde tarief van ${euro.format(result.best.topUpGreenFee)} per ronde.`
     : `Je gebruikt naar verwachting ${decimal.format(result.best.requiredCredits)} ${result.best.unit} en krijgt met dit advies ruimte voor ${decimal.format(result.best.credits)}. Geldig voor ${result.best.scope}.`;
   const validityLine = result.best.kind === "loyaltee"
-    ? "LoyalTee loopt per kalenderjaar"
+    ? isLoyalTeeHandicapCombo ? "LoyalTee en handicapregistratie lopen per kalenderjaar" : "LoyalTee loopt per kalenderjaar"
     : result.best.kind === "handicap"
       ? "Handicapregistratie loopt per kalenderjaar"
       : "Speelrecht is 12 maanden geldig";
@@ -372,6 +386,18 @@ function renderResult(result) {
     : result.best.kind === "handicap"
       ? "Bekijk handicapregistratie"
       : "Bekijk jouw speelrecht";
+  const recommendationLabel = isLoyalTeeHandicapCombo
+    ? `${result.best.label} + handicapregistratie`
+    : result.best.label;
+  const productActionsHtml = isLoyalTeeHandicapCombo
+    ? `<div class="recommendation-actions">
+        <a class="button button--primary button--cta" href="${hgcConfig.links.loyalTee}" target="_blank" rel="noopener">Bekijk HGC LoyalTee <span>→</span></a>
+        <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Bekijk handicapregistratie <span>→</span></a>
+      </div>`
+    : `<a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>`;
+  const nextOptionLabel = result.nextOption?.plan.kind === "loyaltee" && result.forceHandicap
+    ? `${result.nextOption.plan.label} + handicapregistratie`
+    : result.nextOption?.plan.label;
   const nextOptionLink = result.nextOption?.plan.kind === "loyaltee"
     ? hgcConfig.links.loyalTee
     : result.nextOption?.plan.kind === "handicap"
@@ -380,13 +406,17 @@ function renderResult(result) {
   const nextOptionHtml = result.nextOption
     ? `<div class="next-option">
         <div class="next-option-copy">
-          <p class="eyebrow">${result.nextOption.fromRounds ? "Slim alternatief als je vaker speelt" : "Andere HGC-optie"}</p>
-          <h4>${result.nextOption.plan.label}</h4>
-          <p>${result.nextOption.fromRounds
+          <p class="eyebrow">${result.nextOption.requestedCombination ? "Flexibele combinatie" : result.nextOption.fromRounds ? "Slim alternatief als je vaker speelt" : "Andere HGC-optie"}</p>
+          <h4>${nextOptionLabel}</h4>
+          <p>${result.nextOption.requestedCombination
+            ? `Liever zonder vast aantal credits spelen? Met LoyalTee, de greenfees voor jouw ${result.rounds} ${formatLabel} en handicapregistratie betaal je circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`
+            : result.nextOption.fromRounds
             ? `Speel je ongeveer <strong>${result.nextOption.fromRounds} ${formatLabel}</strong> per jaar? Dan wordt dit volgens de berekening de voordeligste HGC-keuze, voor circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`
             : `Dit is bij jouw huidige speelgedrag de eerstvolgende optie, voor circa <strong>${euro.format(result.nextOption.annualCost)} per jaar</strong>.`}</p>
         </div>
-        <a class="next-option-link" href="${nextOptionLink}" target="_blank" rel="noopener">Bekijk deze optie <span>→</span></a>
+        ${result.nextOption.requestedCombination
+          ? `<div class="next-option-actions"><a class="next-option-link" href="${hgcConfig.links.loyalTee}" target="_blank" rel="noopener">Bekijk LoyalTee <span>→</span></a><a class="next-option-link" href="${hgcConfig.links.handicapRegistration}" target="_blank" rel="noopener">Bekijk handicapregistratie <span>→</span></a></div>`
+          : `<a class="next-option-link" href="${nextOptionLink}" target="_blank" rel="noopener">Bekijk deze optie <span>→</span></a>`}
       </div>`
     : "";
 
@@ -422,11 +452,11 @@ function renderResult(result) {
     <div class="recommendation">
       <div class="recommendation-main">
         <p class="eyebrow">Jouw beste HGC-optie</p>
-        <h4>${result.best.label}</h4>
+        <h4>${recommendationLabel}</h4>
         <p>${recommendationExplanation}</p>
         <ul>${handicapLine}<li>${validityLine}</li>${result.best.kind === "loyaltee" || result.best.kind === "handicap" ? "" : "<li>Prijzen zijn exclusief maandbetalingstoeslag</li>"}</ul>
       </div>
-      <a class="button button--primary button--cta" href="${productLink}" target="_blank" rel="noopener">${productButton} <span>→</span></a>
+      ${productActionsHtml}
     </div>
 
     ${nextOptionHtml}
@@ -440,7 +470,7 @@ function renderResult(result) {
   `;
 
   track("calculator_result_viewed", {
-    recommended_product: result.best.label,
+    recommended_product: recommendationLabel,
     result_type: message.type,
     annual_difference: Math.round(result.difference * 100) / 100,
     course: result.course.id,
@@ -462,7 +492,7 @@ form.querySelectorAll('input[name="cost-type"]').forEach((input) => input.addEve
 
 ageCategory.addEventListener("change", () => {
   const price = ageCategory.value === "youth" ? hgcConfig.handicapRegistration.youthPrice : hgcConfig.handicapRegistration.adultPrice;
-  handicapCopy.textContent = `We nemen ${euro.format(price)} dan mee in ieder advies. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
+  handicapCopy.textContent = `We voegen ${euro.format(price)} toe aan ieder advies, ook aan LoyalTee. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
 });
 
 [greenfeeInput, annualInput].forEach((input) => input.addEventListener("blur", () => formatInputMoney(input)));
@@ -497,7 +527,7 @@ calculatorRoot.addEventListener("click", (event) => {
 });
 
 populateCourses();
-handicapCopy.textContent = `We nemen ${euro.format(hgcConfig.handicapRegistration.adultPrice)} dan mee in ieder advies. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
+handicapCopy.textContent = `We voegen ${euro.format(hgcConfig.handicapRegistration.adultPrice)} toe aan ieder advies, ook aan LoyalTee. Voor weinig rondes vergelijken we registratie automatisch als losse optie.`;
 progressBar.style.width = "33.333%";
 updateRangeFill();
 track("calculator_opened");

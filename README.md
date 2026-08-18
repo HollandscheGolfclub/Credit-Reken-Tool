@@ -39,7 +39,7 @@ Voor een nieuwe WordPress-versie:
 1. Verhoog `Version` en `HGC_CALCULATOR_VERSION` in `hgc-credit-calculator.php`.
 2. Verhoog `Stable tag` in `readme.txt`.
 3. Commit en push de wijzigingen naar GitHub.
-4. Maak en push een tag, bijvoorbeeld `v1.0.1`.
+4. Maak en push een tag, bijvoorbeeld `v1.0.2`.
 
 De workflow `.github/workflows/release.yml` verpakt de deploymap automatisch als `hgc-credit-calculator.zip` en plaatst dit bestand bij een GitHub Release. Op de beveiligde live site blijft Git-deploy de primaire updater, omdat dashboardupdates door `DISALLOW_FILE_MODS` zijn geblokkeerd.
 
