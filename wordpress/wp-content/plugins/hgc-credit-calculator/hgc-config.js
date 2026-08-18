@@ -18,6 +18,9 @@ window.hgcConfig = {
     // Binnen het grootste pakket adviseren we één passend pakket, niet meerdere kleine pakketten.
     preferSinglePackage: true,
     monthlyPaymentSurchargePercentage: 5,
+    // Shortgolf is bij gecombineerd spelen alleen passend wanneer minimaal
+    // dit percentage van de rondes op een kleine baan wordt gespeeld.
+    minimumShortGolfRoundSharePercentage: 33,
   },
 
   handicapRegistration: {

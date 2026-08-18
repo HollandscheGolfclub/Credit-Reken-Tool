@@ -60,6 +60,7 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
 - Algemene en Shortgolf-speelrechten gebruiken hun eigen creditwaarden voor de kleine baan.
 - Een algemeen speelrecht dekt alle benodigde credits. Zijn bijvoorbeeld 22 credits nodig, dan kan de keuzehulp twee opeenvolgende pakketten van 20 credits adviseren; er worden geen losse greenfees als aanvulling gebruikt.
 - Een Shortgolf-speelrecht kan bij een combinatie worden geadviseerd. Kleine rondes gebruiken Shortgolf-credits en grote rondes worden tegen het gereduceerde greenfeetarief berekend.
+- Bij gecombineerd spelen doet Shortgolf standaard alleen mee wanneer minimaal 33% van de rondes op een kleine baan wordt gespeeld. Dit percentage is aanpasbaar in WordPress-beheer.
 - Handicapregistratie wordt standaard in ieder advies meegenomen.
 - De twee persoonlijke greenfees van handicapregistratie zijn extra rondes en worden bij een speelrecht niet van de benodigde credits afgetrokken.
 - Handicapregistratie doet zelfstandig mee voor laag speelvolume. De twee inbegrepen rondes zijn greenfees en nooit credits.

@@ -282,6 +282,9 @@ function candidatePlans(context) {
   const totalRounds = largeRounds + smallRounds;
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
   const standardCredits = largeRounds * largeCourse.largeRate + smallRounds * smallCourse.shortRate;
+  const shortGolfShare = totalRounds > 0 ? (smallRounds / totalRounds) * 100 : 0;
+  const minimumShortGolfShare = Number(hgcConfig.settings.minimumShortGolfRoundSharePercentage ?? 33);
+  const shortGolfFitsPlayStyle = smallRounds > 0 && shortGolfShare + 1e-8 >= minimumShortGolfShare;
   const candidates = [];
 
   const packageChoices = youth
@@ -301,7 +304,7 @@ function candidatePlans(context) {
   });
 
   const shortGolfRate = Number(smallCourse.shortGolfRate);
-  if (!youth && smallRounds > 0 && Number.isFinite(shortGolfRate)) {
+  if (!youth && shortGolfFitsPlayStyle && Number.isFinite(shortGolfRate)) {
     const shortCredits = smallRounds * shortGolfRate;
     const shortPlan = packagePlan(hgcConfig.shortGolfPackages, shortCredits, "Hollandsche Golfclub Shortgolf-speelrecht", "shortgolf");
     if (shortPlan) {

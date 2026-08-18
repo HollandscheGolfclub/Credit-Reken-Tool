@@ -77,8 +77,9 @@ final class HGC_Calculator_Admin
 
                 <section class="hgc-admin-panel">
                     <h2>Algemene instellingen</h2>
-                    <div class="hgc-admin-grid hgc-admin-grid--four">
+                    <div class="hgc-admin-grid hgc-admin-grid--three">
                         <?php $this->number_field('Jaar', 'config[year]', $config['year'] ?? date('Y'), 1); ?>
+                        <?php $this->number_field('Minimaal aandeel kleine-baanrondes voor Shortgolf-advies', 'config[settings][minimumShortGolfRoundSharePercentage]', $config['settings']['minimumShortGolfRoundSharePercentage'] ?? 33, 1, '%'); ?>
                         <?php $this->number_field('Marge “ongeveer gelijk”', 'config[settings][equalCostMargin]', $config['settings']['equalCostMargin'] ?? 50, 0.01, '€'); ?>
                         <?php $this->number_field('18-holes vermenigvuldiger', 'config[settings][eighteenHoleMultiplier]', $config['settings']['eighteenHoleMultiplier'] ?? 2, 0.1); ?>
                         <?php $this->number_field('Maandbetalingstoeslag', 'config[settings][monthlyPaymentSurchargePercentage]', $config['settings']['monthlyPaymentSurchargePercentage'] ?? 5, 0.1, '%'); ?>
@@ -180,6 +181,9 @@ final class HGC_Calculator_Admin
         foreach (array('equalCostMargin', 'eighteenHoleMultiplier', 'monthlyPaymentSurchargePercentage') as $key) {
             $config['settings'][$key] = $this->number($raw['settings'][$key] ?? $config['settings'][$key] ?? 0);
         }
+        $config['settings']['minimumShortGolfRoundSharePercentage'] = min(100, max(0, $this->number(
+            $raw['settings']['minimumShortGolfRoundSharePercentage'] ?? $config['settings']['minimumShortGolfRoundSharePercentage'] ?? 33
+        )));
         $config['settings']['preferSinglePackage'] = true;
 
         foreach (array('adultPrice', 'youthPrice', 'vouchers') as $key) {

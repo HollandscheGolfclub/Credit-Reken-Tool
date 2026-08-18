@@ -36,6 +36,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * Omgebouwd van kostenvergelijker naar speelrechtkeuzehulp.
 * Aparte invoer en baanselectie voor grote en kleine 9-holesrondes.
 * Afzonderlijke creditwaarden voor algemene en Shortgolf-speelrechten.
+* Shortgolf wordt bij gemengd spelen alleen geadviseerd bij voldoende kleine-baanrondes.
 * Opeenvolgende creditpakketten worden geadviseerd wanneer één pakket niet volstaat.
 * Toont de effectieve kosten per grote- en kleine-baanronde.
 * Handicapregistratie blijft standaard inbegrepen; de twee persoonlijke greenfees verlagen het aantal credits niet.

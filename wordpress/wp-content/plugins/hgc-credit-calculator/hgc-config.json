@@ -4,7 +4,8 @@
     "equalCostMargin": 50,
     "eighteenHoleMultiplier": 2,
     "preferSinglePackage": true,
-    "monthlyPaymentSurchargePercentage": 5
+    "monthlyPaymentSurchargePercentage": 5,
+    "minimumShortGolfRoundSharePercentage": 33
   },
   "handicapRegistration": {
     "adultPrice": 59.5,

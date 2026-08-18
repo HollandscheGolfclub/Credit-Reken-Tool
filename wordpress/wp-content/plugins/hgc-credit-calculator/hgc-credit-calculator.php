@@ -52,6 +52,11 @@ function hgc_calculator_config(): array
             $saved['courses'][$index]['shortGolfRate'] = $default_courses[$id]['shortGolfRate'] ?? null;
         }
     }
+    foreach (($defaults['settings'] ?? array()) as $key => $value) {
+        if (!array_key_exists($key, $saved['settings'] ?? array())) {
+            $saved['settings'][$key] = $value;
+        }
+    }
     if (empty($saved['links']['playingRights']) && !empty($defaults['links']['playingRights'])) {
         $saved['links']['playingRights'] = $defaults['links']['playingRights'];
     }
