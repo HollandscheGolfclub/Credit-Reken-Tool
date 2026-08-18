@@ -148,6 +148,7 @@
       "largeHoles": 9,
       "largeRate": 0.9,
       "shortRate": 0.6,
+      "shortGolfRate": 1,
       "greenFees": {
         "nine": 30,
         "eighteen": 60,
@@ -164,6 +165,7 @@
       "largeHoles": 9,
       "largeRate": 1,
       "shortRate": 0.4,
+      "shortGolfRate": 0.7,
       "greenFees": {
         "nine": 35,
         "eighteen": 70,
@@ -180,6 +182,7 @@
       "largeHoles": 9,
       "largeRate": 0.85,
       "shortRate": 0.5,
+      "shortGolfRate": 0.75,
       "greenFees": {
         "nine": 29.5,
         "eighteen": 59,
@@ -196,6 +199,7 @@
       "largeHoles": 9,
       "largeRate": 1,
       "shortRate": 0.5,
+      "shortGolfRate": 0.75,
       "greenFees": {
         "nine": 35,
         "eighteen": 70,
@@ -212,6 +216,7 @@
       "largeHoles": 9,
       "largeRate": 0.6,
       "shortRate": 0.3,
+      "shortGolfRate": 0.5,
       "greenFees": {
         "nine": 27.5,
         "eighteen": 55,
@@ -228,6 +233,7 @@
       "largeHoles": 9,
       "largeRate": 1,
       "shortRate": 0.6,
+      "shortGolfRate": 1,
       "greenFees": {
         "nine": 35,
         "eighteen": 70,
@@ -244,6 +250,7 @@
       "largeHoles": 9,
       "largeRate": 1,
       "shortRate": 0.4,
+      "shortGolfRate": 0.7,
       "greenFees": {
         "nine": 35,
         "eighteen": 70,
@@ -323,7 +330,7 @@
     },
     {
       "id": "reymerswael",
-      "name": "Golfcentrum Reymerswael",
+      "name": "Golfpark Reymerswael",
       "location": "Rilland-Bath",
       "largeHoles": 12,
       "largeRate": 1.2,
@@ -344,6 +351,7 @@
       "largeHoles": 9,
       "largeRate": 0.7,
       "shortRate": 0.6,
+      "shortGolfRate": 1,
       "greenFees": {
         "nine": 25,
         "eighteen": null,
@@ -360,6 +368,7 @@
       "largeHoles": null,
       "largeRate": null,
       "shortRate": 0.35,
+      "shortGolfRate": 0.5,
       "greenFees": {
         "nine": null,
         "eighteen": null,

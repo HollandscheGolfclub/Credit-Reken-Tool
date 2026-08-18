@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
- * Description: Besparingscalculator voor speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
- * Version: 1.0.2
+ * Description: Keuzehulp voor speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
+ * Version: 1.1.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.0.2');
+define('HGC_CALCULATOR_VERSION', '1.1.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -35,7 +35,27 @@ function hgc_calculator_default_config(): array
 function hgc_calculator_config(): array
 {
     $saved = get_option('hgc_calculator_config');
-    return is_array($saved) ? $saved : hgc_calculator_default_config();
+    if (!is_array($saved)) {
+        return hgc_calculator_default_config();
+    }
+
+    // Vul nieuwe velden uit de GitHub-standaard aan zonder bestaande
+    // beheerdersinstellingen te overschrijven.
+    $defaults = hgc_calculator_default_config();
+    $default_courses = array();
+    foreach (($defaults['courses'] ?? array()) as $course) {
+        $default_courses[$course['id'] ?? ''] = $course;
+    }
+    foreach (($saved['courses'] ?? array()) as $index => $course) {
+        $id = $course['id'] ?? '';
+        if (!array_key_exists('shortGolfRate', $course)) {
+            $saved['courses'][$index]['shortGolfRate'] = $default_courses[$id]['shortGolfRate'] ?? null;
+        }
+    }
+    if (empty($saved['links']['playingRights']) && !empty($defaults['links']['playingRights'])) {
+        $saved['links']['playingRights'] = $defaults['links']['playingRights'];
+    }
+    return $saved;
 }
 
 if (is_admin()) {
@@ -166,7 +186,7 @@ final class HGC_Calculator_GitHub_Updater
         $information->requires_php = '7.4';
         $information->download_link = $release['package'];
         $information->sections = array(
-            'description' => 'Bereken en vergelijk speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.',
+            'description' => 'Ontdek welk speelrecht, LoyalTee-lidmaatschap of welke handicapregistratie bij jouw golfgedrag past.',
             'changelog' => nl2br(esc_html($release['notes'] ?: 'Bekijk de GitHub Release voor de wijzigingen.')),
         );
 

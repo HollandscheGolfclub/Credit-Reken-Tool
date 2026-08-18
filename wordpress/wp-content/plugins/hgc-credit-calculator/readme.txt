@@ -3,11 +3,11 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Vergelijkt de huidige golfkosten met speelrechten, LoyalTee en handicapregistratie van Hollandsche Golfclub.
+Adviseert het best passende speelrecht op basis van rondes op grote en kleine golfbanen.
 
 == Installatie ==
 
@@ -31,6 +31,14 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.1.0 =
+* Omgebouwd van kostenvergelijker naar speelrechtkeuzehulp.
+* Aparte invoer en baanselectie voor grote en kleine 9-holesrondes.
+* Afzonderlijke creditwaarden voor algemene en Shortgolf-speelrechten.
+* Opeenvolgende creditpakketten worden geadviseerd wanneer één pakket niet volstaat.
+* Toont de effectieve kosten per grote- en kleine-baanronde.
+* Handicapregistratie blijft standaard inbegrepen; de twee persoonlijke greenfees verlagen het aantal credits niet.
 
 = 1.0.2 =
 * Alle zichtbare merkvermeldingen uitgeschreven naar Hollandsche Golfclub.

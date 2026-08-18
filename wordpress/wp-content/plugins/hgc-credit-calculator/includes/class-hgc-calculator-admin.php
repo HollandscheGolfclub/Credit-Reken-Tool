@@ -253,6 +253,7 @@ final class HGC_Calculator_Admin
                 'largeHoles' => $this->number($row['largeHoles'] ?? null, null),
                 'largeRate' => $this->number($row['largeRate'] ?? null, null),
                 'shortRate' => $this->number($row['shortRate'] ?? null, null),
+                'shortGolfRate' => $this->number($row['shortGolfRate'] ?? null, null),
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
                 'greenFees' => $green_fees,
@@ -306,11 +307,12 @@ final class HGC_Calculator_Admin
                 <?php $this->text_input('ID / slug', "config[courses][$index][id]", $course['id'] ?? ''); ?>
                 <?php $this->text_input('Plaats', "config[courses][$index][location]", $course['location'] ?? ''); ?>
             </div>
-            <h4>Credits en baan</h4>
-            <div class="hgc-admin-grid hgc-admin-grid--three">
+            <h4>Baan en creditwaarden</h4>
+            <div class="hgc-admin-grid hgc-admin-grid--four">
                 <?php $this->nullable_number('Aantal holes grote baan', "config[courses][$index][largeHoles]", $course['largeHoles'] ?? null, 1); ?>
-                <?php $this->nullable_number('Credits per baanronde', "config[courses][$index][largeRate]", $course['largeRate'] ?? null); ?>
-                <?php $this->nullable_number('Credits per shortgolfronde', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
+                <?php $this->nullable_number('Algemeen speelrecht: grote baan', "config[courses][$index][largeRate]", $course['largeRate'] ?? null); ?>
+                <?php $this->nullable_number('Algemeen speelrecht: kleine baan', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
+                <?php $this->nullable_number('Shortgolf-speelrecht: kleine baan', "config[courses][$index][shortGolfRate]", $course['shortGolfRate'] ?? null); ?>
             </div>
             <h4>Reguliere greenfees</h4>
             <div class="hgc-admin-grid hgc-admin-grid--three">

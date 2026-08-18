@@ -1,10 +1,10 @@
 /**
- * HGC CALCULATORCONFIGURATIE
+ * HOLLANDSCHE GOLFCLUB CALCULATORCONFIGURATIE
  * -------------------------
  * Pas prijzen, creditwaarden, teksten en links uitsluitend in dit bestand aan.
  * Bedragen zijn in euro's. Een null-waarde betekent dat die spelvorm niet beschikbaar is.
  *
- * Bron tarieven: HGC Speelrechten 2026 en de HGC-webshop, geraadpleegd 18 augustus 2026.
+ * Bron tarieven: Hollandsche Golfclub Speelrechten 2026 en de webshop, geraadpleegd 18 augustus 2026.
  */
 
 window.hgcConfig = {
@@ -13,7 +13,7 @@ window.hgcConfig = {
   settings: {
     // Een verschil binnen deze marge presenteren we als "ongeveer gelijk".
     equalCostMargin: 50,
-    // HGC rekent meestal per baanronde. Voor 18 holes rekenen we met twee baanrondes.
+    // De Hollandsche Golfclub rekent meestal per baanronde. Voor 18 holes rekenen we met twee baanrondes.
     eighteenHoleMultiplier: 2,
     // Binnen het grootste pakket adviseren we één passend pakket, niet meerdere kleine pakketten.
     preferSinglePackage: true,
@@ -42,7 +42,7 @@ window.hgcConfig = {
     terms: "https://www.hollandschegolfclub.nl/wp-content/uploads/2026/01/HGC-Voorwaarden-Speelrechten-2026.pdf",
   },
 
-  // Algemene speelrechten: geldig op grote én kleine HGC-banen.
+  // Algemene speelrechten: geldig op grote én kleine banen van de Hollandsche Golfclub.
   standardPackages: [
     { credits: 20, price: 485, name: "Hollandsche Golfclub Speelrecht – 20 credits" },
     { credits: 60, price: 1030, name: "Hollandsche Golfclub Speelrecht – 60 credits" },
@@ -91,24 +91,24 @@ window.hgcConfig = {
     },
   },
 
-  // Creditwaarden gelden per genoemde baanronde volgens de HGC-brochure.
+  // Creditwaarden gelden per genoemde baanronde volgens de brochure van de Hollandsche Golfclub.
   // Maastricht en Naarderbos zijn later toegevoegd en gebruiken voorlopig
-  // gemarkeerde rekenwaarden totdat HGC de vernieuwde credittabel publiceert.
+  // gemarkeerde rekenwaarden totdat de Hollandsche Golfclub de vernieuwde credittabel publiceert.
   courses: [
-    { id: "almkreek", name: "Golfpark Almkreek", location: "Almkerk", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, greenFees: { nine: 30, eighteen: 60, short: 14, loyalNine: 24, loyalEighteen: 48, loyalShort: 11.2 } },
-    { id: "de-berendonck", name: "Golfpark De Berendonck", location: "Wijchen", largeHoles: 9, largeRate: 1, shortRate: 0.4, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
-    { id: "de-breuninkhof", name: "Golfpark De Breuninkhof", location: "Voorst", largeHoles: 9, largeRate: 0.85, shortRate: 0.5, greenFees: { nine: 29.5, eighteen: 59, short: 15.5, loyalNine: 23.6, loyalEighteen: 47.2, loyalShort: 12.4 } },
-    { id: "de-haverleij", name: "Golfpark De Haverleij", location: "’s-Hertogenbosch", largeHoles: 9, largeRate: 1, shortRate: 0.5, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
-    { id: "de-kurenpolder", name: "Golfpark De Kurenpolder", location: "Hank", largeHoles: 9, largeRate: 0.6, shortRate: 0.3, greenFees: { nine: 27.5, eighteen: 55, short: 13.5, loyalNine: 22, loyalEighteen: 44, loyalShort: 10.75 } },
-    { id: "de-loonsche-duynen", name: "Golfpark De Loonsche Duynen", location: "De Moer", largeHoles: 9, largeRate: 1, shortRate: 0.6, greenFees: { nine: 35, eighteen: 70, short: 21, loyalNine: 28, loyalEighteen: 56, loyalShort: 16.8 } },
-    { id: "de-purmer", name: "Golfpark De Purmer", location: "Purmerend", largeHoles: 9, largeRate: 1, shortRate: 0.4, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
+    { id: "almkreek", name: "Golfpark Almkreek", location: "Almkerk", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, shortGolfRate: 1, greenFees: { nine: 30, eighteen: 60, short: 14, loyalNine: 24, loyalEighteen: 48, loyalShort: 11.2 } },
+    { id: "de-berendonck", name: "Golfpark De Berendonck", location: "Wijchen", largeHoles: 9, largeRate: 1, shortRate: 0.4, shortGolfRate: 0.7, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
+    { id: "de-breuninkhof", name: "Golfpark De Breuninkhof", location: "Voorst", largeHoles: 9, largeRate: 0.85, shortRate: 0.5, shortGolfRate: 0.75, greenFees: { nine: 29.5, eighteen: 59, short: 15.5, loyalNine: 23.6, loyalEighteen: 47.2, loyalShort: 12.4 } },
+    { id: "de-haverleij", name: "Golfpark De Haverleij", location: "’s-Hertogenbosch", largeHoles: 9, largeRate: 1, shortRate: 0.5, shortGolfRate: 0.75, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
+    { id: "de-kurenpolder", name: "Golfpark De Kurenpolder", location: "Hank", largeHoles: 9, largeRate: 0.6, shortRate: 0.3, shortGolfRate: 0.5, greenFees: { nine: 27.5, eighteen: 55, short: 13.5, loyalNine: 22, loyalEighteen: 44, loyalShort: 10.75 } },
+    { id: "de-loonsche-duynen", name: "Golfpark De Loonsche Duynen", location: "De Moer", largeHoles: 9, largeRate: 1, shortRate: 0.6, shortGolfRate: 1, greenFees: { nine: 35, eighteen: 70, short: 21, loyalNine: 28, loyalEighteen: 56, loyalShort: 16.8 } },
+    { id: "de-purmer", name: "Golfpark De Purmer", location: "Purmerend", largeHoles: 9, largeRate: 1, shortRate: 0.4, shortGolfRate: 0.7, greenFees: { nine: 35, eighteen: 70, short: 14, loyalNine: 28, loyalEighteen: 56, loyalShort: 11.2 } },
     { id: "gendersteyn", name: "Golfpark Gendersteyn", location: "Veldhoven", largeHoles: 9, largeRate: 1, shortRate: null, greenFees: { nine: 35, eighteen: 70, short: null, loyalNine: 28, loyalEighteen: 56, loyalShort: null } },
     { id: "land-van-thorn", name: "Golfpark Land van Thorn", location: "Hunsel", largeHoles: 9, largeRate: 0.75, shortRate: null, greenFees: { nine: 29.5, eighteen: 59, short: null, loyalNine: 23.6, loyalEighteen: 47.2, loyalShort: null } },
     { id: "maastricht", name: "Golfpark Maastricht International", location: "Maastricht", largeHoles: 9, largeRate: 1.4, shortRate: null, provisional: true, note: "Voorlopige creditwaarde; vervang deze zodra Hollandsche Golfclub de nieuwe credittabel publiceert.", greenFees: { nine: 50, eighteen: 84.5, short: null, loyalNine: 40, loyalEighteen: 67.6, loyalShort: null } },
     { id: "naarderbos", name: "Golfpark Naarderbos", location: "Naarden", largeHoles: 9, largeRate: 1, shortRate: null, provisional: true, note: "Tijdelijke rekenwaarden zolang de officiële openings- en tariefinformatie nog niet gepubliceerd is.", greenFees: { nine: 35, eighteen: 70, short: null, loyalNine: 28, loyalEighteen: 56, loyalShort: null } },
-    { id: "reymerswael", name: "Golfcentrum Reymerswael", location: "Rilland-Bath", largeHoles: 12, largeRate: 1.2, shortRate: null, greenFees: { nine: 45, eighteen: 67.5, short: null, loyalNine: 36, loyalEighteen: 54, loyalShort: null } },
-    { id: "rotterdam", name: "Golfpark Rotterdam", location: "Rotterdam", largeHoles: 9, largeRate: 0.7, shortRate: 0.6, greenFees: { nine: 25, eighteen: null, short: 21, loyalNine: 20, loyalEighteen: null, loyalShort: 16.8 } },
-    { id: "shortgolf-utrecht", name: "ShortGolf Utrecht", location: "Nieuwegein", largeHoles: null, largeRate: null, shortRate: 0.35, greenFees: { nine: null, eighteen: null, short: 11, loyalNine: null, loyalEighteen: null, loyalShort: null } },
+    { id: "reymerswael", name: "Golfpark Reymerswael", location: "Rilland-Bath", largeHoles: 12, largeRate: 1.2, shortRate: null, greenFees: { nine: 45, eighteen: 67.5, short: null, loyalNine: 36, loyalEighteen: 54, loyalShort: null } },
+    { id: "rotterdam", name: "Golfpark Rotterdam", location: "Rotterdam", largeHoles: 9, largeRate: 0.7, shortRate: 0.6, shortGolfRate: 1, greenFees: { nine: 25, eighteen: null, short: 21, loyalNine: 20, loyalEighteen: null, loyalShort: 16.8 } },
+    { id: "shortgolf-utrecht", name: "ShortGolf Utrecht", location: "Nieuwegein", largeHoles: null, largeRate: null, shortRate: 0.35, shortGolfRate: 0.5, greenFees: { nine: null, eighteen: null, short: 11, loyalNine: null, loyalEighteen: null, loyalShort: null } },
     { id: "sint-nyk", name: "Golfpark Sint Nyk", location: "Sint Nicolaasga", largeHoles: 9, largeRate: 0.9, shortRate: null, greenFees: { nine: 30, eighteen: 60, short: null, loyalNine: 24, loyalEighteen: 48, loyalShort: null } },
     { id: "westerpark", name: "Golfpark Westerpark", location: "Zoetermeer", largeHoles: 9, largeRate: 1, shortRate: null, greenFees: { nine: 35, eighteen: 70, short: null, loyalNine: 28, loyalEighteen: 56, loyalShort: null } },
   ],

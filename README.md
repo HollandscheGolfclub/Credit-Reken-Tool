@@ -1,6 +1,6 @@
 # Hollandsche Golfclub Credit Calculator voor WordPress
 
-WordPress-plugin voor de Hollandsche Golfclub. De calculator vergelijkt de huidige golfkosten van een bezoeker met de ingestelde speelrechten, LoyalTee en handicapregistratie.
+WordPress-plugin voor de Hollandsche Golfclub. De keuzehulp adviseert een passend speelrecht op basis van het verwachte aantal 9-holesrondes op een grote en een kleine baan.
 
 ## Installeren in WordPress
 
@@ -13,22 +13,20 @@ De live site gebruikt `DISALLOW_FILE_MODS = true`. De plugin staat daarom direct
 3. Ga in WordPress naar **Plugins** en activeer **Hollandsche Golfclub Credit Calculator**.
 4. Plaats `[hgc_calculator]` in de gewenste WordPress-pagina.
 
-De beveiligingsinstelling hoeft niet aangepast te worden. Als alternatief kan de map uit `dist/hgc-credit-calculator.zip` via SFTP naar `wp-content/plugins/` worden geüpload.
-
-De alternatieve shortcode `[hgc_rekentool]` werkt ook.
+De beveiligingsinstelling hoeft niet aangepast te worden. Als alternatief kan de map uit `dist/hgc-credit-calculator.zip` via SFTP naar `wp-content/plugins/` worden geüpload. De alternatieve shortcode `[hgc_rekentool]` werkt ook.
 
 ## Beheer in WordPress
 
 Onder **Instellingen > Hollandsche Golfclub Calculator** kan een beheerder zonder code:
 
 - golfbanen toevoegen, aanpassen en verwijderen;
-- creditwaarden per baanronde wijzigen;
-- reguliere en LoyalTee-greenfees voor 9 holes, 18 holes en shortgolf beheren;
-- algemene, daluren-, jeugd- en shortgolfpakketten toevoegen of verwijderen;
+- aparte creditwaarden voor algemene en Shortgolf-speelrechten wijzigen;
+- reguliere en LoyalTee-greenfees beheren;
+- algemene, daluren-, jeugd- en Shortgolf-pakketten toevoegen of verwijderen;
 - handicapregistratie, LoyalTee, links en voordelen aanpassen;
 - alle waarden terugzetten naar de standaardconfiguratie uit GitHub.
 
-De opgeslagen WordPress-instellingen overschrijven de standaardwaarden uit `hgc-config.json`. Een reset gebruikt opnieuw de actuele standaardwaarden uit de geïnstalleerde GitHub-versie.
+Opgeslagen WordPress-instellingen overschrijven de standaardwaarden uit `hgc-config.json`. Nieuwe configuratievelden uit een pluginupdate worden automatisch aangevuld zonder bestaande beheerdersinstellingen te overschrijven.
 
 ## Aanpassen via GitHub
 
@@ -39,13 +37,11 @@ Voor een nieuwe WordPress-versie:
 1. Verhoog `Version` en `HGC_CALCULATOR_VERSION` in `hgc-credit-calculator.php`.
 2. Verhoog `Stable tag` in `readme.txt`.
 3. Commit en push de wijzigingen naar GitHub.
-4. Maak en push een tag, bijvoorbeeld `v1.0.2`.
+4. Maak en push een tag, bijvoorbeeld `v1.1.0`.
 
 De workflow `.github/workflows/release.yml` verpakt de deploymap automatisch als `hgc-credit-calculator.zip` en plaatst dit bestand bij een GitHub Release. Op de beveiligde live site blijft Git-deploy de primaire updater, omdat dashboardupdates door `DISALLOW_FILE_MODS` zijn geblokkeerd.
 
 ## Lokaal openen
-
-Omdat JavaScript-modules door een webserver geladen moeten worden:
 
 ```powershell
 node dev-server.mjs
@@ -53,36 +49,30 @@ node dev-server.mjs
 
 Open daarna `http://localhost:8000`.
 
-## Starten met dubbelklik
+- `HGC Calculator.exe` start een ingebouwde lokale webserver en opent de keuzehulp in de standaardbrowser. Hiervoor is Node.js niet nodig.
+- `Start HGC Calculator.cmd` doet hetzelfde via `dev-server.mjs` en vereist Node.js.
 
-- `HGC Calculator.exe` start een ingebouwde lokale webserver en opent de calculator in de standaardbrowser. Hiervoor is Node.js niet nodig.
-- `Start HGC Calculator.cmd` doet hetzelfde via `dev-server.mjs` en vereist dat Node.js is geïnstalleerd.
+Laat de launcher bij `index.html` en de map `wordpress/` staan.
 
-Laat de launcher bij `index.html` en de map `wordpress/` staan. De `.exe` blijft op de achtergrond actief zolang de lokale calculator beschikbaar moet blijven.
+## Belangrijke ingestelde keuzes
 
-## Tarieven aanpassen
-
-Alle prijzen, creditwaarden, links, voordelen en belangrijke rekeninstellingen zijn via het WordPress-beheerscherm aanpasbaar. De GitHub-standaardwaarden staan in `wordpress/wp-content/plugins/hgc-credit-calculator/hgc-config.json`.
-
-## Belangrijke ingestelde aannames
-
-- De bezoeker voert altijd het aantal rondes van 9 holes in en kiest daarna tussen de grote en kleine baan.
-- Binnen het grootste beschikbare pakket wordt één pakket geadviseerd dat alle verwachte credits dekt.
+- De bezoeker voert apart het aantal grote- en kleine-baanrondes van 9 holes in en kiest voor ieder baantype een golfpark.
+- Algemene en Shortgolf-speelrechten gebruiken hun eigen creditwaarden voor de kleine baan.
+- Een algemeen speelrecht dekt alle benodigde credits. Zijn bijvoorbeeld 22 credits nodig, dan kan de keuzehulp twee opeenvolgende pakketten van 20 credits adviseren; er worden geen losse greenfees als aanvulling gebruikt.
+- Een Shortgolf-speelrecht kan bij een combinatie worden geadviseerd. Kleine rondes gebruiken Shortgolf-credits en grote rondes worden tegen het gereduceerde greenfeetarief berekend.
 - Handicapregistratie wordt standaard in ieder advies meegenomen.
-- Handicapregistratie doet ook zelfstandig mee in de automatische vergelijking: twee rondes zijn inbegrepen en eventuele extra rondes worden tegen het reguliere greenfeetarief berekend.
-- Onder het hoofdadvies toont de calculator automatisch vanaf hoeveel rondes een flexibelere of ruimere optie van Hollandsche Golfclub voordeliger wordt.
-- Hollandsche Golfclub LoyalTee wordt automatisch vergeleken met de speelrechten op basis van de ingestelde greenfeetarieven per baan. Het €25 ballentegoed wordt als voordeel getoond, maar niet van de golfkosten afgetrokken.
-- Bij ieder speelrecht worden resterende rondes na het opgebruiken van de credits meegerekend tegen het gereduceerde greenfeetarief. Daardoor kan een kleiner speelrecht plus losse rondes voordeliger zijn dan een groter pakket.
-- ShortGolf Utrecht is uitgesloten van de LoyalTee-korting, conform de voorwaarden van Hollandsche Golfclub.
-- Maastricht International en Naarderbos staan in de lijst met gemarkeerde voorlopige creditwaarden. Pas deze in WordPress of in `hgc-config.json` aan zodra Hollandsche Golfclub de officiële vernieuwde credittabel publiceert.
-- Het dalurenpakket wordt alleen geadviseerd wanneer het verwachte creditverbruik binnen het beschikbare pakket past.
-- Lokale speelrechten worden alleen vergeleken bij De Breuninkhof en Land van Thorn.
+- De twee persoonlijke greenfees van handicapregistratie zijn extra rondes en worden bij een speelrecht niet van de benodigde credits afgetrokken.
+- Handicapregistratie doet zelfstandig mee voor laag speelvolume. De twee inbegrepen rondes zijn greenfees en nooit credits.
+- Vanaf 20 benodigde algemene credits geeft de keuzehulp voorrang aan een passend credit-speelrecht. Dit borgt de gewenste productkeuze boven een puur rekenkundige greenfeevergelijking.
+- LoyalTee wordt voor lager speelvolume vergeleken op basis van de ingestelde greenfees. Het ballentegoed wordt niet van de kosten afgetrokken.
+- Lokale speelrechten worden alleen meegenomen wanneer alle opgegeven rondes op hetzelfde ondersteunde lokale golfpark worden gespeeld.
+- Maastricht International en Naarderbos gebruiken gemarkeerde voorlopige waarden totdat officiële vernieuwde tarieven beschikbaar zijn.
 
-Laat Hollandsche Golfclub deze aannames controleren voordat de calculator publiek wordt ingezet.
+Laat de Hollandsche Golfclub deze aannames controleren voordat de keuzehulp publiek wordt ingezet.
 
 ## Analytics
 
-De calculator stuurt gebeurtenissen naar `window.dataLayer`, waaronder:
+De keuzehulp stuurt gebeurtenissen naar `window.dataLayer`:
 
 - `calculator_opened`
 - `calculator_step_1_completed`
@@ -91,7 +81,3 @@ De calculator stuurt gebeurtenissen naar `window.dataLayer`, waaronder:
 - `calculator_restarted`
 
 Hiermee kan Google Tag Manager de campagneconversies meten.
-
-## WordPress
-
-Na de Git-deploy hoeft de plugin alleen nog in het WordPress Plugins-overzicht geactiveerd te worden. Gebruik daarna `[hgc_calculator]` op de gewenste pagina.
