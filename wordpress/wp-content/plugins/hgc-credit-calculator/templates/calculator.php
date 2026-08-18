@@ -85,8 +85,7 @@
           </div>
         </div>
 
-        <fieldset class="field-group">
-          <legend>Mijn huidige kosten zijn:</legend>
+        <fieldset class="field-group" aria-label="Manier van betalen">
           <div class="segmented-control">
             <label><input type="radio" name="cost-type" value="greenfee" checked /><span>Per ronde / greenfee</span></label>
             <label><input type="radio" name="cost-type" value="annual" /><span>Een vast bedrag per jaar</span></label>
