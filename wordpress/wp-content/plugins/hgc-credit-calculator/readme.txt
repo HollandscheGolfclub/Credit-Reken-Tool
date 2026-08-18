@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.0.1 =
+* Plugin geschikt gemaakt voor Git-deploy vanuit wordpress/wp-content/plugins.
+* Speelrechten met credits en LoyalTee kunnen expliciet met HGC-handicapregistratie worden gecombineerd.
 
 = 1.0.0 =
 * Eerste WordPress-pluginversie.

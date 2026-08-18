@@ -113,13 +113,13 @@
 
         <div class="loyaltee-note">
           <span aria-hidden="true">20%</span>
-          <p><strong>We vergelijken ook met HGC LoyalTee</strong>Inclusief 20% korting op reguliere HGC-greenfees en €25 ballentegoed.</p>
+          <p><strong>We vergelijken ook met HGC LoyalTee</strong>Inclusief 20% korting op reguliere HGC-greenfees en €25 ballentegoed. Te combineren met HGC-handicapregistratie.</p>
         </div>
 
         <label class="toggle-row toggle-row--compact">
           <input id="include-handicap" type="checkbox" />
           <span class="toggle" aria-hidden="true"></span>
-          <span><strong>Ik wil sowieso HGC-handicapregistratie</strong><small id="handicap-copy">We nemen registratie dan mee in ieder advies. Voor weinig rondes vergelijken we hem automatisch als losse optie.</small></span>
+          <span><strong>Combineer mijn advies met HGC-handicapregistratie</strong><small id="handicap-copy">We voegen registratie toe aan speelrechten met credits én LoyalTee. Voor weinig rondes vergelijken we hem automatisch als losse optie.</small></span>
         </label>
 
         <div class="form-error" id="cost-error" role="alert" hidden>Vul een geldig bedrag groter dan €0 in.</div>

@@ -18,11 +18,8 @@ jobs:
       - name: Pluginpakket bouwen
         shell: bash
         run: |
-          mkdir -p build/hgc-credit-calculator/templates build/hgc-credit-calculator/includes build/hgc-credit-calculator/admin
-          cp hgc-credit-calculator.php uninstall.php calculator.js hgc-config.js hgc-config.json styles.css readme.txt build/hgc-credit-calculator/
-          cp templates/calculator.php build/hgc-credit-calculator/templates/
-          cp includes/class-hgc-calculator-admin.php build/hgc-credit-calculator/includes/
-          cp admin/admin.js admin/admin.css build/hgc-credit-calculator/admin/
+          mkdir -p build
+          cp -R wordpress/wp-content/plugins/hgc-credit-calculator build/hgc-credit-calculator
           cd build
           zip -r ../hgc-credit-calculator.zip hgc-credit-calculator
 
