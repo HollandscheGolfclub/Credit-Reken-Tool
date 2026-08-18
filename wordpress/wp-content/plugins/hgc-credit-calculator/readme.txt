@@ -34,7 +34,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 = 1.0.1 =
 * Plugin geschikt gemaakt voor Git-deploy vanuit wordpress/wp-content/plugins.
-* LoyalTee kan expliciet met HGC-handicapregistratie worden gecombineerd.
+* Speelrechten met credits en LoyalTee kunnen expliciet met HGC-handicapregistratie worden gecombineerd.
 
 = 1.0.0 =
 * Eerste WordPress-pluginversie.

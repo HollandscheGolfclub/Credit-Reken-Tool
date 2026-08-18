@@ -119,7 +119,7 @@
         <label class="toggle-row toggle-row--compact">
           <input id="include-handicap" type="checkbox" />
           <span class="toggle" aria-hidden="true"></span>
-          <span><strong>Combineer mijn advies met HGC-handicapregistratie</strong><small id="handicap-copy">We voegen registratie toe aan ieder advies, ook aan LoyalTee. Voor weinig rondes vergelijken we hem automatisch als losse optie.</small></span>
+          <span><strong>Combineer mijn advies met HGC-handicapregistratie</strong><small id="handicap-copy">We voegen registratie toe aan speelrechten met credits én LoyalTee. Voor weinig rondes vergelijken we hem automatisch als losse optie.</small></span>
         </label>
 
         <div class="form-error" id="cost-error" role="alert" hidden>Vul een geldig bedrag groter dan €0 in.</div>
