@@ -1,0 +1,36 @@
+name: Bouw WordPress-pluginrelease
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository ophalen
+        uses: actions/checkout@v4
+
+      - name: Pluginpakket bouwen
+        shell: bash
+        run: |
+          mkdir -p build/hgc-credit-calculator/templates build/hgc-credit-calculator/includes build/hgc-credit-calculator/admin
+          cp hgc-credit-calculator.php uninstall.php calculator.js hgc-config.js hgc-config.json styles.css readme.txt build/hgc-credit-calculator/
+          cp templates/calculator.php build/hgc-credit-calculator/templates/
+          cp includes/class-hgc-calculator-admin.php build/hgc-credit-calculator/includes/
+          cp admin/admin.js admin/admin.css build/hgc-credit-calculator/admin/
+          cd build
+          zip -r ../hgc-credit-calculator.zip hgc-credit-calculator
+
+      - name: GitHub Release publiceren
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "${GITHUB_REF_NAME}" hgc-credit-calculator.zip \
+            --title "HGC Credit Calculator ${GITHUB_REF_NAME}" \
+            --generate-notes
