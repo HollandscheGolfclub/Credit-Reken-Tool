@@ -283,6 +283,9 @@ function packagePlan(packages, requiredCredits, productName, group) {
     packageParts: parts,
     firstPackage: first,
     isStarterPlan: recommendStarterPackage,
+    fullRoute: recommendStarterPackage && fullPlan
+      ? { credits: fullPlan.credits, price: fullPlan.price, count: fullPlan.count }
+      : null,
     instruction,
   };
 }
@@ -522,6 +525,14 @@ function switchableAmount(withRegistration, withoutRegistration) {
   return `<span class="switchable" data-with="${shown}" data-without="${euro.format(withoutRegistration)}">${shown}</span>`;
 }
 
+function fullRouteNote(plan) {
+  const route = plan.fullRoute;
+  if (!route) return "";
+  const total = Number(route.price) + Number(plan.registrationPrice || 0);
+  const packagesText = Number(route.count) > 1 ? `${decimal.format(route.count)} speelrechten` : "één speelrecht";
+  return `<p class="full-route-note">Speel je al je verwachte rondes, dan heb je circa ${decimal.format(plan.requiredCredits)} credits nodig. Met ${packagesText} kom je uit op ${switchableAmount(total, Number(route.price))} voor ${decimal.format(route.credits)} credits. Dat is de voordeligste route; je betaalt alleen niet alles vooraf.</p>`;
+}
+
 function planAmount(plan) {
   const total = Number(plan.annualCost);
   return switchableAmount(total, total - Number(plan.registrationPrice || 0));
@@ -596,6 +607,7 @@ function choiceCard(plan, options) {
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
       <p class="advice-card-instruction">${plan.instruction}</p>
+      ${fullRouteNote(plan)}
       <p class="advice-card-benefits-title">Hierbij hoort</p>
       <ul class="advice-card-benefits">${benefitList(plan)}</ul>
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
@@ -698,6 +710,7 @@ function renderSingleAdvice(result) {
         <p class="recommendation-amount">${planAmount(best)}<small>${totalCostNote}</small></p>
         <p>${best.detail}</p>
         <p class="package-instruction">${best.instruction}</p>
+        ${fullRouteNote(best)}
       </div>
       <div class="recommendation-actions">
         <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">${webshopLabel} <span>→</span></a>

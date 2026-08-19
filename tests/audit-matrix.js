@@ -121,6 +121,20 @@
                   if (plan.isStarterPlan && (Number(plan.count) !== 1 || Number(plan.requiredCredits) <= Number(plan.credits))) {
                     report("invalid-starter", { ...context, group: plan.group });
                   }
+                  if (plan.isStarterPlan) {
+                    if (!plan.fullRoute) {
+                      report("starter-zonder-volledige-route", { ...context, group: plan.group });
+                    } else {
+                      if (Number(plan.fullRoute.credits) + 1e-8 < Number(plan.requiredCredits)) {
+                        report("volledige-route-dekt-niet", { ...context, group: plan.group, route: plan.fullRoute.credits, nodig: plan.requiredCredits });
+                      }
+                      if (Number(plan.fullRoute.price) + 1e-8 < Number(plan.price)) {
+                        report("volledige-route-goedkoper-dan-startpakket", { ...context, group: plan.group });
+                      }
+                    }
+                  } else if (plan.fullRoute) {
+                    report("volledige-route-zonder-startpakket", { ...context, group: plan.group });
+                  }
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
                     report("shortgolf-outside-profile", { ...context, group: plan.group });
                   }
@@ -259,6 +273,18 @@
         if (claimsCoverage) report("startpakket-belooft-dekking", { ...context, coverage });
         if (!/startpakket/.test(coverage)) report("startpakket-niet-benoemd", { ...context, coverage });
         if (!/starten/.test(note)) report("startpakket-niet-in-toelichting", { ...context, note });
+        const route = card.querySelector(".full-route-note");
+        if (!route) {
+          report("volledige-route-niet-getoond", context);
+        } else {
+          const shownAmount = route.querySelector(".switchable").textContent.replace(/\s/g, "");
+          const expectedAmount = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" })
+            .format(Number(plan.fullRoute.price) + Number(plan.registrationPrice || 0))
+            .replace(/\s/g, "");
+          if (shownAmount !== expectedAmount) {
+            report("volledige-route-bedrag-wijkt-af", { ...context, shownAmount, expectedAmount });
+          }
+        }
       } else if (!claimsCoverage) {
         report("dekking-niet-benoemd", { ...context, coverage });
       }

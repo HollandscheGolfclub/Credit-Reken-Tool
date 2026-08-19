@@ -38,6 +38,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * Het advies toont een schakelaar voor handicapregistratie. Alle bedragen wisselen direct mee, ook die van de aanbeveling en van de alternatieve optie.
 * Aanbeveling en alternatief tonen nu allebei het bedrag zelf in plaats van alleen een omschrijving.
 * Een beheerder stelt de drempelwaarden voor het speelbeeld in onder Instellingen.
+* Bij een startpakket vermeldt het advies waar de bezoeker uitkomt als hij al zijn rondes speelt, met het aantal benodigde credits, het aantal speelrechten en het totaalbedrag.
 
 = 1.4.2 =
 * De lichte Clubhuis-vormgeving is de definitieve standaard; de shortcode opent direct de keuzehulp zonder ontwerpselectie.

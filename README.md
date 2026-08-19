@@ -81,6 +81,8 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
 - De bezoeker voert apart het aantal grote- en kleine-baanrondes van 9 holes in en kiest voor ieder baantype een golfpark.
 - Algemene en Shortgolf-speelrechten gebruiken hun eigen creditwaarden voor de kleine baan.
 - Een algemeen speelrecht adviseert het passende startpakket. Zijn bijvoorbeeld 22 credits nodig, dan start het advies met 20 credits en vermeldt het dat de speler pas na verbruik moet verlengen; er worden vooraf geen twee kleine pakketten opgeteld.
+- Bij zo'n startpakket noemt het advies ook waar de bezoeker uitkomt als hij al zijn rondes speelt: het aantal benodigde credits, het aantal speelrechten en het totaalbedrag. Zonder die regel lijkt het bedrag van het startpakket de jaarprijs, terwijl het de instapprijs is.
+- Het startpakket is niet alleen de laagste instap maar ook de voordeligste route. Gemeten over alle banen, leeftijden en speelvolumes is verlengen in geen enkel geval duurder dan één dekkend pakket vooraf kopen. Bij circa 31 benodigde credits kost 20 credits plus verlengen € 970 voor 40 credits, tegenover € 1.030 voor één pakket van 60 credits.
 - De verhouding tussen kleine- en grote-baanrondes bepaalt het advies. De keuzehulp kent drie zones, met instelbare grenzen:
   - vanaf 85% kleine-baanrondes adviseert de keuzehulp een Shortgolf-speelrecht, omdat Shortgolf-credits op de kleine baan voordeliger zijn. Het advies vermeldt dat de resterende grote-baanrondes buiten dat speelrecht vallen en apart worden afgerekend;
   - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
