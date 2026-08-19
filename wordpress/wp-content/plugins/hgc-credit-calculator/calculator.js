@@ -549,6 +549,18 @@ function roundWord(count) {
   return `${count} ronde${count === 1 ? "" : "s"}`;
 }
 
+function amountNote(plan, whenCovered) {
+  if (plan.isStarterPlan) return `om te starten met ${decimal.format(plan.credits)} credits`;
+  if (plan.count > 1) return "voor jouw opgegeven speelvolume";
+  return whenCovered;
+}
+
+function coverageText(plan, coveredText, neededRoundsText) {
+  return plan.isStarterPlan
+    ? `${neededRoundsText} vragen circa ${decimal.format(plan.requiredCredits)} credits. Dit is je startpakket van ${decimal.format(plan.credits)} credits; zodra die op zijn, verleng je met het speelrecht dat dan past.`
+    : coveredText;
+}
+
 function benefitsSection(plan) {
   return `
     <section class="included-benefits">
@@ -582,7 +594,8 @@ function choiceCard(plan, options) {
 function renderChoice(result) {
   const credits = result.choice.credits;
   const shortGolf = result.choice.shortGolf;
-  const saving = Number(credits.annualCost) - Number(shortGolf.annualCost);
+  const largeRoundsText = `${roundWord(result.largeRounds)} op de grote baan`;
+  const smallRoundsText = `${roundWord(result.smallRounds)} op de kleine baan`;
 
   resultContent.innerHTML = `
     <div class="result-hero">
@@ -599,16 +612,24 @@ function renderChoice(result) {
         variant: "credits",
         question: "Speel je voornamelijk op de grote baan?",
         product: brandText(credits.productName),
-        amountNote: "voor al je rondes",
-        coverage: `Dit speelrecht dekt zowel je ${roundWord(result.largeRounds)} op de grote baan als je ${roundWord(result.smallRounds)} op de kleine baan.`,
+        amountNote: amountNote(credits, "voor al je rondes"),
+        coverage: coverageText(
+          credits,
+          `Dit speelrecht dekt zowel je ${largeRoundsText} als je ${smallRoundsText}.`,
+          `Je ${largeRoundsText} en ${smallRoundsText}`
+        ),
         buttonClass: "button--primary",
       })}
       ${choiceCard(shortGolf, {
         variant: "shortgolf",
         question: "Speel je voornamelijk op de kleine baan?",
         product: brandText(shortGolf.productName),
-        amountNote: saving > 0 ? `${euro.format(saving)} voordeliger` : "voor je kleine rondes",
-        coverage: `Shortgolf-credits zijn voordeliger op de kleine baan. Je ${roundWord(result.largeRounds)} op de grote baan ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`,
+        amountNote: amountNote(shortGolf, `voor je ${smallRoundsText}`),
+        coverage: `Shortgolf-credits zijn voordeliger op de kleine baan. ${coverageText(
+          shortGolf,
+          `Dit speelrecht dekt je ${smallRoundsText}.`,
+          `Je ${smallRoundsText}`
+        )} Je ${largeRoundsText} ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`,
         buttonClass: "button--shortgolf",
       })}
     </div>
@@ -746,7 +767,7 @@ updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
 if (new URLSearchParams(window.location.search).has("hgc-audit")) {
-  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile });
+  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent });
 }
 track("calculator_opened");
 })();

@@ -224,6 +224,87 @@
     return { cases, zoneCounts, choicesSeen, errorCounts, errors };
   };
 
+  window.runHgcTextAudit = function runHgcTextAudit() {
+    const { recommendationFor, renderResult, resultContent } = window.hgcCalculatorAudit;
+    const roundPairs = [
+      [0, 5], [0, 22], [1, 20], [2, 20], [5, 5], [10, 10], [20, 22], [22, 20],
+      [20, 20], [30, 30], [50, 50], [60, 60], [100, 100], [200, 200], [20, 0], [40, 5],
+    ];
+    const largeCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.largeRate));
+    const smallCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.shortRate));
+    const errors = [];
+    const errorCounts = {};
+    let cases = 0;
+    let cardsChecked = 0;
+    let starterCardsChecked = 0;
+
+    function report(code, context) {
+      errorCounts[code] = (errorCounts[code] || 0) + 1;
+      if (errors.length < 50) errors.push({ code, ...context });
+    }
+
+    function checkCard(card, plan, context) {
+      if (!card) {
+        report("missing-card", context);
+        return;
+      }
+      cardsChecked += 1;
+      const coverage = card.querySelector(".advice-card-coverage").textContent;
+      const note = card.querySelector(".advice-card-amount small").textContent;
+      const amount = card.querySelector(".advice-card-amount .switchable").textContent;
+      const claimsCoverage = /\bdekt\b/.test(coverage);
+
+      if (plan.isStarterPlan) {
+        starterCardsChecked += 1;
+        if (claimsCoverage) report("startpakket-belooft-dekking", { ...context, coverage });
+        if (!/startpakket/.test(coverage)) report("startpakket-niet-benoemd", { ...context, coverage });
+        if (!/starten/.test(note)) report("startpakket-niet-in-toelichting", { ...context, note });
+      } else if (!claimsCoverage) {
+        report("dekking-niet-benoemd", { ...context, coverage });
+      }
+
+      const expected = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(Number(plan.annualCost));
+      if (amount.replace(/\s/g, "") !== expected.replace(/\s/g, "")) {
+        report("bedrag-wijkt-af", { ...context, amount, expected });
+      }
+    }
+
+    for (const largeCourse of largeCourses) {
+      for (const smallCourse of smallCourses) {
+        for (const [largeRounds, smallRounds] of roundPairs) {
+          for (const youth of [false, true]) {
+            const context = { largeRounds, smallRounds, largeCourse: largeCourse.id, smallCourse: smallCourse.id, youth };
+            cases += 1;
+            let result;
+            try {
+              result = recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak: false });
+              renderResult(result);
+            } catch (error) {
+              report("exception", { ...context, message: error.message });
+              continue;
+            }
+
+            if (result.choice) {
+              checkCard(resultContent.querySelector(".advice-card--credits"), result.choice.credits, { ...context, kaart: "credits" });
+              checkCard(resultContent.querySelector(".advice-card--shortgolf"), result.choice.shortGolf, { ...context, kaart: "shortgolf" });
+              continue;
+            }
+
+            // Bij één advies mag een startpakket ook niet als volledige dekking gelden.
+            const shown = resultContent.textContent;
+            if (result.best.isStarterPlan && /dekt zowel|dekt al je rondes/.test(shown)) {
+              report("startpakket-belooft-dekking-enkel-advies", context);
+            }
+            if (Number(result.best.uncoveredLargeRounds || 0) > 0 && !/buiten dit speelrecht/.test(shown)) {
+              report("ongedekte-rondes-niet-gemeld", context);
+            }
+          }
+        }
+      }
+    }
+    return { cases, cardsChecked, starterCardsChecked, errorCounts, errors };
+  };
+
   window.runHgcRoundSweepAudit = function runHgcRoundSweepAudit() {
     const { recommendationFor } = window.hgcCalculatorAudit;
     const largeCourses = hgcConfig.courses.filter((course) => course.largeRate !== null && course.largeRate !== undefined);
