@@ -127,6 +127,7 @@
 .hgc-calculator select:focus, .hgc-calculator input:focus-visible { border-color: var(--green); box-shadow: 0 0 0 3px rgba(149,193,32,.18); }
 .hgc-calculator .course-select-native { display: none !important; }
 .hgc-calculator .course-picker { position: relative; z-index: 12; }
+.hgc-calculator .course-picker.is-open { z-index: 100; }
 .hgc-calculator .course-picker-button { width: 100%; min-height: 60px; padding: 10px 12px 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: white; text-align: left; cursor: pointer; transition: border-color .18s, box-shadow .18s, background .18s; }
 .hgc-calculator .course-picker-button:hover { border-color: #a8bc78; background: #fcfdf9; }
 .hgc-calculator .course-picker-button:focus-visible, .hgc-calculator .course-picker.is-open .course-picker-button { outline: 0; border-color: var(--green); box-shadow: 0 0 0 3px rgba(149,193,32,.18); }
@@ -241,11 +242,93 @@
 .hgc-calculator .included-benefits ul { margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 13px 24px; list-style: none; }
 .hgc-calculator .included-benefits li { display: flex; align-items: flex-start; gap: 11px; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.45; }
 .hgc-calculator .included-benefits li span { flex: 0 0 24px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: white; background: #7fa719; font-size: 12px; font-weight: 800; }
+/* Ontwerpkeuze: vijf visuele richtingen met dezelfde calculatorinhoud. */
+.hgc-calculator .design-picker { width: min(1180px, calc(100% - 24px)); min-width: 0; scroll-margin-top: 18px; margin: 0 auto; padding: 42px; border: 1px solid #dbe3d4; border-radius: 16px; background: #fff; box-shadow: 0 22px 60px rgba(43,61,31,.12); }
+.hgc-calculator .design-picker__header { max-width: 720px; margin-bottom: 32px; }
+.hgc-calculator .design-picker__header img { width: 175px; height: auto; margin-bottom: 28px; }
+.hgc-calculator .design-picker__header h2 { margin-bottom: 10px; font-size: clamp(27px, 3.5vw, 40px); line-height: 1.14; letter-spacing: -.035em; }
+.hgc-calculator .design-picker__header > p:last-child { margin-bottom: 0; color: var(--ink-soft); line-height: 1.65; }
+.hgc-calculator .design-options { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.hgc-calculator .design-option { min-width: 0; padding: 13px 13px 18px; border: 1px solid #dce3d7; border-radius: 10px; color: #303530; background: #fff; text-align: left; cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s; }
+.hgc-calculator .design-option:hover, .hgc-calculator .design-option:focus-visible { outline: 0; transform: translateY(-4px); border-color: #91b53b; box-shadow: 0 15px 30px rgba(45,61,34,.13); }
+.hgc-calculator .design-option:focus-visible { box-shadow: 0 0 0 4px rgba(149,193,32,.2), 0 15px 30px rgba(45,61,34,.13); }
+.hgc-calculator .design-preview { height: 120px; margin-bottom: 16px; padding: 13px; display: grid; grid-template-columns: 1.3fr .7fr; grid-template-rows: 28px 1fr; gap: 8px; overflow: hidden; border-radius: 7px; background: var(--preview-bg); }
+.hgc-calculator .design-preview i { display: block; border-radius: var(--preview-radius, 3px); background: var(--preview-card); }
+.hgc-calculator .design-preview i:first-child { grid-column: 1 / -1; background: var(--preview-hero); }
+.hgc-calculator .design-preview i:last-child { background: var(--preview-accent); }
+.hgc-calculator .design-option__number { display: block; margin-bottom: 6px; color: #789323; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.hgc-calculator .design-option strong, .hgc-calculator .design-option small { display: block; }
+.hgc-calculator .design-option strong { font-size: 16px; }
+.hgc-calculator .design-option small { margin-top: 6px; color: #777; font-size: 11px; line-height: 1.45; }
+.hgc-calculator .design-option--clubhouse { --preview-bg: #edf2e6; --preview-hero: #304b34; --preview-card: #fff; --preview-accent: #95c120; }
+.hgc-calculator .design-option--fairway { --preview-bg: #e8f4e7; --preview-hero: #fff; --preview-card: #cfe6bf; --preview-accent: #4b9856; --preview-radius: 12px; }
+.hgc-calculator .design-option--scorecard { --preview-bg: #f2eddf; --preview-hero: #e2dbc9; --preview-card: #fffdf7; --preview-accent: #1d3327; --preview-radius: 0; }
+.hgc-calculator .design-option--night { --preview-bg: #0b1715; --preview-hero: #1c302a; --preview-card: #233c35; --preview-accent: #c1dc52; --preview-radius: 5px; }
+.hgc-calculator .design-option--energy { --preview-bg: #eff8c9; --preview-hero: #95c120; --preview-card: #fff; --preview-accent: #ff941f; --preview-radius: 10px; }
+.hgc-calculator .launcher-design-back { margin: -14px 0 25px; padding: 7px 0; border: 0; color: #5a7720; background: transparent; cursor: pointer; font-size: 12px; font-weight: 700; }
+.hgc-calculator .launcher-design-back:hover { text-decoration: underline; }
+.hgc-calculator .launcher-design-back span { margin-right: 5px; }
+
+/* 02 Fairway: zacht, luchtig en organisch. */
+.hgc-calculator[data-design="fairway"] { --green: #4d9b59; --green-deep: #183b29; --green-light: #dff0da; --orange: #d98b32; --line: #cfe0cb; --radius: 24px; background: linear-gradient(145deg, #eef8ed, #dfeede); }
+.hgc-calculator[data-design="fairway"] .calculator-shell { border: 0; border-radius: 24px; box-shadow: 0 20px 55px rgba(36,83,45,.12); }
+.hgc-calculator[data-design="fairway"] .launcher-hero { color: #183b29; background: radial-gradient(circle at 84% 20%, #cbe8bd 0 18%, transparent 19%), linear-gradient(135deg, #fff 0%, #e8f5e4 100%); }
+.hgc-calculator[data-design="fairway"] .launcher-hero h2 { color: #183b29; }
+.hgc-calculator[data-design="fairway"] .launcher-hero .eyebrow { color: #43834e; }
+.hgc-calculator[data-design="fairway"] .launcher-hero p:last-child { color: #617767; }
+.hgc-calculator[data-design="fairway"] .launcher-logo-card { border: 0; border-radius: 20px; box-shadow: 0 12px 30px rgba(41,92,50,.12); }
+.hgc-calculator[data-design="fairway"] .launcher-option, .hgc-calculator[data-design="fairway"] .round-plan-grid, .hgc-calculator[data-design="fairway"] .round-plan-card, .hgc-calculator[data-design="fairway"] .recommendation, .hgc-calculator[data-design="fairway"] .next-option, .hgc-calculator[data-design="fairway"] .included-benefits { border-radius: 18px; }
+.hgc-calculator[data-design="fairway"] .button, .hgc-calculator[data-design="fairway"] select, .hgc-calculator[data-design="fairway"] .course-picker-button { border-radius: 14px; }
+.hgc-calculator[data-design="fairway"] .calculator-topbar { background: linear-gradient(135deg, #fff, #eaf6e6); }
+
+/* 03 Scorekaart: redactioneel, rustig en hoekig. */
+.hgc-calculator[data-design="scorecard"] { --ink: #202a23; --ink-soft: #6f7068; --green: #1e442d; --green-deep: #15271d; --green-light: #ebe6d8; --orange: #a96832; --line: #cfc8b6; --radius: 0; background: #e9e3d5; }
+.hgc-calculator[data-design="scorecard"] h1, .hgc-calculator[data-design="scorecard"] h2, .hgc-calculator[data-design="scorecard"] h3, .hgc-calculator[data-design="scorecard"] h4, .hgc-calculator[data-design="scorecard"] .result-hero h3 { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.02em; }
+.hgc-calculator[data-design="scorecard"] .calculator-shell { border: 1px solid #bcb4a1; border-radius: 0; box-shadow: 10px 10px 0 rgba(31,53,39,.1); }
+.hgc-calculator[data-design="scorecard"] .launcher-hero { color: #202a23; background: #f4f0e6; border-bottom: 7px solid #1e442d; }
+.hgc-calculator[data-design="scorecard"] .launcher-hero h2 { color: #202a23; font-size: clamp(34px, 4.5vw, 52px); }
+.hgc-calculator[data-design="scorecard"] .launcher-hero .eyebrow, .hgc-calculator[data-design="scorecard"] .launcher-hero p:last-child { color: #5c655d; }
+.hgc-calculator[data-design="scorecard"] .launcher-logo-card, .hgc-calculator[data-design="scorecard"] .launcher-option, .hgc-calculator[data-design="scorecard"] .button, .hgc-calculator[data-design="scorecard"] select, .hgc-calculator[data-design="scorecard"] .course-picker-button, .hgc-calculator[data-design="scorecard"] .recommendation, .hgc-calculator[data-design="scorecard"] .next-option, .hgc-calculator[data-design="scorecard"] .included-benefits { border-radius: 0; box-shadow: none; }
+.hgc-calculator[data-design="scorecard"] .launcher-option { background: #fffdf7; }
+.hgc-calculator[data-design="scorecard"] .calculator-topbar { border-bottom: 1px solid #cfc8b6; background: #f6f2e9; }
+
+/* 04 Tour: donker en premium. */
+.hgc-calculator[data-design="night"] { --ink: #f4f7f2; --ink-soft: #aebdb6; --green: #bddb4f; --green-deep: #08120f; --green-light: #253c32; --orange: #e2ad62; --line: #355047; --paper: #101d19; --radius: 12px; background: radial-gradient(circle at 80% 5%, #274238, transparent 35%), #07120f; }
+.hgc-calculator[data-design="night"] .calculator-shell, .hgc-calculator[data-design="night"] .launcher-shell { border-color: #314a41; background: #101d19; box-shadow: 0 24px 65px rgba(0,0,0,.35); }
+.hgc-calculator[data-design="night"] .launcher-hero { background: linear-gradient(125deg, #07120f, #193128 65%, #314c2d); }
+.hgc-calculator[data-design="night"] .launcher-body, .hgc-calculator[data-design="night"] .form-step { background: #101d19; }
+.hgc-calculator[data-design="night"] .launcher-option, .hgc-calculator[data-design="night"] .round-plan-grid, .hgc-calculator[data-design="night"] .round-plan-card, .hgc-calculator[data-design="night"] .choice-costs article, .hgc-calculator[data-design="night"] .recommendation, .hgc-calculator[data-design="night"] .next-option, .hgc-calculator[data-design="night"] .included-benefits, .hgc-calculator[data-design="night"] .toggle-row, .hgc-calculator[data-design="night"] .cost-panel { border-color: #355047; color: var(--ink); background: #172822; }
+.hgc-calculator[data-design="night"] .calculator-topbar { background: linear-gradient(135deg, #11211c, #1b3129); }
+.hgc-calculator[data-design="night"] .calculator-brand-logo { padding: 7px; border-radius: 7px; background: #fff; }
+.hgc-calculator[data-design="night"] select, .hgc-calculator[data-design="night"] .number-suffix, .hgc-calculator[data-design="night"] .course-picker-button, .hgc-calculator[data-design="night"] .course-picker-menu { border-color: #456158; color: var(--ink); background: #20362f; }
+.hgc-calculator[data-design="night"] .number-suffix input { color: #d0e87c; background: transparent; }
+.hgc-calculator[data-design="night"] .course-picker-option { color: var(--ink); }
+.hgc-calculator[data-design="night"] .course-picker-option:hover { background: #2a453b; }
+.hgc-calculator[data-design="night"] .button--primary { color: #142016; }
+.hgc-calculator[data-design="night"] .button--ghost { color: #e8eee9; background: #293b35; }
+.hgc-calculator[data-design="night"] .launcher-design-back, .hgc-calculator[data-design="night"] .launcher-back, .hgc-calculator[data-design="night"] .button--text, .hgc-calculator[data-design="night"] .launcher-link, .hgc-calculator[data-design="night"] .launcher-tag, .hgc-calculator[data-design="night"] .next-option-link { color: #c8df78; }
+
+/* 05 Energie: helder, rond en actiegericht. */
+.hgc-calculator[data-design="energy"] { --ink: #263020; --ink-soft: #67715f; --green: #91c414; --green-deep: #243319; --green-light: #eaf7bd; --orange: #ff8a18; --line: #d8e4b4; --radius: 20px; background: linear-gradient(135deg, #f5fadf 0 55%, #fff0d7 100%); }
+.hgc-calculator[data-design="energy"] .calculator-shell { border: 2px solid #cae27d; border-radius: 20px; box-shadow: 0 18px 0 rgba(123,156,39,.12); }
+.hgc-calculator[data-design="energy"] .launcher-hero { background: linear-gradient(120deg, #84b80f 0%, #9fd11d 62%, #c8e958 100%); }
+.hgc-calculator[data-design="energy"] .launcher-hero .eyebrow, .hgc-calculator[data-design="energy"] .launcher-hero p:last-child { color: rgba(28,48,15,.75); }
+.hgc-calculator[data-design="energy"] .launcher-hero h2 { color: #203016; }
+.hgc-calculator[data-design="energy"] .launcher-logo-card { border: 3px solid #fff; border-radius: 18px; transform: rotate(1.5deg); }
+.hgc-calculator[data-design="energy"] .launcher-option, .hgc-calculator[data-design="energy"] .round-plan-grid, .hgc-calculator[data-design="energy"] .recommendation, .hgc-calculator[data-design="energy"] .next-option, .hgc-calculator[data-design="energy"] .included-benefits { border-radius: 16px; }
+.hgc-calculator[data-design="energy"] .launcher-option--comparison, .hgc-calculator[data-design="energy"] .next-option { background: #fff7e9; border-color: #ffc777; }
+.hgc-calculator[data-design="energy"] .button { border-radius: 30px; }
+.hgc-calculator[data-design="energy"] .button--primary, .hgc-calculator[data-design="energy"] .button--cta { background: #ff8a18; }
+.hgc-calculator[data-design="energy"] .button--primary:hover, .hgc-calculator[data-design="energy"] .button--cta:hover { background: #ed7908; }
+.hgc-calculator[data-design="energy"] .calculator-topbar { background: linear-gradient(135deg, #fff, #f1f9d5); }
+
 .hgc-calculator .result-disclaimer { margin: 0; padding-top: 18px; border-top: 1px solid var(--line); color: #76847e; font-size: 11px; line-height: 1.55; }
 .hgc-calculator .result-disclaimer a { color: #5a7d19; }
 .hgc-calculator .form-actions--result { padding-top: 30px; }
 
 @media (max-width: 850px) {
+  .hgc-calculator .design-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hgc-calculator .design-option:last-child { grid-column: 1 / -1; }
   .hgc-calculator .launcher-hero { padding: 42px; }
   .hgc-calculator .launcher-logo-card { width: 190px; min-height: 108px; padding: 18px 20px; }
   .hgc-calculator .launcher-body { padding: 38px 42px; }
@@ -264,6 +347,14 @@
   .hgc-calculator { padding: 12px 0; }
   .hgc-calculator .calculator-shell { margin: 0 12px; border-radius: 8px; }
   .hgc-calculator .launcher-shell { margin: 0 12px; }
+  .hgc-calculator .design-picker { width: calc(100% - 24px); margin: 0 12px; padding: 28px 20px; overflow: hidden; border-radius: 10px; }
+  .hgc-calculator .design-picker__header { margin-bottom: 24px; }
+  .hgc-calculator .design-picker__header img { width: 145px; margin-bottom: 22px; }
+  .hgc-calculator .design-picker__header h2 { font-size: 27px; }
+  .hgc-calculator .design-picker__header h2, .hgc-calculator .design-picker__header p { max-width: 100%; overflow-wrap: anywhere; }
+  .hgc-calculator .design-options { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .hgc-calculator .design-option, .hgc-calculator .design-option:last-child { width: 100%; max-width: 100%; min-width: 0; grid-column: auto; }
+  .hgc-calculator .design-preview { width: 100%; max-width: 100%; height: 92px; }
   .hgc-calculator .launcher-hero { min-height: 0; padding: 34px 25px 36px; grid-template-columns: 1fr; }
   .hgc-calculator .launcher-hero h2 { font-size: 31px; }
   .hgc-calculator .launcher-hero p:last-child { font-size: 14px; line-height: 1.55; }

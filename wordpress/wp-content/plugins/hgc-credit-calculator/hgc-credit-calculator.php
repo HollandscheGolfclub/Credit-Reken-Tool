@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp en kostenvergelijker van de Hollandsche Golfclub.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.3.0');
+define('HGC_CALCULATOR_VERSION', '1.4.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));

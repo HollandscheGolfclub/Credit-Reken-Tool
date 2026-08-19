@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.4.0 =
+* Nieuwe ontwerpkeuze aan het begin met vijf visuele stijlen: Clubhuis, Fairway, Scorekaart, Tour en Energie.
+* Het gekozen ontwerp wordt toegepast op de routekeuze, calculator en resultaten zonder de berekeningen te wijzigen.
+* Bezoekers kunnen eenvoudig teruggaan om een ander ontwerp te bekijken.
+* De ontwerpkeuze is responsive en meetbaar via afzonderlijke analyticsgebeurtenissen.
 
 = 1.3.0 =
 * Nieuwe, volledig responsive start waar bezoekers eerst kiezen tussen persoonlijk speelrechtadvies en een vergelijking met hun huidige golfkosten.
