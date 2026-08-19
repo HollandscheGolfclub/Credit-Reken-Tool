@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.6.1 =
+* Een algemeen speelrecht vermeldt dat je onbeperkt medespelers kunt introduceren tegen een gereduceerd greenfeetarief.
+* Een Shortgolf-speelrecht vermeldt dat je op de grote banen tegen een gereduceerd greenfeetarief speelt.
 
 = 1.6.0 =
 * Het geadviseerde speelrecht dekt altijd alle opgegeven rondes. Zijn er 31,2 credits nodig, dan adviseert de keuzehulp 60 credits in plaats van een instappakket van 20 credits.
