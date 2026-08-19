@@ -440,11 +440,15 @@ function calculate() {
   const loyalTeeIsRelevant = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) <= 20;
   const substantialCreditAdvice = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) > 20;
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
-  const nextPackage = substantialCreditAdvice ? nextLargerCreditOption(best, handicapPrice) : null;
+  const adjacentPackage = Number(best.credits) === 120
+    ? nextSmallerCreditOption(best, handicapPrice)
+    : Number(best.credits) === 60
+      ? nextLargerCreditOption(best, handicapPrice)
+      : null;
   const alternative = loyalTeeIsRelevant
     ? plans.find((plan) => plan.type === "loyaltee")
     : substantialCreditAdvice
-      ? nextPackage
+      ? adjacentPackage
       : plans.find((plan) => plan.group !== best?.group && plan.type !== "loyaltee");
   return {
     largeRounds,
@@ -479,6 +483,31 @@ function nextLargerCreditOption(plan, handicapPrice) {
     annualCost: totalPrice + handicapPrice,
     isUpgradeOption: true,
     detail: `Je krijgt ${decimal.format(extraCredits)} credits extra voor ${euro.format(extraCost)} meer dan het geadviseerde speelrecht. Zo heb je meer ruimte als je vaker wilt spelen.`,
+  };
+}
+
+function nextSmallerCreditOption(plan, handicapPrice) {
+  if (!Array.isArray(plan.availablePackages) || !plan.availablePackages.length) return null;
+  const previous = plan.availablePackages
+    .map((item) => ({ ...item, credits: Number(item.credits), price: Number(item.price) }))
+    .filter((item) => item.credits < Number(plan.credits) && Number.isFinite(item.price))
+    .sort((a, b) => b.credits - a.credits)[0];
+  if (!previous) return null;
+
+  const fewerCredits = Number(plan.credits) - previous.credits;
+  const saving = Number(plan.packageBasePrice ?? plan.price) - previous.price;
+  const totalPrice = previous.price + Number(plan.nonPackageCost || 0);
+  return {
+    type: plan.type,
+    group: `${plan.group}-starter-${previous.credits}`,
+    name: previous.name || `${plan.productName} – ${decimal.format(previous.credits)} credits`,
+    productName: plan.productName,
+    credits: previous.credits,
+    price: totalPrice,
+    registrationPrice: handicapPrice,
+    annualCost: totalPrice + handicapPrice,
+    isSmallerOption: true,
+    detail: `Je start met ${decimal.format(fewerCredits)} credits minder en betaalt ${euro.format(saving)} minder voor het speelrecht. Dit dekt niet al je verwachte rondes; zodra de credits op zijn, kun je verlengen.`,
   };
 }
 
@@ -564,7 +593,7 @@ function renderResult(result) {
     ${alternative ? `
       <article class="next-option">
         <div>
-          <p class="eyebrow">${alternative.isUpgradeOption ? "Meer speelruimte" : "Andere passende optie"}</p>
+          <p class="eyebrow">${alternative.isUpgradeOption ? "Meer speelruimte" : alternative.isSmallerOption ? "Voordeliger instappen" : "Andere passende optie"}</p>
           <h4>${brandText(alternative.name)}</h4>
           <p>${alternative.isStarterPlan
             ? `Met deze optie start je voor <strong>${euro.format(alternative.annualCost)}</strong> en kun je later verlengen.`

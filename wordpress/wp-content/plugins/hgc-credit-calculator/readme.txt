@@ -38,7 +38,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * Golfjaar-invoer vernieuwd tot één rustig paneel; sliders ondersteunen nu maximaal 400 rondes van 9 holes per jaar.
 * Bij een hoog speelvolume adviseert de keuzehulp eerst het speelrecht van 200 credits; de bezoeker kan verlengen zodra die credits werkelijk op zijn.
 * LoyalTee wordt alleen als alternatief getoond bij een laag speelvolume rond het 20-creditadvies, niet naast 60-, 120- of 200-creditadviezen.
-* Bij 60 en 120 credits toont de uitkomst respectievelijk 120 en 200 credits als duidelijke optie voor meer speelruimte.
+* Bij 60 credits toont de uitkomst 120 credits voor meer speelruimte; bij 120 credits toont zij 60 credits als voordeligere instapoptie.
 * Beide routes openen op dezelfde pagina en bezoekers kunnen eenvoudig terug naar de startkeuze.
 * Nieuwe analyticsgebeurtenissen voor het bekijken en maken van de routekeuze.
 
