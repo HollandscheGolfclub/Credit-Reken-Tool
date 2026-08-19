@@ -18,8 +18,8 @@ final class HGC_Calculator_Admin
     public function register_page(): void
     {
         add_options_page(
-            'HGC Calculator',
-            'HGC Calculator',
+            'Hollandsche Golfclub Calculator',
+            'Hollandsche Golfclub Calculator',
             'manage_options',
             self::PAGE_SLUG,
             array($this, 'render_page')
@@ -62,7 +62,7 @@ final class HGC_Calculator_Admin
         );
         ?>
         <div class="wrap hgc-admin">
-            <h1>HGC Calculator</h1>
+            <h1>Hollandsche Golfclub Calculator</h1>
             <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
 
             <?php if (isset($_GET['updated'])) : ?>
@@ -71,14 +71,32 @@ final class HGC_Calculator_Admin
                 <div class="notice notice-success is-dismissible"><p>De standaardinstellingen zijn hersteld.</p></div>
             <?php endif; ?>
 
+            <section class="hgc-admin-panel">
+                <h2>Plaatsen op de website</h2>
+                <p>Maak bij voorkeur voor iedere variant een eigen WordPress-pagina en plaats daar de bijbehorende shortcode.</p>
+                <div class="hgc-admin-grid hgc-admin-grid--two">
+                    <article class="hgc-shortcode-card">
+                        <h3>Speelrechtkeuzehulp</h3>
+                        <p>Adviseert een speelrecht op basis van grote en kleine baanrondes.</p>
+                        <code>[hgc_calculator mode="keuzehulp"]</code>
+                    </article>
+                    <article class="hgc-shortcode-card">
+                        <h3>Kostenvergelijking</h3>
+                        <p>Vergelijkt de huidige kosten van de bezoeker met het aanbod.</p>
+                        <code>[hgc_calculator mode="vergelijking"]</code>
+                    </article>
+                </div>
+            </section>
+
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="hgc_calculator_save" />
                 <?php wp_nonce_field('hgc_calculator_save'); ?>
 
                 <section class="hgc-admin-panel">
                     <h2>Algemene instellingen</h2>
-                    <div class="hgc-admin-grid hgc-admin-grid--four">
+                    <div class="hgc-admin-grid hgc-admin-grid--three">
                         <?php $this->number_field('Jaar', 'config[year]', $config['year'] ?? date('Y'), 1); ?>
+                        <?php $this->number_field('Minimaal aandeel kleine-baanrondes voor Shortgolf-advies', 'config[settings][minimumShortGolfRoundSharePercentage]', $config['settings']['minimumShortGolfRoundSharePercentage'] ?? 33, 1, '%'); ?>
                         <?php $this->number_field('Marge “ongeveer gelijk”', 'config[settings][equalCostMargin]', $config['settings']['equalCostMargin'] ?? 50, 0.01, '€'); ?>
                         <?php $this->number_field('18-holes vermenigvuldiger', 'config[settings][eighteenHoleMultiplier]', $config['settings']['eighteenHoleMultiplier'] ?? 2, 0.1); ?>
                         <?php $this->number_field('Maandbetalingstoeslag', 'config[settings][monthlyPaymentSurchargePercentage]', $config['settings']['monthlyPaymentSurchargePercentage'] ?? 5, 0.1, '%'); ?>
@@ -100,7 +118,7 @@ final class HGC_Calculator_Admin
                 <section class="hgc-admin-panel">
                     <h2>Links</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--two">
-                        <?php foreach (array('webshop' => 'Webshop', 'loyalTee' => 'LoyalTee', 'handicapRegistration' => 'Handicapregistratie', 'terms' => 'Voorwaarden') as $key => $label) : ?>
+                        <?php foreach (array('webshop' => 'Webshop', 'playingRights' => 'Speelrechten', 'loyalTee' => 'LoyalTee', 'handicapRegistration' => 'Handicapregistratie', 'terms' => 'Voorwaarden') as $key => $label) : ?>
                             <label class="hgc-admin-field"><span><?php echo esc_html($label); ?></span><input class="large-text" type="url" name="config[links][<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($config['links'][$key] ?? ''); ?>" /></label>
                         <?php endforeach; ?>
                     </div>
@@ -180,6 +198,9 @@ final class HGC_Calculator_Admin
         foreach (array('equalCostMargin', 'eighteenHoleMultiplier', 'monthlyPaymentSurchargePercentage') as $key) {
             $config['settings'][$key] = $this->number($raw['settings'][$key] ?? $config['settings'][$key] ?? 0);
         }
+        $config['settings']['minimumShortGolfRoundSharePercentage'] = min(100, max(0, $this->number(
+            $raw['settings']['minimumShortGolfRoundSharePercentage'] ?? $config['settings']['minimumShortGolfRoundSharePercentage'] ?? 33
+        )));
         $config['settings']['preferSinglePackage'] = true;
 
         foreach (array('adultPrice', 'youthPrice', 'vouchers') as $key) {
@@ -189,7 +210,7 @@ final class HGC_Calculator_Admin
             $config['loyalTee'][$key] = $this->number($raw['loyalTee'][$key] ?? 0);
         }
 
-        foreach (array('webshop', 'loyalTee', 'handicapRegistration', 'terms') as $key) {
+        foreach (array('webshop', 'playingRights', 'loyalTee', 'handicapRegistration', 'terms') as $key) {
             $config['links'][$key] = esc_url_raw($raw['links'][$key] ?? '');
         }
 
@@ -253,6 +274,7 @@ final class HGC_Calculator_Admin
                 'largeHoles' => $this->number($row['largeHoles'] ?? null, null),
                 'largeRate' => $this->number($row['largeRate'] ?? null, null),
                 'shortRate' => $this->number($row['shortRate'] ?? null, null),
+                'shortGolfRate' => $this->number($row['shortGolfRate'] ?? null, null),
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
                 'greenFees' => $green_fees,
@@ -306,11 +328,12 @@ final class HGC_Calculator_Admin
                 <?php $this->text_input('ID / slug', "config[courses][$index][id]", $course['id'] ?? ''); ?>
                 <?php $this->text_input('Plaats', "config[courses][$index][location]", $course['location'] ?? ''); ?>
             </div>
-            <h4>Credits en baan</h4>
-            <div class="hgc-admin-grid hgc-admin-grid--three">
+            <h4>Baan en creditwaarden</h4>
+            <div class="hgc-admin-grid hgc-admin-grid--four">
                 <?php $this->nullable_number('Aantal holes grote baan', "config[courses][$index][largeHoles]", $course['largeHoles'] ?? null, 1); ?>
-                <?php $this->nullable_number('Credits per baanronde', "config[courses][$index][largeRate]", $course['largeRate'] ?? null); ?>
-                <?php $this->nullable_number('Credits per shortgolfronde', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
+                <?php $this->nullable_number('Algemeen speelrecht: grote baan', "config[courses][$index][largeRate]", $course['largeRate'] ?? null); ?>
+                <?php $this->nullable_number('Algemeen speelrecht: kleine baan', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
+                <?php $this->nullable_number('Shortgolf-speelrecht: kleine baan', "config[courses][$index][shortGolfRate]", $course['shortGolfRate'] ?? null); ?>
             </div>
             <h4>Reguliere greenfees</h4>
             <div class="hgc-admin-grid hgc-admin-grid--three">

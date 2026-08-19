@@ -1,12 +1,15 @@
 <?php defined('ABSPATH') || exit; ?>
-<div class="hgc-calculator">
+<div class="hgc-calculator" data-calculator-mode="choice">
   <section class="calculator-shell" id="calculator" aria-labelledby="calculator-title">
     <div class="calculator-topbar">
       <div>
-        <p class="eyebrow">Jouw berekening</p>
+        <p class="eyebrow">Jouw keuzehulp</p>
         <h2 id="calculator-title">Ontdek jouw beste speelrecht</h2>
       </div>
-      <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 3</p>
+      <div class="calculator-topbar-meta">
+        <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
+        <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 2</p>
+      </div>
     </div>
 
     <div class="progress" aria-hidden="true">
@@ -19,49 +22,47 @@
           <span class="step-number">01</span>
           <div>
             <h3>Hoe ziet jouw golfjaar eruit?</h3>
-            <p>Een goede schatting is voldoende.</p>
+            <p>Vul per baantype in hoeveel rondes van 9 holes je ongeveer speelt.</p>
           </div>
         </div>
 
-        <div class="field-group">
-          <div class="field-label-row">
-            <label for="rounds">Hoeveel rondes speel je ongeveer per jaar?</label>
-            <div class="number-suffix">
-              <input id="rounds-number" type="number" min="1" max="150" value="35" inputmode="numeric" />
-              <span>rondes</span>
+        <div class="round-plan-grid">
+          <article class="round-plan-card">
+            <div class="round-plan-title"><span class="choice-icon">9</span><div><h4>Grote baan</h4><p>Volwaardige golfbaan</p></div></div>
+            <div class="field-group">
+              <div class="field-label-row">
+                <label for="large-rounds-number">Hoeveel rondes per jaar?</label>
+                <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div>
+              </div>
+              <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" />
+              <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
             </div>
-          </div>
-          <input id="rounds" class="range" type="range" min="1" max="150" value="35" />
-          <div class="range-scale"><span>1</span><span>150</span></div>
+            <div class="field-group field-group--last">
+              <label id="large-course-label" for="large-course">Op welke grote baan speel je meestal?</label>
+              <select id="large-course" aria-labelledby="large-course-label" required></select>
+              <p class="field-help" id="large-course-help">De baan bepaalt hoeveel credits een ronde kost.</p>
+            </div>
+          </article>
+
+          <article class="round-plan-card">
+            <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Shortgolfbaan</p></div></div>
+            <div class="field-group">
+              <div class="field-label-row">
+                <label for="small-rounds-number">Hoeveel rondes per jaar?</label>
+                <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div>
+              </div>
+              <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" />
+              <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
+            </div>
+            <div class="field-group field-group--last">
+              <label id="small-course-label" for="small-course">Op welke kleine baan speel je meestal?</label>
+              <select id="small-course" aria-labelledby="small-course-label" required></select>
+              <p class="field-help" id="small-course-help">Voor Shortgolf gelden andere creditwaarden.</p>
+            </div>
+          </article>
         </div>
 
-        <fieldset class="field-group">
-          <legend>Wat speel je meestal?</legend>
-          <div class="choice-grid choice-grid--three">
-            <label class="choice-card">
-              <input type="radio" name="round-format" value="nine" checked />
-              <span class="choice-icon">9</span>
-              <span><strong>9 holes</strong><small>Één baanronde</small></span>
-            </label>
-            <label class="choice-card">
-              <input type="radio" name="round-format" value="eighteen" />
-              <span class="choice-icon">18</span>
-              <span><strong>18 holes</strong><small>Twee baanrondes</small></span>
-            </label>
-            <label class="choice-card">
-              <input type="radio" name="round-format" value="short" />
-              <span class="choice-icon choice-icon--flag">⚑</span>
-              <span><strong>Shortgolf</strong><small>Kleine baan</small></span>
-            </label>
-          </div>
-        </fieldset>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label for="course">Waar zou je bij HGC het vaakst spelen?</label>
-            <select id="course" required></select>
-            <p class="field-help" id="course-help">De baan bepaalt hoeveel credits een ronde kost.</p>
-          </div>
+        <div class="field-row field-row--settings">
           <div class="field-group">
             <label for="age-category">Voor wie bereken je dit?</label>
             <select id="age-category">
@@ -69,71 +70,24 @@
               <option value="youth">Jeugd t/m 17 jaar</option>
             </select>
           </div>
+          <label class="toggle-row toggle-row--inline">
+            <input id="off-peak" type="checkbox" />
+            <span class="toggle" aria-hidden="true"></span>
+            <span><strong>Ik speel vooral in de daluren</strong><small>We nemen het dalurenspeelrecht mee als dat past.</small></span>
+          </label>
         </div>
 
-        <label class="toggle-row">
-          <input id="off-peak" type="checkbox" />
-          <span class="toggle" aria-hidden="true"></span>
-          <span><strong>Ik kan vooral in daluren spelen</strong><small>We nemen het dalurenspeelrecht mee als dat past.</small></span>
-        </label>
+        <div class="form-error" id="rounds-error" role="alert" hidden>Vul bij de grote of kleine baan minimaal 1 ronde in.</div>
 
         <div class="form-actions form-actions--end">
-          <button class="button button--primary" type="button" data-next>Verder naar jouw kosten <span>→</span></button>
+          <button class="button button--primary" type="submit">Ontdek mijn beste speelrecht <span>→</span></button>
         </div>
       </section>
 
-      <section class="form-step" data-step="2" hidden>
-        <div class="step-heading">
-          <span class="step-number">02</span>
-          <div>
-            <h3>Wat betaal je nu?</h3>
-            <p>Kies de manier waarop jij je golfkosten kent.</p>
-          </div>
-        </div>
-
-        <fieldset class="field-group">
-          <legend>Mijn huidige kosten zijn:</legend>
-          <div class="segmented-control">
-            <label><input type="radio" name="cost-type" value="greenfee" checked /><span>Per ronde / greenfee</span></label>
-            <label><input type="radio" name="cost-type" value="annual" /><span>Een vast bedrag per jaar</span></label>
-          </div>
-        </fieldset>
-
-        <div class="cost-panel" id="greenfee-panel">
-          <label for="greenfee">Mijn gemiddelde greenfee</label>
-          <div class="currency-input"><span>€</span><input id="greenfee" type="text" value="42,50" inputmode="decimal" /></div>
-          <p>Vul het bedrag in dat je gemiddeld voor één ronde betaalt.</p>
-        </div>
-
-        <div class="cost-panel" id="annual-panel" hidden>
-          <label for="annual-cost">Ik betaal per jaar</label>
-          <div class="currency-input"><span>€</span><input id="annual-cost" type="text" value="1.500" inputmode="decimal" /></div>
-          <p>Bijvoorbeeld je contributie, speelrecht of abonnement.</p>
-        </div>
-
-        <div class="loyaltee-note">
-          <span aria-hidden="true">20%</span>
-          <p><strong>We vergelijken ook met HGC LoyalTee</strong>Inclusief 20% korting op reguliere HGC-greenfees en €25 ballentegoed. Te combineren met HGC-handicapregistratie.</p>
-        </div>
-
-        <label class="toggle-row toggle-row--compact">
-          <input id="include-handicap" type="checkbox" />
-          <span class="toggle" aria-hidden="true"></span>
-          <span><strong>Combineer mijn advies met HGC-handicapregistratie</strong><small id="handicap-copy">We voegen registratie toe aan speelrechten met credits én LoyalTee. Voor weinig rondes vergelijken we hem automatisch als losse optie.</small></span>
-        </label>
-
-        <div class="form-error" id="cost-error" role="alert" hidden>Vul een geldig bedrag groter dan €0 in.</div>
-
-        <div class="form-actions">
-          <button class="button button--text" type="button" data-back>← Terug</button>
-          <button class="button button--primary" type="submit">Bereken mijn voordeel <span>→</span></button>
-        </div>
-      </section>
-
-      <section class="form-step result-step" data-step="3" hidden aria-live="polite">
+      <section class="form-step result-step" data-step="2" hidden aria-live="polite">
         <div id="result-content"></div>
         <div class="form-actions form-actions--result">
-          <button class="button button--text" type="button" data-back>← Berekening aanpassen</button>
+          <button class="button button--text" type="button" data-back>← Keuzes aanpassen</button>
           <button class="button button--ghost" type="button" id="restart">Opnieuw beginnen</button>
         </div>
       </section>
