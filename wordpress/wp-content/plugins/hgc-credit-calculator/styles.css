@@ -239,7 +239,7 @@
 .hgc-calculator .advice-card-coverage { margin-bottom: 13px; color: var(--ink-soft) !important; font-size: 13px; line-height: 1.55; }
 .hgc-calculator .advice-card-instruction { margin-bottom: 20px; padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
 .hgc-calculator .advice-card--shortgolf .advice-card-instruction { border-left-color: var(--orange); background: #fdf2e6; }
-.hgc-calculator .full-route-note { margin: 13px 0 20px; color: var(--ink-soft) !important; font-size: 13px; line-height: 1.55; }
+.hgc-calculator .cheaper-route-note { margin: 0 0 20px; padding: 12px 14px; border-radius: 6px; background: #f4f6f0; color: var(--ink) !important; font-size: 13px; line-height: 1.55; }
 .hgc-calculator .advice-card-benefits-title { margin-bottom: 10px; color: var(--ink-soft) !important; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
 .hgc-calculator .advice-card-benefits { margin: 0 0 22px; padding: 0; display: grid; gap: 9px; list-style: none; }
 .hgc-calculator .advice-card-benefits li { display: flex; align-items: flex-start; gap: 10px; color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.45; }

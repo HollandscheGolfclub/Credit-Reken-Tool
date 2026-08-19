@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.6.0 =
+* Het geadviseerde speelrecht dekt altijd alle opgegeven rondes. Zijn er 31,2 credits nodig, dan adviseert de keuzehulp 60 credits in plaats van een instappakket van 20 credits.
+* Zijn meerdere kleinere pakketten samen goedkoper, dan staat die route als tweede advies onder het hoofdadvies, met het aantal aankopen en het bedrag.
+* Bestaat er geen speelrecht dat de rondes in één keer dekt, dan noemt het advies de benodigde combinatie expliciet, bijvoorbeeld 2 x 20 credits bij een jeugdspeelrecht.
+* Het advies toont geen instapprijs meer die het opgegeven golfjaar niet dekt.
 
 = 1.5.0 =
 * De verhouding tussen kleine- en grote-baanrondes bepaalt het advies. Overheerst de kleine baan, dan adviseert de keuzehulp een Shortgolf-speelrecht omdat die credits daar voordeliger zijn.

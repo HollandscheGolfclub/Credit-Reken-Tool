@@ -2,6 +2,7 @@
   function expectedAlternative(best) {
     const packages = Array.isArray(best.availablePackages) ? best.availablePackages : [];
     const credits = Number(best.credits);
+    if (best.cheaperRoute) return Number(best.cheaperRoute.credits);
     if (credits === 200) return null;
     if (credits === 120) {
       return packages.map((item) => Number(item.credits)).filter((value) => value < 120).sort((a, b) => b - a)[0] ?? null;
@@ -18,8 +19,18 @@
       report("unsupported-product", { ...context, type: best?.type });
       return;
     }
-    if (![20, 60, 120, 200].includes(Number(best.credits))) {
-      report("unknown-credit-tier", { ...context, credits: best.credits, group: best.group });
+    const items = Array.isArray(best.packageItems) ? best.packageItems : [];
+    const available = (Array.isArray(best.availablePackages) ? best.availablePackages : []).map((item) => Number(item.credits));
+    if (!items.length) {
+      report("advies-zonder-pakketten", { ...context, group: best.group });
+    } else {
+      if (items.some((item) => !available.includes(Number(item.credits)))) {
+        report("pakket-niet-in-aanbod", { ...context, group: best.group, items: items.map((item) => item.credits).join("+") });
+      }
+      const sum = items.reduce((total, item) => total + Number(item.credits), 0);
+      if (Math.abs(sum - Number(best.credits)) > 1e-8) {
+        report("credits-tellen-niet-op", { ...context, group: best.group, sum, credits: best.credits });
+      }
     }
     const expected = expectedAlternative(best);
     if (expected === null && alternative) {
@@ -115,25 +126,19 @@
                   if (Math.abs(reconstructed - Number(plan.annualCost)) > 0.01) {
                     report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
                   }
-                  if (!plan.isStarterPlan && Number(plan.credits) + 1e-8 < Number(plan.requiredCredits)) {
-                    report("undercovered-nonstarter", { ...context, group: plan.group });
+                  if (Number(plan.credits) + 1e-8 < Number(plan.requiredCredits)) {
+                    report("advies-dekt-de-rondes-niet", { ...context, group: plan.group, credits: plan.credits, nodig: plan.requiredCredits });
                   }
-                  if (plan.isStarterPlan && (Number(plan.count) !== 1 || Number(plan.requiredCredits) <= Number(plan.credits))) {
-                    report("invalid-starter", { ...context, group: plan.group });
-                  }
-                  if (plan.isStarterPlan) {
-                    if (!plan.fullRoute) {
-                      report("starter-zonder-volledige-route", { ...context, group: plan.group });
-                    } else {
-                      if (Number(plan.fullRoute.credits) + 1e-8 < Number(plan.requiredCredits)) {
-                        report("volledige-route-dekt-niet", { ...context, group: plan.group, route: plan.fullRoute.credits, nodig: plan.requiredCredits });
-                      }
-                      if (Number(plan.fullRoute.price) + 1e-8 < Number(plan.price)) {
-                        report("volledige-route-goedkoper-dan-startpakket", { ...context, group: plan.group });
-                      }
+                  if (plan.cheaperRoute) {
+                    if (Number(plan.cheaperRoute.credits) + 1e-8 < Number(plan.requiredCredits)) {
+                      report("voordeligere-route-dekt-niet", { ...context, group: plan.group });
                     }
-                  } else if (plan.fullRoute) {
-                    report("volledige-route-zonder-startpakket", { ...context, group: plan.group });
+                    if (Number(plan.cheaperRoute.price) + 1e-8 >= Number(plan.price)) {
+                      report("voordeligere-route-niet-voordeliger", { ...context, group: plan.group, route: plan.cheaperRoute.price, advies: plan.price });
+                    }
+                    if (Number(plan.cheaperRoute.count) <= 1) {
+                      report("voordeligere-route-is-een-pakket", { ...context, group: plan.group });
+                    }
                   }
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
                     report("shortgolf-outside-profile", { ...context, group: plan.group });
@@ -250,7 +255,6 @@
     const errorCounts = {};
     let cases = 0;
     let cardsChecked = 0;
-    let starterCardsChecked = 0;
 
     function report(code, context) {
       errorCounts[code] = (errorCounts[code] || 0) + 1;
@@ -268,30 +272,30 @@
       const amount = card.querySelector(".advice-card-amount .switchable").textContent;
       const claimsCoverage = /\bdekt\b/.test(coverage);
 
-      if (plan.isStarterPlan) {
-        starterCardsChecked += 1;
-        if (claimsCoverage) report("startpakket-belooft-dekking", { ...context, coverage });
-        if (!/startpakket/.test(coverage)) report("startpakket-niet-benoemd", { ...context, coverage });
-        if (!/starten/.test(note)) report("startpakket-niet-in-toelichting", { ...context, note });
-        const route = card.querySelector(".full-route-note");
-        if (!route) {
-          report("volledige-route-niet-getoond", context);
-        } else {
-          const shownAmount = route.querySelector(".switchable").textContent.replace(/\s/g, "");
-          const expectedAmount = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" })
-            .format(Number(plan.fullRoute.price) + Number(plan.registrationPrice || 0))
-            .replace(/\s/g, "");
-          if (shownAmount !== expectedAmount) {
-            report("volledige-route-bedrag-wijkt-af", { ...context, shownAmount, expectedAmount });
-          }
-        }
-      } else if (!claimsCoverage) {
+      if (!claimsCoverage) {
         report("dekking-niet-benoemd", { ...context, coverage });
       }
 
       const expected = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(Number(plan.annualCost));
       if (amount.replace(/\s/g, "") !== expected.replace(/\s/g, "")) {
         report("bedrag-wijkt-af", { ...context, amount, expected });
+      }
+
+      if (plan.cheaperRoute) {
+        const line = card.querySelector(".cheaper-route-note");
+        if (!line) {
+          report("voordeligere-route-niet-op-kaart", context);
+        } else {
+          const shownAmount = line.querySelector(".switchable").textContent.replace(/\s/g, "");
+          const expectedAmount = new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" })
+            .format(Number(plan.cheaperRoute.price) + Number(plan.registrationPrice || 0))
+            .replace(/\s/g, "");
+          if (shownAmount !== expectedAmount) {
+            report("voordeligere-route-bedrag-wijkt-af", { ...context, shownAmount, expectedAmount });
+          }
+        }
+      } else if (card.querySelector(".cheaper-route-note")) {
+        report("voordeligere-route-zonder-reden", context);
       }
 
       const shown = [...card.querySelectorAll(".advice-card-benefits li")].map((item) => item.textContent.replace(/^✓/, ""));
@@ -338,19 +342,24 @@
               continue;
             }
 
-            // Bij één advies mag een startpakket ook niet als volledige dekking gelden.
             const shown = resultContent.textContent;
-            if (result.best.isStarterPlan && /dekt zowel|dekt al je rondes/.test(shown)) {
-              report("startpakket-belooft-dekking-enkel-advies", context);
-            }
             if (Number(result.best.uncoveredLargeRounds || 0) > 0 && !/buiten dit speelrecht/.test(shown)) {
               report("ongedekte-rondes-niet-gemeld", context);
+            }
+            // Bestaat er een voordeligere route met meerdere speelrechten, dan
+            // hoort die als tweede advies onder het hoofdadvies te staan.
+            if (result.best.cheaperRoute) {
+              if (!result.alternative || !result.alternative.isCheaperRoute) {
+                report("voordeligere-route-niet-als-tweede-advies", context);
+              } else if (!/Voordeliger, in meerdere aankopen/.test(shown)) {
+                report("voordeligere-route-niet-aangekondigd", context);
+              }
             }
           }
         }
       }
     }
-    return { cases, cardsChecked, starterCardsChecked, errorCounts, errors };
+    return { cases, cardsChecked, errorCounts, errors };
   };
 
   window.runHgcRoundSweepAudit = function runHgcRoundSweepAudit() {

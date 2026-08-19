@@ -80,9 +80,10 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
 
 - De bezoeker voert apart het aantal grote- en kleine-baanrondes van 9 holes in en kiest voor ieder baantype een golfpark.
 - Algemene en Shortgolf-speelrechten gebruiken hun eigen creditwaarden voor de kleine baan.
-- Een algemeen speelrecht adviseert het passende startpakket. Zijn bijvoorbeeld 22 credits nodig, dan start het advies met 20 credits en vermeldt het dat de speler pas na verbruik moet verlengen; er worden vooraf geen twee kleine pakketten opgeteld.
-- Bij zo'n startpakket noemt het advies ook waar de bezoeker uitkomt als hij al zijn rondes speelt: het aantal benodigde credits, het aantal speelrechten en het totaalbedrag. Zonder die regel lijkt het bedrag van het startpakket de jaarprijs, terwijl het de instapprijs is.
-- Het startpakket is niet alleen de laagste instap maar ook de voordeligste route. Gemeten over alle banen, leeftijden en speelvolumes is verlengen in geen enkel geval duurder dan één dekkend pakket vooraf kopen. Bij circa 31 benodigde credits kost 20 credits plus verlengen € 970 voor 40 credits, tegenover € 1.030 voor één pakket van 60 credits.
+- **Het geadviseerde speelrecht dekt altijd alle opgegeven rondes.** Zijn bijvoorbeeld 31,2 credits nodig, dan adviseert de keuzehulp 60 credits en niet een instappakket van 20 credits. De keuzehulp toont dus nooit een bedrag dat het opgegeven golfjaar niet dekt.
+- Eén speelrecht heeft voorrang, ook wanneer meerdere kleinere pakketten samen goedkoper uitvallen. Die goedkopere route staat er als tweede advies onder, met het aantal aankopen en het bedrag erbij: bij 31,2 benodigde credits kost 2 × 20 credits € 970 tegenover € 1.030 voor 60 credits, maar levert 20 credits minder ruimte op.
+- Bestaat er geen enkel speelrecht dat de rondes in één keer dekt, dan adviseert de keuzehulp de voordeligste combinatie en benoemt zij dat expliciet. Bij jeugd- en dalurenspeelrechten bestaat alleen een pakket van 20 credits, dus daar is bijvoorbeeld "2 × 20 credits, samen 40 credits" een normale uitkomst.
+- Deze keuze is bewust gemaakt: een instapprijs tonen die het golfjaar niet dekt geeft een te laag beeld van de werkelijke kosten. Het gevolg is dat de getoonde bedragen bij een hoger speelvolume hoger uitvallen dan voorheen.
 - De verhouding tussen kleine- en grote-baanrondes bepaalt het advies. De keuzehulp kent drie zones, met instelbare grenzen:
   - vanaf 85% kleine-baanrondes adviseert de keuzehulp een Shortgolf-speelrecht, omdat Shortgolf-credits op de kleine baan voordeliger zijn. Het advies vermeldt dat de resterende grote-baanrondes buiten dat speelrecht vallen en apart worden afgerekend;
   - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
@@ -100,6 +101,8 @@ Laat de Hollandsche Golfclub deze aannames controleren voordat de keuzehulp publ
 ## Rekencontrole
 
 `tests/audit-matrix.js` controleert de aanbevelingen over alle banen, producttypen, leeftijden, dalurenkeuzes en relevante grenswaarden. De audit controleert ook pakketdekking, toegestane producten, alternatieven en of de kosten per baantype optellen tot het getoonde totaal.
+
+Iedere aanbeveling wordt gecontroleerd op dekking: geen enkel plan mag minder credits bevatten dan er nodig zijn, en de geadviseerde credits moeten optellen uit pakketten die daadwerkelijk in het aanbod staan. Een voordeligere route moet de rondes ook dekken, uit meer dan één pakket bestaan en werkelijk goedkoper zijn.
 
 `runHgcProfileAudit` controleert daarnaast de zone-indeling tegen de ingestelde drempelwaarden, of een Shortgolf-speelrecht alleen in de juiste zones meedoet, of een gemengd speelbeeld inderdaad twee opties oplevert, en of het bedrag achter de schakelaar exact de speelrechtprijs zonder handicapregistratie is.
 
