@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
- * Description: Speelrechtkeuzehulp en kostenvergelijker van de Hollandsche Golfclub.
- * Version: 1.4.1
+ * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
+ * Version: 1.4.2
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.4.1');
+define('HGC_CALCULATOR_VERSION', '1.4.2');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -60,6 +60,17 @@ function hgc_calculator_config(): array
     if (empty($saved['links']['playingRights']) && !empty($defaults['links']['playingRights'])) {
         $saved['links']['playingRights'] = $defaults['links']['playingRights'];
     }
+    $saved = array_intersect_key($saved, $defaults);
+    $saved['settings'] = array_intersect_key($saved['settings'] ?? array(), $defaults['settings'] ?? array());
+    $saved['links'] = array_intersect_key($saved['links'] ?? array(), $defaults['links'] ?? array());
+    $saved['handicapRegistration'] = array_intersect_key(
+        $saved['handicapRegistration'] ?? array(),
+        $defaults['handicapRegistration'] ?? array()
+    );
+    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'provisional', 'note'));
+    foreach (($saved['courses'] ?? array()) as $index => $course) {
+        $saved['courses'][$index] = array_intersect_key($course, $course_keys);
+    }
     return $saved;
 }
 
@@ -75,15 +86,7 @@ function hgc_calculator_shortcode(array $atts = array()): string
 {
     static $rendered_modes = array();
 
-    $atts = shortcode_atts(array('mode' => 'start'), $atts, 'hgc_calculator');
-    $requested_mode = sanitize_key((string) ($atts['mode'] ?? 'start'));
-    if (in_array($requested_mode, array('vergelijking', 'comparison', 'besparing'), true)) {
-        $mode = 'comparison';
-    } elseif (in_array($requested_mode, array('keuzehulp', 'choice', 'advies'), true)) {
-        $mode = 'choice';
-    } else {
-        $mode = 'start';
-    }
+    $mode = 'choice';
 
     if (!empty($rendered_modes[$mode])) {
         return '';
@@ -114,9 +117,7 @@ function hgc_calculator_shortcode(array $atts = array()): string
         'window.hgcConfig = ' . wp_json_encode(hgc_calculator_config(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';',
         'after'
     );
-    $scripts = $mode === 'start'
-        ? array('calculator.js', 'launcher.js')
-        : array($mode === 'comparison' ? 'comparison.js' : 'calculator.js');
+    $scripts = array('calculator.js');
     $dependencies = array('hgc-calculator-config');
     foreach ($scripts as $script) {
         $handle = 'hgc-calculator-' . basename($script, '.js');
@@ -131,10 +132,7 @@ function hgc_calculator_shortcode(array $atts = array()): string
     }
 
     ob_start();
-    $template = $mode === 'start'
-        ? 'templates/launcher.php'
-        : ($mode === 'comparison' ? 'templates/comparison.php' : 'templates/calculator.php');
-    include HGC_CALCULATOR_DIR . $template;
+    include HGC_CALCULATOR_DIR . 'templates/calculator.php';
     return (string) ob_get_clean();
 }
 add_shortcode('hgc_calculator', 'hgc_calculator_shortcode');
@@ -145,14 +143,8 @@ function hgc_choice_helper_shortcode(array $atts = array()): string
     return hgc_calculator_shortcode($atts);
 }
 
-function hgc_comparison_shortcode(array $atts = array()): string
-{
-    $atts['mode'] = 'vergelijking';
-    return hgc_calculator_shortcode($atts);
-}
-
 add_shortcode('hgc_keuzehulp', 'hgc_choice_helper_shortcode');
-add_shortcode('hgc_besparingscalculator', 'hgc_comparison_shortcode');
+add_shortcode('hgc_besparingscalculator', 'hgc_choice_helper_shortcode');
 
 /**
  * Maakt een blok beschikbaar in de klassieke editor en pagebuilders via de shortcode.
@@ -227,7 +219,7 @@ final class HGC_Calculator_GitHub_Updater
         $information->requires_php = '7.4';
         $information->download_link = $release['package'];
         $information->sections = array(
-            'description' => 'Speelrechtkeuzehulp en vergelijking met huidige golfkosten voor de Hollandsche Golfclub.',
+            'description' => 'Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.',
             'changelog' => nl2br(esc_html($release['notes'] ?: 'Bekijk de GitHub Release voor de wijzigingen.')),
         );
 

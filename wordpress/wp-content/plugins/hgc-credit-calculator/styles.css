@@ -178,10 +178,6 @@
 .hgc-calculator .currency-input { display: flex; align-items: center; border-bottom: 2px solid var(--green); }
 .hgc-calculator .currency-input span { color: #5a7d19; font: 700 33px/1 "Montserrat", sans-serif; }
 .hgc-calculator .currency-input input { width: 100%; padding: 6px 10px 9px; border: 0; outline: 0; background: transparent; color: var(--ink); font: 700 42px/1 "Montserrat", sans-serif; }
-.hgc-calculator .loyaltee-note { margin-top: 20px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; border: 1px solid #dbe9b6; border-radius: 6px; background: #f7faed; }
-.hgc-calculator .loyaltee-note > span { flex: 0 0 48px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; color: white; background: var(--green); font-weight: 800; }
-.hgc-calculator .loyaltee-note p { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-.hgc-calculator .loyaltee-note strong { display: block; color: var(--ink); font-size: 14px; }
 .hgc-calculator .form-error { margin: -20px 0 18px; padding: 12px 15px; border-radius: 10px; color: #8b271f; background: #fce8e5; font-size: 13px; }
 
 .hgc-calculator .result-step { padding-top: 0; }

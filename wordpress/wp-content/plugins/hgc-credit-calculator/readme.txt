@@ -1,9 +1,9 @@
 === Hollandsche Golfclub Credit Calculator ===
 Contributors: hollandschegolfclub
-Tags: golf, calculator, speelrecht, credits, greenfee
+Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,11 +13,11 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 
 1. Upload `hgc-credit-calculator.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
 2. Activeer Hollandsche Golfclub Credit Calculator.
-3. Plaats `[hgc_calculator]` voor de gecombineerde start, of gebruik `[hgc_calculator mode="keuzehulp"]` en `[hgc_calculator mode="vergelijking"]` voor een losse variant.
+3. Plaats `[hgc_calculator]` om de gekozen HGC-speelrechtkeuzehulp direct te tonen.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
 
-Beheer banen, greenfees, credits, pakketten, voordelen en links via
+Beheer banen, creditwaarden, pakketten, voordelen en links via
 Instellingen > Hollandsche Golfclub Calculator.
 
 == GitHub-updates ==
@@ -32,9 +32,16 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 == Changelog ==
 
+= 1.4.2 =
+* De lichte Clubhuis-vormgeving is de definitieve standaard; de shortcode opent direct de keuzehulp zonder ontwerpselectie.
+* De keuzehulp rekent uitsluitend met credits, speelrechtprijzen en handicapregistratie.
+* Tarieven en producten voor losse rondes zijn volledig uit de plugin verwijderd.
+* Als meerdere kleine pakketten nodig zouden zijn, adviseert de keuzehulp eerst één passend startpakket en pas later verlengen.
+* De effectieve kosten per grote en kleine ronde sluiten nu aan op het getoonde totaalbedrag.
+* Een automatische rekenaudit controleert alle producttypen, banen, leeftijden, daluren en grenswaarden.
+
 = 1.4.1 =
 * De vijf ontwerpkaarten openen nu direct de keuzehulp “Welk speelrecht past bij mij?”.
-* De tussenstap met de kostenvergelijking is uit de ontwerpflow verwijderd.
 * Het gekozen ontwerp loopt door in alle formuliervelden, knoppen en resultaten van de keuzehulp.
 
 = 1.4.0 =
@@ -44,18 +51,16 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * De ontwerpkeuze is responsive en meetbaar via afzonderlijke analyticsgebeurtenissen.
 
 = 1.3.0 =
-* Nieuwe, volledig responsive start waar bezoekers eerst kiezen tussen persoonlijk speelrechtadvies en een vergelijking met hun huidige golfkosten.
+* Nieuwe, volledig responsive start voor persoonlijk speelrechtadvies.
 * Officieel Hollandsche Golfclub-logo en een duidelijkere, websitewaardige merkpresentatie in alle stappen.
 * Golfjaar-invoer vernieuwd tot één rustig paneel; sliders ondersteunen nu maximaal 400 rondes van 9 holes per jaar.
 * Bij een hoog speelvolume adviseert de keuzehulp eerst het speelrecht van 200 credits; de bezoeker kan verlengen zodra die credits werkelijk op zijn.
-* LoyalTee wordt alleen als alternatief getoond bij een laag speelvolume rond het 20-creditadvies, niet naast 60-, 120- of 200-creditadviezen.
+* Alternatieve creditpakketten sluiten aan op het geadviseerde speelvolume.
 * Bij 60 credits toont de uitkomst 120 credits voor meer speelruimte; bij 120 credits toont zij 60 credits als voordeligere instapoptie.
-* Beide routes openen op dezelfde pagina en bezoekers kunnen eenvoudig terug naar de startkeuze.
-* Nieuwe analyticsgebeurtenissen voor het bekijken en maken van de routekeuze.
+* Nieuwe analyticsgebeurtenissen voor het bekijken van de keuzehulp.
 
 = 1.2.0 =
-* De speelrechtkeuzehulp en eerdere kostenvergelijking zijn beide beschikbaar.
-* Nieuwe shortcodes voor iedere variant en losse lokale voorbeeldpagina voor de vergelijking.
+* Nieuwe shortcodes voor de speelrechtkeuzehulp.
 
 = 1.1.0 =
 * Omgebouwd van kostenvergelijker naar speelrechtkeuzehulp.
@@ -64,7 +69,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * Shortgolf wordt bij gemengd spelen alleen geadviseerd bij voldoende kleine-baanrondes.
 * Opeenvolgende creditpakketten worden geadviseerd wanneer één pakket niet volstaat.
 * Toont de effectieve kosten per grote- en kleine-baanronde.
-* Handicapregistratie blijft standaard inbegrepen; de twee persoonlijke greenfees verlagen het aantal credits niet.
+* Handicapregistratie blijft standaard inbegrepen en verlaagt het benodigde aantal credits niet.
 
 = 1.0.2 =
 * Alle zichtbare merkvermeldingen uitgeschreven naar Hollandsche Golfclub.
@@ -74,7 +79,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 = 1.0.1 =
 * Plugin geschikt gemaakt voor Git-deploy vanuit wordpress/wp-content/plugins.
-* Speelrechten met credits en LoyalTee kunnen expliciet met handicapregistratie van Hollandsche Golfclub worden gecombineerd.
+* Speelrechten met credits kunnen met handicapregistratie van Hollandsche Golfclub worden gecombineerd.
 
 = 1.0.0 =
 * Eerste WordPress-pluginversie.

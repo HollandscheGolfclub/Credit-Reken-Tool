@@ -236,10 +236,19 @@ function packagePlan(packages, requiredCredits, productName, group) {
     .filter((plan) => plan && plan.credits + 1e-8 >= requiredCredits)
     .sort((a, b) => a.price - b.price || a.credits - b.credits || a.count - b.count);
   const largestPackage = usable[usable.length - 1];
-  const recommendStarterPackage = Boolean(hgcConfig.settings.preferSinglePackage) && requiredCredits > largestPackage.credits;
-  const best = recommendStarterPackage
-    ? { price: largestPackage.price, count: 1, items: [largestPackage], credits: largestPackage.credits }
-    : options[0];
+  const fullPlan = options[0];
+  const preferSinglePackage = Boolean(hgcConfig.settings.preferSinglePackage);
+  const starterPackage = preferSinglePackage
+    ? requiredCredits > largestPackage.credits
+      ? largestPackage
+      : fullPlan?.count > 1
+        ? [...fullPlan.items].sort((a, b) => b.credits - a.credits)[0]
+        : null
+    : null;
+  const recommendStarterPackage = Boolean(starterPackage);
+  const best = starterPackage
+    ? { price: starterPackage.price, count: 1, items: [starterPackage], credits: starterPackage.credits }
+    : fullPlan;
   if (!best) return null;
 
   const counts = best.items.reduce((all, item) => {
@@ -278,16 +287,6 @@ function packagePlan(packages, requiredCredits, productName, group) {
   };
 }
 
-function regularFee(course, type) {
-  return Number(course.greenFees?.[type === "large" ? "nine" : "short"] || 0);
-}
-
-function loyalFee(course, type) {
-  const key = type === "large" ? "loyalNine" : "loyalShort";
-  const discounted = Number(course.greenFees?.[key]);
-  return Number.isFinite(discounted) && discounted > 0 ? discounted : regularFee(course, type);
-}
-
 function addRegistration(plan, handicapPrice) {
   return { ...plan, registrationPrice: handicapPrice, annualCost: plan.price + handicapPrice };
 }
@@ -297,9 +296,7 @@ function candidatePlans(context) {
   const totalRounds = largeRounds + smallRounds;
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
   const standardCredits = largeRounds * largeCourse.largeRate + smallRounds * smallCourse.shortRate;
-  const shortGolfShare = totalRounds > 0 ? (smallRounds / totalRounds) * 100 : 0;
-  const minimumShortGolfShare = Number(hgcConfig.settings.minimumShortGolfRoundSharePercentage ?? 33);
-  const shortGolfFitsPlayStyle = smallRounds > 0 && shortGolfShare + 1e-8 >= minimumShortGolfShare;
+  const shortGolfFitsPlayStyle = smallRounds > 0;
   const candidates = [];
 
   const packageChoices = youth
@@ -313,10 +310,10 @@ function candidatePlans(context) {
     if (plan) {
       plan.availablePackages = choice.packages;
       plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
-      plan.largeBaseCost = plan.credits > 0 ? largeCourse.largeRate * (plan.price / plan.credits) : 0;
-      plan.smallBaseCost = plan.credits > 0 ? smallCourse.shortRate * (plan.price / plan.credits) : 0;
+      plan.largeBaseCost = standardCredits > 0 ? largeCourse.largeRate * (plan.price / standardCredits) : 0;
+      plan.smallBaseCost = standardCredits > 0 ? smallCourse.shortRate * (plan.price / standardCredits) : 0;
       plan.detail = plan.isStarterPlan
-        ? `Je verwacht circa ${decimal.format(standardCredits)} credits nodig te hebben. Begin met het grootste speelrecht van ${decimal.format(plan.credits)} credits en verleng pas wanneer die credits daadwerkelijk op zijn.`
+        ? `Je verwacht circa ${decimal.format(standardCredits)} credits nodig te hebben. Begin met ${decimal.format(plan.credits)} credits en verleng pas wanneer die credits daadwerkelijk op zijn.`
         : plan.count > 1
         ? `Voor jouw opgegeven speelvolume zijn circa ${decimal.format(standardCredits)} credits nodig. De voordeligste route is ${plan.packageParts.join(" + ")} (${decimal.format(plan.credits)} credits totaal).`
         : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
@@ -325,19 +322,15 @@ function candidatePlans(context) {
   });
 
   const shortGolfRate = Number(smallCourse.shortGolfRate);
-  if (!youth && shortGolfFitsPlayStyle && Number.isFinite(shortGolfRate)) {
+  if (!youth && largeRounds === 0 && shortGolfFitsPlayStyle && Number.isFinite(shortGolfRate)) {
     const shortCredits = smallRounds * shortGolfRate;
     const shortPlan = packagePlan(hgcConfig.shortGolfPackages, shortCredits, "Hollandsche Golfclub Shortgolf-speelrecht", "shortgolf");
     if (shortPlan) {
       shortPlan.availablePackages = hgcConfig.shortGolfPackages;
       shortPlan.type = "shortgolf";
-      const largeGreenFees = largeRounds * loyalFee(largeCourse, "large");
-      shortPlan.packageBasePrice = shortPlan.price;
-      shortPlan.nonPackageCost = largeGreenFees;
-      shortPlan.price += largeGreenFees;
-      shortPlan.largeBaseCost = loyalFee(largeCourse, "large");
+      shortPlan.largeBaseCost = 0;
       shortPlan.smallBaseCost = shortPlan.packageItems.reduce((sum, item) => sum + item.price, 0) / smallRounds;
-      shortPlan.detail = `${decimal.format(shortCredits)} Shortgolf-credits voor je kleine rondes${largeRounds ? `, plus ${largeRounds} grote-baanrondes tegen gereduceerd greenfeetarief` : ""}.`;
+      shortPlan.detail = `${decimal.format(shortCredits)} Shortgolf-credits nodig voor je kleine rondes; ${decimal.format(shortPlan.credits)} credits geadviseerd.`;
       candidates.push(addRegistration(shortPlan, handicapPrice));
     }
   }
@@ -356,8 +349,8 @@ function candidatePlans(context) {
       if (!plan) return;
       plan.availablePackages = choice.packages;
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
-      plan.largeBaseCost = plan.credits > 0 ? Number(local.largeRoundRate || 0) * (plan.price / plan.credits) : 0;
-      plan.smallBaseCost = plan.credits > 0 ? Number(local.shortRoundRate || 0) * (plan.price / plan.credits) : 0;
+      plan.largeBaseCost = localCredits > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localCredits) : 0;
+      plan.smallBaseCost = localCredits > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localCredits) : 0;
       plan.detail = plan.isStarterPlan
         ? `Je verwacht circa ${decimal.format(localCredits)} lokale credits nodig te hebben. Begin met ${decimal.format(plan.credits)} credits en verleng pas wanneer die daadwerkelijk op zijn.`
         : `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
@@ -365,53 +358,9 @@ function candidatePlans(context) {
     });
   }
 
-  if (!youth) {
-    const largeFee = loyalFee(largeCourse, "large");
-    const smallFee = loyalFee(smallCourse, "small");
-    const greenFees = largeRounds * largeFee + smallRounds * smallFee;
-    candidates.push(addRegistration({
-      type: "loyaltee",
-      group: "loyaltee",
-      name: brandText(hgcConfig.loyalTee.name),
-      productName: brandText(hgcConfig.loyalTee.name),
-      price: Number(hgcConfig.loyalTee.membershipPrice) + greenFees,
-      sharedCost: Number(hgcConfig.loyalTee.membershipPrice),
-      largeBaseCost: largeFee,
-      smallBaseCost: smallFee,
-      detail: `${euro.format(hgcConfig.loyalTee.membershipPrice)} lidmaatschap plus greenfees met 20% korting waar dit tarief beschikbaar is.`,
-      instruction: "Je betaalt per gespeelde ronde en krijgt korting op de reguliere greenfee.",
-    }, handicapPrice));
-  }
-
-  const voucherCount = Math.min(totalRounds, Number(hgcConfig.handicapRegistration.vouchers || 0));
-  const voucherOptions = [
-    ...Array(largeRounds).fill({ type: "large", fee: regularFee(largeCourse, "large") }),
-    ...Array(smallRounds).fill({ type: "small", fee: regularFee(smallCourse, "small") }),
-  ].sort((a, b) => b.fee - a.fee);
-  const covered = voucherOptions.slice(0, voucherCount);
-  const coveredLarge = covered.filter((item) => item.type === "large").length;
-  const coveredSmall = covered.filter((item) => item.type === "small").length;
-  const paidLarge = Math.max(0, largeRounds - coveredLarge);
-  const paidSmall = Math.max(0, smallRounds - coveredSmall);
-  const extraGreenFees = paidLarge * regularFee(largeCourse, "large") + paidSmall * regularFee(smallCourse, "small");
-  candidates.push({
-    type: "handicap",
-    group: "handicap",
-    name: "Hollandsche Golfclub Handicapregistratie",
-    productName: "Hollandsche Golfclub Handicapregistratie",
-    price: handicapPrice + extraGreenFees,
-    registrationPrice: 0,
-    sharedCost: handicapPrice,
-    annualCost: handicapPrice + extraGreenFees,
-    largeBaseCost: largeRounds ? paidLarge * regularFee(largeCourse, "large") / largeRounds : 0,
-    smallBaseCost: smallRounds ? paidSmall * regularFee(smallCourse, "small") / smallRounds : 0,
-    detail: `Inclusief ${voucherCount} van de ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees; overige rondes zijn tegen regulier tarief meegerekend.`,
-    instruction: "De inbegrepen greenfees zijn losse rondes en geen credits.",
-  });
-
   const sorted = candidates
     .map((plan) => {
-      const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / (Number(plan.coveredRounds) || totalRounds);
+      const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / totalRounds;
       return {
         ...plan,
         selectionCost: plan.isStarterPlan && Number(plan.requiredCredits) > Number(plan.credits)
@@ -422,34 +371,19 @@ function candidatePlans(context) {
       };
     })
     .sort((a, b) => a.selectionCost - b.selectionCost || a.group.localeCompare(b.group));
-  const creditPlans = sorted.filter((plan) => plan.type === "credits" || plan.type === "shortgolf");
-  if (standardCredits >= 20 && creditPlans.length) {
-    return [...creditPlans, ...sorted.filter((plan) => !creditPlans.includes(plan))];
-  }
   return sorted;
 }
 
-function calculate() {
-  const largeRounds = normaliseRounds(largeRoundsNumber.value);
-  const smallRounds = normaliseRounds(smallRoundsNumber.value);
-  const largeCourse = selectedCourse(largeCourseSelect);
-  const smallCourse = selectedCourse(smallCourseSelect);
-  const youth = ageCategory.value === "youth";
-  const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak: offPeak.checked });
+function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak }) {
+  const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak });
   const best = plans[0];
-  const loyalTeeIsRelevant = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) <= 20;
-  const substantialCreditAdvice = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) > 20;
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
   const adjacentPackage = Number(best.credits) === 120
     ? nextSmallerCreditOption(best, handicapPrice)
-    : Number(best.credits) === 60
+    : Number(best.credits) === 20 || Number(best.credits) === 60
       ? nextLargerCreditOption(best, handicapPrice)
       : null;
-  const alternative = loyalTeeIsRelevant
-    ? plans.find((plan) => plan.type === "loyaltee")
-    : substantialCreditAdvice
-      ? adjacentPackage
-      : plans.find((plan) => plan.group !== best?.group && plan.type !== "loyaltee");
+  const alternative = Number(best.credits) === 200 ? null : adjacentPackage;
   return {
     largeRounds,
     smallRounds,
@@ -459,6 +393,17 @@ function calculate() {
     best,
     alternative,
   };
+}
+
+function calculate() {
+  return recommendationFor({
+    largeRounds: normaliseRounds(largeRoundsNumber.value),
+    smallRounds: normaliseRounds(smallRoundsNumber.value),
+    largeCourse: selectedCourse(largeCourseSelect),
+    smallCourse: selectedCourse(smallCourseSelect),
+    youth: ageCategory.value === "youth",
+    canPlayOffPeak: offPeak.checked,
+  });
 }
 
 function nextLargerCreditOption(plan, handicapPrice) {
@@ -514,27 +459,17 @@ function nextSmallerCreditOption(plan, handicapPrice) {
 function planBenefits(plan) {
   const source = plan.type === "shortgolf"
     ? hgcConfig.shortGolfBenefits
-    : plan.type === "loyaltee"
-      ? hgcConfig.loyalTeeBenefits
-      : plan.type === "handicap"
-        ? hgcConfig.handicapBenefits
-        : plan.group.startsWith("local-")
-          ? hgcConfig.localBenefits
-          : hgcConfig.benefits;
-  const cleanedSource = plan.type === "handicap"
-    ? source
-    : source.filter((benefit) => !/handicapregistratie/i.test(benefit));
-  const registrationBenefits = plan.type === "handicap"
-    ? []
-    : ["Handicapregistratie bij de Hollandsche Golfclub", "2 persoonlijke greenfees naast je gekozen product"];
+    : plan.group.startsWith("local-")
+      ? hgcConfig.localBenefits
+      : hgcConfig.benefits;
+  const cleanedSource = source.filter((benefit) => !/handicapregistratie/i.test(benefit));
+  const registrationBenefits = ["Handicapregistratie bij de Hollandsche Golfclub"];
   return [...cleanedSource, ...registrationBenefits]
     .map(brandText)
     .filter((item, index, all) => all.indexOf(item) === index);
 }
 
 function planLink(plan) {
-  if (plan.type === "loyaltee") return hgcConfig.links.loyalTee || hgcConfig.links.webshop;
-  if (plan.type === "handicap") return hgcConfig.links.handicapRegistration || hgcConfig.links.webshop;
   return hgcConfig.links.webshop;
 }
 
@@ -553,14 +488,20 @@ function costCard(label, value, note) {
 function renderResult(result) {
   const best = result.best;
   const benefits = planBenefits(best);
-  const registrationText = best.type === "handicap"
-    ? `Handicapregistratie is het geadviseerde product en bevat ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.`
-    : `In dit totaal zit ${euro.format(result.handicapPrice)} voor handicapregistratie. De ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees zijn extra rondes en zijn niet van je credits afgetrokken.`;
+  const registrationText = `In dit totaal zit ${euro.format(result.handicapPrice)} voor handicapregistratie.`;
   const alternative = result.alternative;
   const totalCostLabel = best.isStarterPlan ? "Kosten om te starten" : best.count > 1 ? "Geschatte totale kosten" : "Verwachte kosten per jaar";
   const totalCostNote = best.isStarterPlan ? `voor ${decimal.format(best.credits)} credits, inclusief handicapregistratie` : best.count > 1 ? "voor jouw opgegeven speelvolume, inclusief handicapregistratie" : "inclusief handicapregistratie";
-  const recommendationEyebrow = best.isStarterPlan ? "Ons advies" : best.count > 1 ? "Jouw voordeligste route" : "Kies jouw speelrecht";
-  const webshopLabel = best.isStarterPlan ? `Kies ${decimal.format(best.credits)} credits` : best.count > 1 ? `Start met ${decimal.format(best.firstPackage.credits)} credits` : "Bekijk in de webshop";
+  const recommendationEyebrow = best.isStarterPlan
+      ? "Ons advies"
+      : best.count > 1
+        ? "Jouw voordeligste route"
+        : "Kies jouw speelrecht";
+  const webshopLabel = best.isStarterPlan
+        ? `Kies ${decimal.format(best.credits)} credits`
+        : best.count > 1
+          ? `Start met ${decimal.format(best.firstPackage.credits)} credits`
+          : "Bekijk in de webshop";
 
   resultContent.innerHTML = `
     <div class="result-hero">
@@ -609,7 +550,7 @@ function renderResult(result) {
       <ul>${benefits.map((benefit) => `<li><span>✓</span>${benefit}</li>`).join("")}</ul>
     </section>
 
-    <p class="result-disclaimer">Deze keuzehulp geeft een indicatie op basis van jouw opgegeven rondes en de ingestelde tarieven voor ${hgcConfig.year}. Greenfees kunnen per dag en tijdstip verschillen. Bekijk altijd de actuele <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>
+    <p class="result-disclaimer">Deze keuzehulp geeft een indicatie op basis van jouw opgegeven rondes, creditwaarden en speelrechtprijzen voor ${hgcConfig.year}. Bekijk altijd de actuele <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>
   `;
 }
 
@@ -657,5 +598,8 @@ populateCourses();
 updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
+if (new URLSearchParams(window.location.search).has("hgc-audit")) {
+  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate });
+}
 track("calculator_opened");
 })();
