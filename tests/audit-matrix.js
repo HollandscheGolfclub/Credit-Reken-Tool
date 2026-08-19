@@ -28,8 +28,24 @@
     if (expected !== null && Number(alternative?.credits) !== expected) {
       report("wrong-alternative", { ...context, credits: best.credits, expected, actual: alternative?.credits });
     }
-    if (best.type === "shortgolf" && context.largeRounds !== 0) {
-      report("shortgolf-with-large-rounds", context);
+    const zone = result.profile ? result.profile.zone : null;
+    if (!["credits", "mixed", "shortgolf"].includes(zone)) {
+      report("unknown-profile-zone", { ...context, zone });
+    }
+    if (best.type === "shortgolf" && zone === "credits") {
+      report("shortgolf-outside-profile", { ...context, zone });
+    }
+    const shortGolfPossible = !context.youth
+      && context.smallRounds > 0
+      && Number.isFinite(Number(result.smallCourse && result.smallCourse.shortGolfRate));
+    if (zone === "mixed" && shortGolfPossible && !result.choice) {
+      report("missing-choice-in-mixed-zone", { ...context, zone });
+    }
+    if (zone !== "mixed" && result.choice) {
+      report("choice-outside-mixed-zone", { ...context, zone });
+    }
+    if (result.choice && (result.choice.credits.type !== "credits" || result.choice.shortGolf.type !== "shortgolf")) {
+      report("wrong-choice-types", { ...context, credits: result.choice.credits.type, shortGolf: result.choice.shortGolf.type });
     }
     if (context.youth && best.group !== "youth") {
       report("non-youth-product-for-youth", { ...context, group: best.group });
@@ -105,7 +121,9 @@
                   if (plan.isStarterPlan && (Number(plan.count) !== 1 || Number(plan.requiredCredits) <= Number(plan.credits))) {
                     report("invalid-starter", { ...context, group: plan.group });
                   }
-                  if (plan.type === "shortgolf" && largeRounds !== 0) report("shortgolf-with-large-rounds", context);
+                  if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
+                    report("shortgolf-outside-profile", { ...context, group: plan.group });
+                  }
                   if (youth && plan.group !== "youth") report("adult-plan-for-youth", { ...context, group: plan.group });
                   if (!canPlayOffPeak && String(plan.group).includes("offpeak")) report("offpeak-without-selection", { ...context, group: plan.group });
                 }
@@ -116,6 +134,94 @@
       }
     }
     return { cases, plansChecked, largeCourseCount: largeCourses.length, smallCourseCount: smallCourses.length, roundValues, errorCounts, errors, recommendationCounts };
+  };
+
+  window.runHgcProfileAudit = function runHgcProfileAudit() {
+    const { candidatePlans, recommendationFor, playProfile } = window.hgcCalculatorAudit;
+    const settings = hgcConfig.settings || {};
+    const shortGolfShare = Number(settings.shortGolfSharePercent) / 100;
+    const mixedFrom = Number(settings.mixedProfileFromPercent) / 100;
+    const mixedTo = Number(settings.mixedProfileToPercent) / 100;
+    const roundValues = [0, 1, 2, 5, 10, 20, 30, 50, 100, 200];
+    const largeCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.largeRate));
+    const smallCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.shortRate));
+    const errors = [];
+    const errorCounts = {};
+    const zoneCounts = {};
+    let cases = 0;
+    let choicesSeen = 0;
+
+    function report(code, context) {
+      errorCounts[code] = (errorCounts[code] || 0) + 1;
+      if (errors.length < 50) errors.push({ code, ...context });
+    }
+
+    for (const largeCourse of largeCourses) {
+      for (const smallCourse of smallCourses) {
+        for (const largeRounds of roundValues) {
+          for (const smallRounds of roundValues) {
+            if (largeRounds + smallRounds === 0) continue;
+            for (const youth of [false, true]) {
+              const context = { largeRounds, smallRounds, largeCourse: largeCourse.id, smallCourse: smallCourse.id, youth };
+              const input = { largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak: false };
+              cases += 1;
+
+              const share = smallRounds / (largeRounds + smallRounds);
+              const expectedZone = share >= shortGolfShare
+                ? "shortgolf"
+                : share >= mixedFrom && share <= mixedTo
+                  ? "mixed"
+                  : "credits";
+              const profile = playProfile(largeRounds, smallRounds);
+              if (profile.zone !== expectedZone) {
+                report("zone-mismatch", { ...context, share, expected: expectedZone, actual: profile.zone });
+              }
+              zoneCounts[expectedZone] = (zoneCounts[expectedZone] || 0) + 1;
+
+              let plans;
+              let result;
+              try {
+                plans = candidatePlans(input);
+                result = recommendationFor(input);
+              } catch (error) {
+                report("exception", { ...context, message: error.message });
+                continue;
+              }
+
+              const shortGolfPossible = !youth && smallRounds > 0 && Number.isFinite(Number(smallCourse.shortGolfRate));
+              const hasShortGolf = plans.some((plan) => plan.type === "shortgolf");
+              if (expectedZone === "credits" && hasShortGolf) {
+                report("shortgolf-in-credits-zone", context);
+              }
+              if (expectedZone !== "credits" && shortGolfPossible && !hasShortGolf) {
+                report("missing-shortgolf-plan", context);
+              }
+              if (expectedZone === "mixed" && shortGolfPossible) {
+                if (!result.choice) {
+                  report("missing-choice", context);
+                } else {
+                  choicesSeen += 1;
+                  if (result.choice.credits.type !== "credits") report("choice-credits-wrong-type", { ...context, type: result.choice.credits.type });
+                  if (result.choice.shortGolf.type !== "shortgolf") report("choice-shortgolf-wrong-type", { ...context, type: result.choice.shortGolf.type });
+                }
+              }
+
+              // De schakelaar toont hetzelfde bedrag min de registratieprijs.
+              for (const plan of plans) {
+                const withoutRegistration = Number(plan.annualCost) - Number(plan.registrationPrice || 0);
+                if (Math.abs(withoutRegistration - Number(plan.price)) > 0.001) {
+                  report("registration-split-mismatch", { ...context, group: plan.group });
+                }
+                if (withoutRegistration < 0) {
+                  report("negative-amount-without-registration", { ...context, group: plan.group });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return { cases, zoneCounts, choicesSeen, errorCounts, errors };
   };
 
   window.runHgcRoundSweepAudit = function runHgcRoundSweepAudit() {

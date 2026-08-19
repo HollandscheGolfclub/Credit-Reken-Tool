@@ -10,6 +10,13 @@ window.hgcConfig = {
   year: 2026,
   settings: {
     preferSinglePackage: true,
+    // Zit dit aandeel van de rondes of meer op de kleine baan, dan adviseert de
+    // keuzehulp een Shortgolf-speelrecht; die credits zijn daar voordeliger.
+    shortGolfSharePercent: 85,
+    // Ligt het aandeel kleine-baanrondes tussen deze twee waarden, dan is het
+    // speelbeeld gemengd en legt de keuzehulp de keuze bij de bezoeker.
+    mixedProfileFromPercent: 40,
+    mixedProfileToPercent: 60,
   },
   handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5 },
   links: {

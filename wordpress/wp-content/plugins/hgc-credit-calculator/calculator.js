@@ -287,6 +287,22 @@ function packagePlan(packages, requiredCredits, productName, group) {
   };
 }
 
+// Bepaalt of de bezoeker duidelijk op één baantype speelt of een gemengd beeld
+// laat zien. Overheerst de kleine baan, dan is een Shortgolf-speelrecht het
+// advies omdat Shortgolf-credits daar voordeliger zijn. Bij een gemengd beeld
+// legt de keuzehulp de keuze tussen beide speelrechten bij de bezoeker.
+function playProfile(largeRounds, smallRounds) {
+  const totalRounds = largeRounds + smallRounds;
+  const smallShare = totalRounds > 0 ? smallRounds / totalRounds : 0;
+  const settings = hgcConfig.settings || {};
+  const shortGolfShare = Number(settings.shortGolfSharePercent ?? 85) / 100;
+  const mixedFrom = Number(settings.mixedProfileFromPercent ?? 40) / 100;
+  const mixedTo = Number(settings.mixedProfileToPercent ?? 60) / 100;
+  if (smallShare >= shortGolfShare) return { zone: "shortgolf", smallShare };
+  if (smallShare >= mixedFrom && smallShare <= mixedTo) return { zone: "mixed", smallShare };
+  return { zone: "credits", smallShare };
+}
+
 function addRegistration(plan, handicapPrice) {
   return { ...plan, registrationPrice: handicapPrice, annualCost: plan.price + handicapPrice };
 }
@@ -322,7 +338,9 @@ function candidatePlans(context) {
   });
 
   const shortGolfRate = Number(smallCourse.shortGolfRate);
-  if (!youth && largeRounds === 0 && shortGolfFitsPlayStyle && Number.isFinite(shortGolfRate)) {
+  const profile = playProfile(largeRounds, smallRounds);
+  const shortGolfSuitsProfile = profile.zone === "shortgolf" || profile.zone === "mixed";
+  if (!youth && shortGolfSuitsProfile && shortGolfFitsPlayStyle && Number.isFinite(shortGolfRate)) {
     const shortCredits = smallRounds * shortGolfRate;
     const shortPlan = packagePlan(hgcConfig.shortGolfPackages, shortCredits, "Hollandsche Golfclub Shortgolf-speelrecht", "shortgolf");
     if (shortPlan) {
@@ -330,7 +348,10 @@ function candidatePlans(context) {
       shortPlan.type = "shortgolf";
       shortPlan.largeBaseCost = 0;
       shortPlan.smallBaseCost = shortPlan.packageItems.reduce((sum, item) => sum + item.price, 0) / smallRounds;
-      shortPlan.detail = `${decimal.format(shortCredits)} Shortgolf-credits nodig voor je kleine rondes; ${decimal.format(shortPlan.credits)} credits geadviseerd.`;
+      shortPlan.uncoveredLargeRounds = largeRounds;
+      shortPlan.detail = largeRounds > 0
+        ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
+        : `${decimal.format(shortCredits)} Shortgolf-credits nodig voor je kleine rondes; ${decimal.format(shortPlan.credits)} credits geadviseerd.`;
       candidates.push(addRegistration(shortPlan, handicapPrice));
     }
   }
@@ -384,12 +405,20 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
       ? nextLargerCreditOption(best, handicapPrice)
       : null;
   const alternative = Number(best.credits) === 200 ? null : adjacentPackage;
+  const profile = playProfile(largeRounds, smallRounds);
+  const creditsOption = plans.find((plan) => plan.type === "credits") || null;
+  const shortGolfOption = plans.find((plan) => plan.type === "shortgolf") || null;
+  const choice = profile.zone === "mixed" && creditsOption && shortGolfOption
+    ? { credits: creditsOption, shortGolf: shortGolfOption }
+    : null;
   return {
     largeRounds,
     smallRounds,
     largeCourse,
     smallCourse,
     handicapPrice,
+    profile,
+    choice,
     best,
     alternative,
   };
@@ -480,28 +509,136 @@ function roundSummary(result) {
   return parts.join(" en ");
 }
 
-function costCard(label, value, note) {
+function costCard(label, value, note, registrationShare) {
   if (value === null) return "";
-  return `<article><p>${label}</p><strong>${euro.format(value)}</strong><span>${note}</span></article>`;
+  return `<article><p>${label}</p><strong>${switchableAmount(value, value - registrationShare)}</strong><span>${note}</span></article>`;
 }
 
-function renderResult(result) {
+// De schakelaar in het advies wisselt uitsluitend de getoonde bedragen. De
+// prijs voor handicapregistratie is voor ieder speelrecht gelijk en verandert
+// de aanbeveling dus niet; alleen wat de bezoeker ziet verandert.
+function switchableAmount(withRegistration, withoutRegistration) {
+  const shown = euro.format(withRegistration);
+  return `<span class="switchable" data-with="${shown}" data-without="${euro.format(withoutRegistration)}">${shown}</span>`;
+}
+
+function planAmount(plan) {
+  const total = Number(plan.annualCost);
+  return switchableAmount(total, total - Number(plan.registrationPrice || 0));
+}
+
+function applyRegistrationSwitch(include) {
+  resultContent.querySelectorAll(".switchable").forEach((node) => {
+    node.textContent = include ? node.dataset.with : node.dataset.without;
+  });
+}
+
+function registrationSwitch(handicapPrice) {
+  const withText = `Alle bedragen zijn inclusief ${euro.format(handicapPrice)} voor handicapregistratie bij de Hollandsche Golfclub.`;
+  const withoutText = `Alle bedragen zijn zonder de ${euro.format(handicapPrice)} voor handicapregistratie bij de Hollandsche Golfclub.`;
+  return `
+    <label class="toggle-row toggle-row--compact registration-switch">
+      <input id="handicap-switch" type="checkbox" checked />
+      <span class="toggle" aria-hidden="true"></span>
+      <span><strong>Handicapregistratie meerekenen</strong><small class="switchable" data-with="${withText}" data-without="${withoutText}">${withText}</small></span>
+    </label>
+  `;
+}
+
+function roundWord(count) {
+  return `${count} ronde${count === 1 ? "" : "s"}`;
+}
+
+function benefitsSection(plan) {
+  return `
+    <section class="included-benefits">
+      <p class="eyebrow">Dit krijg je er ook bij</p>
+      <h4>Meer dan alleen speelrondes</h4>
+      <ul>${planBenefits(plan).map((benefit) => `<li><span>✓</span>${benefit}</li>`).join("")}</ul>
+    </section>
+  `;
+}
+
+function disclaimer() {
+  return `<p class="result-disclaimer">Deze keuzehulp geeft een indicatie op basis van jouw opgegeven rondes, creditwaarden en speelrechtprijzen voor ${hgcConfig.year}. Bekijk altijd de actuele <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>`;
+}
+
+function choiceCard(plan, options) {
+  return `
+    <article class="advice-card advice-card--${options.variant}">
+      <p class="advice-card-question">${options.question}</p>
+      <p class="eyebrow">${options.product}</p>
+      <h4>${brandText(plan.name)}</h4>
+      <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
+      <p class="advice-card-coverage">${options.coverage}</p>
+      <p class="advice-card-instruction">${plan.instruction}</p>
+      <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
+    </article>
+  `;
+}
+
+// Bij een gemengd speelbeeld kiest de bezoeker zelf tussen een algemeen
+// speelrecht en een Shortgolf-speelrecht.
+function renderChoice(result) {
+  const credits = result.choice.credits;
+  const shortGolf = result.choice.shortGolf;
+  const saving = Number(credits.annualCost) - Number(shortGolf.annualCost);
+
+  resultContent.innerHTML = `
+    <div class="result-hero">
+      <span class="result-check" aria-hidden="true">✓</span>
+      <p class="eyebrow">Jouw advies</p>
+      <h3>Je speelt de grote en de kleine baan ongeveer even vaak</h3>
+      <p>Gebaseerd op ${roundSummary(result)}. Twee speelrechten passen hierbij. Wat het beste uitkomt, hangt af van waar je het liefst speelt.</p>
+    </div>
+
+    ${registrationSwitch(result.handicapPrice)}
+
+    <div class="advice-choice">
+      ${choiceCard(credits, {
+        variant: "credits",
+        question: "Speel je voornamelijk op de grote baan?",
+        product: brandText(credits.productName),
+        amountNote: "voor al je rondes",
+        coverage: `Dit speelrecht dekt zowel je ${roundWord(result.largeRounds)} op de grote baan als je ${roundWord(result.smallRounds)} op de kleine baan.`,
+        buttonClass: "button--primary",
+      })}
+      ${choiceCard(shortGolf, {
+        variant: "shortgolf",
+        question: "Speel je voornamelijk op de kleine baan?",
+        product: brandText(shortGolf.productName),
+        amountNote: saving > 0 ? `${euro.format(saving)} voordeliger` : "voor je kleine rondes",
+        coverage: `Shortgolf-credits zijn voordeliger op de kleine baan. Je ${roundWord(result.largeRounds)} op de grote baan ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`,
+        buttonClass: "button--shortgolf",
+      })}
+    </div>
+
+    ${benefitsSection(credits)}
+    ${disclaimer()}
+  `;
+}
+
+function renderSingleAdvice(result) {
   const best = result.best;
-  const benefits = planBenefits(best);
-  const registrationText = `In dit totaal zit ${euro.format(result.handicapPrice)} voor handicapregistratie.`;
   const alternative = result.alternative;
+  const totalRounds = result.largeRounds + result.smallRounds;
+  const registrationShare = totalRounds > 0 ? Number(best.registrationPrice || 0) / totalRounds : 0;
+  const isShortGolf = best.type === "shortgolf";
+  const coveredLargeRounds = result.largeRounds === 0 || !Number(best.uncoveredLargeRounds || 0);
   const totalCostLabel = best.isStarterPlan ? "Kosten om te starten" : best.count > 1 ? "Geschatte totale kosten" : "Verwachte kosten per jaar";
-  const totalCostNote = best.isStarterPlan ? `voor ${decimal.format(best.credits)} credits, inclusief handicapregistratie` : best.count > 1 ? "voor jouw opgegeven speelvolume, inclusief handicapregistratie" : "inclusief handicapregistratie";
-  const recommendationEyebrow = best.isStarterPlan
+  const totalCostNote = best.isStarterPlan ? `voor ${decimal.format(best.credits)} credits` : best.count > 1 ? "voor jouw opgegeven speelvolume" : "per golfjaar";
+  const recommendationEyebrow = isShortGolf
+    ? "Speel je voornamelijk op de kleine baan"
+    : best.isStarterPlan
       ? "Ons advies"
       : best.count > 1
         ? "Jouw voordeligste route"
         : "Kies jouw speelrecht";
   const webshopLabel = best.isStarterPlan
-        ? `Kies ${decimal.format(best.credits)} credits`
-        : best.count > 1
-          ? `Start met ${decimal.format(best.firstPackage.credits)} credits`
-          : "Bekijk in de webshop";
+    ? `Kies ${decimal.format(best.credits)} credits`
+    : best.count > 1
+      ? `Start met ${decimal.format(best.firstPackage.credits)} credits`
+      : "Bekijk in de webshop";
 
   resultContent.innerHTML = `
     <div class="result-hero">
@@ -511,22 +648,25 @@ function renderResult(result) {
       <p>Gebaseerd op ${roundSummary(result)}.</p>
     </div>
 
-    <div class="choice-costs">
-      <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${euro.format(best.annualCost)}</strong><span>${totalCostNote}</span></article>
-      ${costCard("Grote baan", best.largeRoundCost, "effectief per ronde")}
-      ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde")}
-    </div>
+    ${registrationSwitch(result.handicapPrice)}
 
-    <article class="recommendation recommendation--featured">
+    <div class="choice-costs">
+      <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${planAmount(best)}</strong><span>${totalCostNote}</span></article>
+      ${costCard("Grote baan", coveredLargeRounds ? best.largeRoundCost : null, "effectief per ronde", registrationShare)}
+      ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde", registrationShare)}
+    </div>
+    ${coveredLargeRounds ? "" : `<p class="coverage-warning">Je ${roundWord(result.largeRounds)} op de grote baan ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht. Die reken je apart af op de baan.</p>`}
+
+    <article class="recommendation recommendation--featured${isShortGolf ? " recommendation--shortgolf" : ""}">
       <div class="recommendation-main">
         <p class="eyebrow">${recommendationEyebrow}</p>
         <h4>${brandText(best.name)}</h4>
+        <p class="recommendation-amount">${planAmount(best)}<small>${totalCostNote}</small></p>
         <p>${best.detail}</p>
         <p class="package-instruction">${best.instruction}</p>
-        <p class="registration-note">${registrationText}</p>
       </div>
       <div class="recommendation-actions">
-        <a class="button button--primary button--cta" href="${planLink(best)}">${webshopLabel} <span>→</span></a>
+        <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">${webshopLabel} <span>→</span></a>
         <a class="button button--secondary" href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Meer over speelrechten</a>
       </div>
     </article>
@@ -536,22 +676,24 @@ function renderResult(result) {
         <div>
           <p class="eyebrow">${alternative.isUpgradeOption ? "Meer speelruimte" : alternative.isSmallerOption ? "Voordeliger instappen" : "Andere passende optie"}</p>
           <h4>${brandText(alternative.name)}</h4>
-          <p>${alternative.isStarterPlan
-            ? `Met deze optie start je voor <strong>${euro.format(alternative.annualCost)}</strong> en kun je later verlengen.`
-            : `Deze ruimere of andere keuze komt uit op circa <strong>${euro.format(alternative.annualCost)} per jaar</strong>.`} ${alternative.detail}</p>
+          <p class="next-option-amount">${planAmount(alternative)}<small>${alternative.isStarterPlan ? "om te starten" : "per golfjaar"}</small></p>
+          <p>${alternative.detail}</p>
         </div>
         <div class="next-option-actions"><a class="next-option-link" href="${planLink(alternative)}">Meer informatie →</a></div>
       </article>
     ` : ""}
 
-    <section class="included-benefits">
-      <p class="eyebrow">Dit krijg je er ook bij</p>
-      <h4>Meer dan alleen speelrondes</h4>
-      <ul>${benefits.map((benefit) => `<li><span>✓</span>${benefit}</li>`).join("")}</ul>
-    </section>
-
-    <p class="result-disclaimer">Deze keuzehulp geeft een indicatie op basis van jouw opgegeven rondes, creditwaarden en speelrechtprijzen voor ${hgcConfig.year}. Bekijk altijd de actuele <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>
+    ${benefitsSection(best)}
+    ${disclaimer()}
   `;
+}
+
+function renderResult(result) {
+  if (result.choice) {
+    renderChoice(result);
+    return;
+  }
+  renderSingleAdvice(result);
 }
 
 form.addEventListener("submit", (event) => {
@@ -569,7 +711,7 @@ form.addEventListener("submit", (event) => {
   const result = calculate();
   renderResult(result);
   track("calculator_step_1_completed", { large_rounds: result.largeRounds, small_rounds: result.smallRounds });
-  track("calculator_result_viewed", { recommended_product: result.best.name, annual_cost: result.best.annualCost });
+  track("calculator_result_viewed", { recommended_product: result.best.name, annual_cost: result.best.annualCost, play_profile: result.profile.zone });
   showStep(2);
 });
 
@@ -588,7 +730,12 @@ calculatorRoot.querySelector("#restart").addEventListener("click", () => {
   track("calculator_restarted");
 });
 resultContent.addEventListener("click", (event) => {
-  if (event.target.closest(".button--cta")) track("calculator_product_clicked");
+  if (event.target.closest(".button--cta-tracked")) track("calculator_product_clicked");
+});
+resultContent.addEventListener("change", (event) => {
+  if (event.target.id !== "handicap-switch") return;
+  applyRegistrationSwitch(event.target.checked);
+  track("calculator_registration_switched", { handicap_registration: event.target.checked });
 });
 largeCourseSelect.addEventListener("change", () => { largeCoursePicker.render(); updateCourseHelp(); });
 smallCourseSelect.addEventListener("change", () => { smallCoursePicker.render(); updateCourseHelp(); });
@@ -599,7 +746,7 @@ updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
 if (new URLSearchParams(window.location.search).has("hgc-audit")) {
-  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate });
+  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile });
 }
 track("calculator_opened");
 })();

@@ -21,6 +21,7 @@
 .hgc-package-panel table input[type="number"] { width: 130px; }
 .hgc-package-panel th:last-child, .hgc-package-panel td:last-child { width: 100px; text-align: right; }
 .hgc-course-list { display: grid; gap: 18px; }
+.hgc-admin-hint { margin: 0 0 14px; max-width: 900px; color: #646970; font-size: 12px; line-height: 1.6; }
 .hgc-course-card { padding: 22px; border: 1px solid #d9e4c2; border-radius: 7px; background: #fafcf6; scroll-margin-top: 45px; }
 .hgc-course-card h3 { margin: 0 0 18px; font-size: 18px; }
 .hgc-course-card h4 { margin: 22px 0 10px; color: #527417; }

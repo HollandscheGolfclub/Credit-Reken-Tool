@@ -95,6 +95,16 @@ final class HGC_Calculator_Admin
                 </section>
 
                 <section class="hgc-admin-panel">
+                    <h2>Speelbeeld en advies</h2>
+                    <p class="hgc-admin-hint">De verhouding tussen kleine- en grote-baanrondes bepaalt welk advies de bezoeker ziet. Zit het aandeel kleine-baanrondes op of boven de eerste waarde, dan adviseert de keuzehulp een Shortgolf-speelrecht. Ligt dat aandeel tussen de twee andere waarden, dan is het speelbeeld gemengd en kiest de bezoeker zelf tussen een algemeen speelrecht en een Shortgolf-speelrecht. Daarbuiten adviseert de keuzehulp een algemeen creditspeelrecht.</p>
+                    <div class="hgc-admin-grid hgc-admin-grid--three">
+                        <?php $this->number_field('Shortgolf-advies vanaf aandeel kleine baan', 'config[settings][shortGolfSharePercent]', $config['settings']['shortGolfSharePercent'] ?? 85, 1, '%'); ?>
+                        <?php $this->number_field('Gemengd speelbeeld vanaf', 'config[settings][mixedProfileFromPercent]', $config['settings']['mixedProfileFromPercent'] ?? 40, 1, '%'); ?>
+                        <?php $this->number_field('Gemengd speelbeeld tot en met', 'config[settings][mixedProfileToPercent]', $config['settings']['mixedProfileToPercent'] ?? 60, 1, '%'); ?>
+                    </div>
+                </section>
+
+                <section class="hgc-admin-panel">
                     <h2>Handicapregistratie</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--three">
                         <?php $this->number_field('Handicapregistratie volwassenen', 'config[handicapRegistration][adultPrice]', $config['handicapRegistration']['adultPrice'] ?? 0, 0.01, '€'); ?>
@@ -183,6 +193,11 @@ final class HGC_Calculator_Admin
         $config['year'] = absint($raw['year'] ?? $config['year'] ?? date('Y'));
 
         $config['settings']['preferSinglePackage'] = true;
+        $config['settings']['shortGolfSharePercent'] = $this->percentage($raw['settings']['shortGolfSharePercent'] ?? null, 85);
+        $mixed_from = $this->percentage($raw['settings']['mixedProfileFromPercent'] ?? null, 40);
+        $mixed_to = $this->percentage($raw['settings']['mixedProfileToPercent'] ?? null, 60);
+        $config['settings']['mixedProfileFromPercent'] = min($mixed_from, $mixed_to);
+        $config['settings']['mixedProfileToPercent'] = max($mixed_from, $mixed_to);
 
         foreach (array('adultPrice', 'youthPrice') as $key) {
             $config['handicapRegistration'][$key] = $this->number($raw['handicapRegistration'][$key] ?? 0);
@@ -253,6 +268,15 @@ final class HGC_Calculator_Admin
             );
         }
         return $courses;
+    }
+
+    private function percentage($value, int $fallback): int
+    {
+        $number = $this->number($value, null);
+        if ($number === null) {
+            return $fallback;
+        }
+        return (int) min(100, max(0, round($number)));
     }
 
     private function number($value, $fallback = 0)

@@ -219,9 +219,36 @@
 .hgc-calculator .recommendation ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .recommendation li + li { margin-top: 4px; }
 .hgc-calculator .package-instruction { padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
+.hgc-calculator .registration-switch { margin: 0 0 22px; }
+.hgc-calculator .coverage-warning { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--orange); background: #fdf2e6; color: var(--ink); font-size: 13px; font-weight: 650; }
 .hgc-calculator .registration-note { margin-bottom: 0 !important; font-size: 12px; }
-.hgc-calculator .button--cta { max-width: 330px; min-height: 58px; white-space: normal; text-align: center; background: var(--orange); }
+
+/* Gemengd speelbeeld: de bezoeker kiest zelf tussen beide speelrechten. */
+.hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.hgc-calculator .advice-card { padding: 28px; border: 2px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; background: white; box-shadow: 0 10px 28px rgba(48, 62, 40, .06); }
+.hgc-calculator .advice-card--credits { border-color: #bdd375; background: linear-gradient(135deg, #fff 0%, #f8fbef 100%); }
+.hgc-calculator .advice-card--shortgolf { border-color: #f4c088; background: linear-gradient(135deg, #fff 0%, #fff6ec 100%); }
+.hgc-calculator .advice-card-question { margin-bottom: 14px; padding-bottom: 13px; border-bottom: 1px solid #e7ece0; color: var(--ink); font-size: 15px; font-weight: 800; }
+.hgc-calculator .advice-card--shortgolf .advice-card-question { border-bottom-color: #f6e0c6; }
+.hgc-calculator .advice-card .eyebrow { margin-bottom: 6px; }
+.hgc-calculator .advice-card--shortgolf .eyebrow { color: var(--orange); }
+.hgc-calculator .advice-card h4 { margin-bottom: 12px; font-size: 20px; line-height: 1.3; }
+.hgc-calculator .advice-card-amount, .hgc-calculator .recommendation-amount, .hgc-calculator .next-option-amount { margin-bottom: 13px; color: var(--ink) !important; font: 800 32px/1 "Montserrat", sans-serif; }
+.hgc-calculator .advice-card-amount small, .hgc-calculator .recommendation-amount small, .hgc-calculator .next-option-amount small { display: block; margin-top: 6px; color: var(--ink-soft); font: 500 13px/1.4 "Montserrat", sans-serif; }
+.hgc-calculator .next-option-amount { font-size: 24px; }
+.hgc-calculator .advice-card-coverage { margin-bottom: 13px; color: var(--ink-soft) !important; font-size: 13px; line-height: 1.55; }
+.hgc-calculator .advice-card-instruction { margin-bottom: 20px; padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
+.hgc-calculator .advice-card--shortgolf .advice-card-instruction { border-left-color: var(--orange); background: #fdf2e6; }
+.hgc-calculator .advice-card .button { margin-top: auto; }
+.hgc-calculator .recommendation--shortgolf { border-color: #f4c088; background: linear-gradient(135deg, #fff 0%, #fff6ec 100%); }
+.hgc-calculator .recommendation--shortgolf .eyebrow { color: var(--orange); }
+.hgc-calculator .recommendation--shortgolf .package-instruction { border-left-color: var(--orange); background: #fdf2e6; }
+.hgc-calculator .button--cta, .hgc-calculator .button--cta-tracked { max-width: 330px; min-height: 58px; white-space: normal; text-align: center; }
+.hgc-calculator .button--cta { background: var(--orange); }
 .hgc-calculator .button--cta:hover { background: #ff6600; }
+.hgc-calculator .button--shortgolf { background: var(--orange); color: white; }
+.hgc-calculator .button--shortgolf:hover { background: #ff6600; }
+.hgc-calculator .button--shortgolf span { color: white; font-size: 20px; }
 .hgc-calculator .button--secondary { border: 1px solid #8bb327; color: #567619; background: white; white-space: nowrap; }
 .hgc-calculator .button--secondary:hover { background: #f6f9ee; }
 .hgc-calculator .recommendation-actions { display: grid; gap: 9px; }
@@ -389,6 +416,9 @@
   .hgc-calculator .round-plan-card .field-label-row { align-items: flex-start; flex-direction: column; gap: 10px; }
   .hgc-calculator .round-plan-card .number-suffix { width: 100%; flex-basis: 48px; }
   .hgc-calculator .choice-costs { grid-template-columns: 1fr; }
+  .hgc-calculator .advice-choice { grid-template-columns: 1fr; }
+  .hgc-calculator .advice-card { padding: 22px; }
+  .hgc-calculator .advice-card-amount { font-size: 28px; }
   .hgc-calculator .course-picker-menu { max-height: 280px; }
   .hgc-calculator .segmented-control { grid-template-columns: 1fr; }
   .hgc-calculator .cost-panel { padding: 22px; }

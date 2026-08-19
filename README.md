@@ -31,6 +31,7 @@ Onder **Instellingen > Hollandsche Golfclub Calculator** kan een beheerder zonde
 
 - golfbanen toevoegen, aanpassen en verwijderen;
 - aparte creditwaarden voor algemene en Shortgolf-speelrechten wijzigen;
+- de drempelwaarden voor het speelbeeld instellen die bepalen welk advies een bezoeker ziet;
 - algemene, daluren-, jeugd- en Shortgolf-pakketten toevoegen of verwijderen;
 - handicapregistratie, links en voordelen aanpassen;
 - alle waarden terugzetten naar de standaardconfiguratie uit GitHub.
@@ -49,6 +50,16 @@ Voor een nieuwe WordPress-versie:
 4. Maak en push een tag, bijvoorbeeld `v1.4.2`.
 
 De workflow `.github/workflows/release.yml` verpakt de deploymap automatisch als `hgc-credit-calculator.zip` en plaatst dit bestand bij een GitHub Release. Op de beveiligde live site blijft Git-deploy de primaire updater, omdat dashboardupdates door `DISALLOW_FILE_MODS` zijn geblokkeerd.
+
+## Zipbestand bouwen
+
+Gebruik voor een handmatige upload het bestand uit een GitHub Release, of bouw het lokaal:
+
+```powershell
+tools\build-plugin-zip.ps1
+```
+
+Gebruik hiervoor **niet** `Compress-Archive`. Windows PowerShell 5.1 schrijft backslashes als padscheiding in het archief, terwijl de ZIP-standaard forward slashes vereist. WordPress maakt dan geen map `hgc-credit-calculator/` aan, maar pakt losse bestanden met een backslash in de naam uit. De installer meldt vervolgens "Plugin succesvol geïnstalleerd", waarna het activeren afbreekt met "Plugin bestand bestaat niet.". Verwijder in dat geval de foutieve bestanden via SFTP uit `wp-content/plugins/` voordat je opnieuw uploadt.
 
 ## Lokaal openen
 
@@ -70,8 +81,12 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
 - De bezoeker voert apart het aantal grote- en kleine-baanrondes van 9 holes in en kiest voor ieder baantype een golfpark.
 - Algemene en Shortgolf-speelrechten gebruiken hun eigen creditwaarden voor de kleine baan.
 - Een algemeen speelrecht adviseert het passende startpakket. Zijn bijvoorbeeld 22 credits nodig, dan start het advies met 20 credits en vermeldt het dat de speler pas na verbruik moet verlengen; er worden vooraf geen twee kleine pakketten opgeteld.
-- Een Shortgolf-speelrecht wordt alleen geadviseerd wanneer uitsluitend kleine-baanrondes zijn ingevuld. Bij gecombineerd spelen rekent de keuzehulp volledig met algemene credits.
-- Handicapregistratie wordt standaard in ieder advies meegenomen.
+- De verhouding tussen kleine- en grote-baanrondes bepaalt het advies. De keuzehulp kent drie zones, met instelbare grenzen:
+  - vanaf 85% kleine-baanrondes adviseert de keuzehulp een Shortgolf-speelrecht, omdat Shortgolf-credits op de kleine baan voordeliger zijn. Het advies vermeldt dat de resterende grote-baanrondes buiten dat speelrecht vallen en apart worden afgerekend;
+  - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
+  - daarbuiten, bijvoorbeeld bij een verhouding van 70:30, adviseert de keuzehulp een algemeen creditspeelrecht.
+- De keuzehulp rekent nooit met greenfeetarieven. Rondes die buiten een speelrecht vallen krijgen geen prijs per ronde, zodat er geen bedrag wordt getoond dat de club niet heeft vastgesteld.
+- Handicapregistratie zit standaard in ieder bedrag. In het advies staat een schakelaar waarmee de bezoeker die kosten uit het beeld haalt. Dat wisselt alleen de getoonde bedragen; de aanbeveling zelf verandert niet, omdat de registratieprijs voor ieder speelrecht gelijk is.
 - De keuzehulp rekent uitsluitend met creditwaarden, speelrechtprijzen en de prijs van handicapregistratie.
 - Ook bij een laag speelvolume adviseert de keuzehulp een passend creditspeelrecht.
 - Lokale speelrechten worden alleen meegenomen wanneer alle opgegeven rondes op hetzelfde ondersteunde lokale golfpark worden gespeeld.
@@ -83,13 +98,23 @@ Laat de Hollandsche Golfclub deze aannames controleren voordat de keuzehulp publ
 
 `tests/audit-matrix.js` controleert de aanbevelingen over alle banen, producttypen, leeftijden, dalurenkeuzes en relevante grenswaarden. De audit controleert ook pakketdekking, toegestane producten, alternatieven en of de kosten per baantype optellen tot het getoonde totaal.
 
+`runHgcProfileAudit` controleert daarnaast de zone-indeling tegen de ingestelde drempelwaarden, of een Shortgolf-speelrecht alleen in de juiste zones meedoet, of een gemengd speelbeeld inderdaad twee opties oplevert, en of het bedrag achter de schakelaar exact de speelrechtprijs zonder handicapregistratie is.
+
+Draaien gaat via een browser met foutopsporing op een debugpoort:
+
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --remote-debugging-port=9227 --user-data-dir="$env:TEMP\hgc-audit" about:blank
+node tests\run-browser-audit.mjs 9227
+```
+
 ## Analytics
 
 De keuzehulp stuurt gebeurtenissen naar `window.dataLayer`:
 
 - `calculator_opened`
 - `calculator_step_1_completed`
-- `calculator_result_viewed`
+- `calculator_result_viewed` (met `play_profile` voor de zone: `credits`, `mixed` of `shortgolf`)
+- `calculator_registration_switched`
 - `calculator_product_clicked`
 - `calculator_restarted`
 

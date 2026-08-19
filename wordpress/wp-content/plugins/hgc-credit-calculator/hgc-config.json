@@ -1,7 +1,10 @@
 {
   "year": 2026,
   "settings": {
-    "preferSinglePackage": true
+    "preferSinglePackage": true,
+    "shortGolfSharePercent": 85,
+    "mixedProfileFromPercent": 40,
+    "mixedProfileToPercent": 60
   },
   "handicapRegistration": { "adultPrice": 59.5, "youthPrice": 27.5 },
   "links": {
