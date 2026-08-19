@@ -225,7 +225,7 @@
   };
 
   window.runHgcTextAudit = function runHgcTextAudit() {
-    const { recommendationFor, renderResult, resultContent } = window.hgcCalculatorAudit;
+    const { recommendationFor, renderResult, resultContent, planBenefits, applyRegistrationSwitch } = window.hgcCalculatorAudit;
     const roundPairs = [
       [0, 5], [0, 22], [1, 20], [2, 20], [5, 5], [10, 10], [20, 22], [22, 20],
       [20, 20], [30, 30], [50, 50], [60, 60], [100, 100], [200, 200], [20, 0], [40, 5],
@@ -267,6 +267,12 @@
       if (amount.replace(/\s/g, "") !== expected.replace(/\s/g, "")) {
         report("bedrag-wijkt-af", { ...context, amount, expected });
       }
+
+      const shown = [...card.querySelectorAll(".advice-card-benefits li")].map((item) => item.textContent.replace(/^✓/, ""));
+      const belongs = planBenefits(plan);
+      if (shown.join("|") !== belongs.join("|")) {
+        report("voordelen-horen-niet-bij-speelrecht", { ...context, shown: shown.join("|"), expected: belongs.join("|") });
+      }
     }
 
     for (const largeCourse of largeCourses) {
@@ -282,6 +288,22 @@
             } catch (error) {
               report("exception", { ...context, message: error.message });
               continue;
+            }
+
+            const registrationRows = [...resultContent.querySelectorAll("li")].filter((item) => /handicapregistratie/i.test(item.textContent));
+            if (!registrationRows.length) {
+              report("registratie-voordeel-ontbreekt", context);
+            }
+            if (registrationRows.some((item) => !item.hasAttribute("data-registration-row"))) {
+              report("registratie-voordeel-volgt-schakelaar-niet", context);
+            }
+            applyRegistrationSwitch(false);
+            if (registrationRows.some((item) => !item.hidden)) {
+              report("registratie-voordeel-blijft-staan", context);
+            }
+            applyRegistrationSwitch(true);
+            if (registrationRows.some((item) => item.hidden)) {
+              report("registratie-voordeel-komt-niet-terug", context);
             }
 
             if (result.choice) {

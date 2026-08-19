@@ -86,7 +86,8 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
   - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
   - daarbuiten, bijvoorbeeld bij een verhouding van 70:30, adviseert de keuzehulp een algemeen creditspeelrecht.
 - De keuzehulp rekent nooit met greenfeetarieven. Rondes die buiten een speelrecht vallen krijgen geen prijs per ronde, zodat er geen bedrag wordt getoond dat de club niet heeft vastgesteld.
-- Handicapregistratie zit standaard in ieder bedrag. In het advies staat een schakelaar waarmee de bezoeker die kosten uit het beeld haalt. Dat wisselt alleen de getoonde bedragen; de aanbeveling zelf verandert niet, omdat de registratieprijs voor ieder speelrecht gelijk is.
+- Handicapregistratie zit standaard in ieder bedrag. In het advies staat een schakelaar waarmee de bezoeker die kosten uit het beeld haalt. Dat wisselt alleen de getoonde bedragen en laat het voordeel "Handicapregistratie bij de Hollandsche Golfclub" uit de lijst verdwijnen; de aanbeveling zelf verandert niet, omdat de registratieprijs voor ieder speelrecht gelijk is.
+- Bij een gemengd speelbeeld staan de voordelen per kaart, zodat de Shortgolf-kaart de Shortgolf-voordelen toont en niet die van het algemene speelrecht.
 - De keuzehulp rekent uitsluitend met creditwaarden, speelrechtprijzen en de prijs van handicapregistratie.
 - Ook bij een laag speelvolume adviseert de keuzehulp een passend creditspeelrecht.
 - Lokale speelrechten worden alleen meegenomen wanneer alle opgegeven rondes op hetzelfde ondersteunde lokale golfpark worden gespeeld.

@@ -531,6 +531,9 @@ function applyRegistrationSwitch(include) {
   resultContent.querySelectorAll(".switchable").forEach((node) => {
     node.textContent = include ? node.dataset.with : node.dataset.without;
   });
+  resultContent.querySelectorAll("[data-registration-row]").forEach((node) => {
+    node.hidden = !include;
+  });
 }
 
 function registrationSwitch(handicapPrice) {
@@ -561,12 +564,21 @@ function coverageText(plan, coveredText, neededRoundsText) {
     : coveredText;
 }
 
+function benefitList(plan) {
+  return planBenefits(plan)
+    .map((benefit) => {
+      const followsSwitch = /handicapregistratie/i.test(benefit) ? " data-registration-row" : "";
+      return `<li${followsSwitch}><span>✓</span>${benefit}</li>`;
+    })
+    .join("");
+}
+
 function benefitsSection(plan) {
   return `
     <section class="included-benefits">
       <p class="eyebrow">Dit krijg je er ook bij</p>
       <h4>Meer dan alleen speelrondes</h4>
-      <ul>${planBenefits(plan).map((benefit) => `<li><span>✓</span>${benefit}</li>`).join("")}</ul>
+      <ul>${benefitList(plan)}</ul>
     </section>
   `;
 }
@@ -584,6 +596,8 @@ function choiceCard(plan, options) {
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
       <p class="advice-card-instruction">${plan.instruction}</p>
+      <p class="advice-card-benefits-title">Hierbij hoort</p>
+      <ul class="advice-card-benefits">${benefitList(plan)}</ul>
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
     </article>
   `;
@@ -634,7 +648,6 @@ function renderChoice(result) {
       })}
     </div>
 
-    ${benefitsSection(credits)}
     ${disclaimer()}
   `;
 }
@@ -767,7 +780,7 @@ updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
 if (new URLSearchParams(window.location.search).has("hgc-audit")) {
-  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent });
+  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent, planBenefits, applyRegistrationSwitch });
 }
 track("calculator_opened");
 })();
