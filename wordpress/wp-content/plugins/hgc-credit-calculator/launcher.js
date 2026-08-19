@@ -18,64 +18,40 @@
   }
 
   const picker = launcher.querySelector("#hgc-design-picker");
-  const start = launcher.querySelector("#hgc-calculator-start");
-  const panels = [...launcher.querySelectorAll("[data-mode-panel]")];
+  const choicePanel = launcher.querySelector('[data-mode-panel="choice"]');
 
   function showDesignPicker() {
-    panels.forEach((panel) => { panel.hidden = true; });
-    start.hidden = true;
+    choicePanel.hidden = true;
     picker.hidden = false;
     picker.scrollIntoView({ behavior: "smooth", block: "start" });
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: "calculator_design_selection_viewed" });
   }
 
-  function showLauncher() {
-    panels.forEach((panel) => { panel.hidden = true; });
+  function showChoice(design) {
+    const selected = applyDesign(launcher, design);
     picker.hidden = true;
-    start.hidden = false;
-    start.scrollIntoView({ behavior: "smooth", block: "start" });
+    choicePanel.hidden = false;
+    choicePanel.scrollIntoView({ behavior: "smooth", block: "start" });
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: "calculator_mode_selection_viewed" });
+    window.dataLayer.push({
+      event: "calculator_design_selected",
+      calculator_design: selected,
+      calculator_mode: "choice",
+    });
   }
 
   launcher.querySelectorAll("[data-design-choice]").forEach((button) => {
     button.addEventListener("click", () => {
-      const design = applyDesign(launcher, button.dataset.designChoice);
       launcher.querySelectorAll("[data-design-choice]").forEach((option) => {
         option.setAttribute("aria-pressed", String(option === button));
       });
-      showLauncher();
-      window.dataLayer.push({ event: "calculator_design_selected", calculator_design: design });
+      showChoice(button.dataset.designChoice);
     });
   });
 
-  launcher.querySelectorAll("[data-launch-mode]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const mode = button.dataset.launchMode;
-      start.hidden = true;
-      panels.forEach((panel) => { panel.hidden = panel.dataset.modePanel !== mode; });
-      const activePanel = panels.find((panel) => !panel.hidden);
-      activePanel?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "calculator_mode_selected", calculator_mode: mode });
-    });
-  });
-
-  launcher.querySelectorAll("[data-launch-href]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const destination = new URL(button.dataset.launchHref, window.location.href);
-      destination.searchParams.set("design", launcher.dataset.design || "clubhouse");
-      window.location.href = destination.href;
-    });
-  });
-
-  launcher.querySelectorAll("[data-back-to-launcher]").forEach((button) => button.addEventListener("click", showLauncher));
   launcher.querySelectorAll("[data-back-to-designs]").forEach((button) => button.addEventListener("click", showDesignPicker));
 
   const requestedDesign = new URLSearchParams(window.location.search).get("design");
-  if (allowedDesigns.includes(requestedDesign)) {
-    applyDesign(launcher, requestedDesign);
-    showLauncher();
-  }
+  if (allowedDesigns.includes(requestedDesign)) showChoice(requestedDesign);
 })();
