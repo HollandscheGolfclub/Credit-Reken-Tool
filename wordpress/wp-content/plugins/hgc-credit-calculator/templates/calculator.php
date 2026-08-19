@@ -6,7 +6,10 @@
         <p class="eyebrow">Jouw keuzehulp</p>
         <h2 id="calculator-title">Ontdek jouw beste speelrecht</h2>
       </div>
-      <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 2</p>
+      <div class="calculator-topbar-meta">
+        <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
+        <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 2</p>
+      </div>
     </div>
 
     <div class="progress" aria-hidden="true">
@@ -29,10 +32,10 @@
             <div class="field-group">
               <div class="field-label-row">
                 <label for="large-rounds-number">Hoeveel rondes per jaar?</label>
-                <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="150" value="20" inputmode="numeric" /><span>rondes</span></div>
+                <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div>
               </div>
-              <input id="large-rounds" class="range" type="range" min="0" max="150" value="20" />
-              <div class="range-scale"><span>0</span><span>150</span></div>
+              <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" />
+              <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
             </div>
             <div class="field-group field-group--last">
               <label id="large-course-label" for="large-course">Op welke grote baan speel je meestal?</label>
@@ -46,10 +49,10 @@
             <div class="field-group">
               <div class="field-label-row">
                 <label for="small-rounds-number">Hoeveel rondes per jaar?</label>
-                <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="150" value="10" inputmode="numeric" /><span>rondes</span></div>
+                <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div>
               </div>
-              <input id="small-rounds" class="range" type="range" min="0" max="150" value="10" />
-              <div class="range-scale"><span>0</span><span>150</span></div>
+              <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" />
+              <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
             </div>
             <div class="field-group field-group--last">
               <label id="small-course-label" for="small-course">Op welke kleine baan speel je meestal?</label>

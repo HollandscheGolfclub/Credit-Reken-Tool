@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits, greenfee
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,7 +13,7 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 
 1. Upload `hgc-credit-calculator.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
 2. Activeer Hollandsche Golfclub Credit Calculator.
-3. Plaats `[hgc_calculator mode="keuzehulp"]` of `[hgc_calculator mode="vergelijking"]` in een pagina of shortcodeblok.
+3. Plaats `[hgc_calculator]` voor de gecombineerde start, of gebruik `[hgc_calculator mode="keuzehulp"]` en `[hgc_calculator mode="vergelijking"]` voor een losse variant.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
 
@@ -31,6 +31,16 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.3.0 =
+* Nieuwe, volledig responsive start waar bezoekers eerst kiezen tussen persoonlijk speelrechtadvies en een vergelijking met hun huidige golfkosten.
+* Officieel Hollandsche Golfclub-logo en een duidelijkere, websitewaardige merkpresentatie in alle stappen.
+* Golfjaar-invoer vernieuwd tot één rustig paneel; sliders ondersteunen nu maximaal 400 rondes van 9 holes per jaar.
+* Bij een hoog speelvolume adviseert de keuzehulp eerst het speelrecht van 200 credits; de bezoeker kan verlengen zodra die credits werkelijk op zijn.
+* LoyalTee wordt alleen als alternatief getoond bij een laag speelvolume rond het 20-creditadvies, niet naast 60-, 120- of 200-creditadviezen.
+* Bij 60 en 120 credits toont de uitkomst respectievelijk 120 en 200 credits als duidelijke optie voor meer speelruimte.
+* Beide routes openen op dezelfde pagina en bezoekers kunnen eenvoudig terug naar de startkeuze.
+* Nieuwe analyticsgebeurtenissen voor het bekijken en maken van de routekeuze.
 
 = 1.2.0 =
 * De speelrechtkeuzehulp en eerdere kostenvergelijking zijn beide beschikbaar.

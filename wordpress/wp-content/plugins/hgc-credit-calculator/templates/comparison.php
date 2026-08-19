@@ -6,7 +6,10 @@
         <p class="eyebrow">Jouw berekening</p>
         <h2 id="calculator-title">Ontdek jouw beste speelrecht</h2>
       </div>
-      <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 3</p>
+      <div class="calculator-topbar-meta">
+        <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
+        <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 3</p>
+      </div>
     </div>
 
     <div class="progress" aria-hidden="true">
@@ -27,12 +30,12 @@
           <div class="field-label-row">
             <label for="rounds">Hoeveel rondes van 9 holes speel je ongeveer per jaar?</label>
             <div class="number-suffix">
-              <input id="rounds-number" type="number" min="1" max="150" value="35" inputmode="numeric" />
+            <input id="rounds-number" type="number" min="1" max="400" value="35" inputmode="numeric" />
               <span>9-holesrondes</span>
             </div>
           </div>
-          <input id="rounds" class="range" type="range" min="1" max="150" value="35" />
-          <div class="range-scale"><span>1</span><span>150</span></div>
+          <input id="rounds" class="range" type="range" min="1" max="400" value="35" />
+          <div class="range-scale"><span>1</span><span>200</span><span>400</span></div>
         </div>
 
         <fieldset class="field-group">

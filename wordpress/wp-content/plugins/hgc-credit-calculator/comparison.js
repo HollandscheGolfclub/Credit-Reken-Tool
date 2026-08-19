@@ -176,7 +176,7 @@ function showStep(stepNumber) {
 }
 
 function normaliseRounds(value) {
-  return Math.min(150, Math.max(1, Math.round(Number(value) || 1)));
+  return Math.min(Number(roundsRange.max), Math.max(1, Math.round(Number(value) || 1)));
 }
 
 function updateRangeFill() {
@@ -380,10 +380,12 @@ function sortedPlans({ course, format, rounds, youth, canPlayOffPeak, forceHandi
 
 function findNextOption({ course, format, rounds, youth, canPlayOffPeak, forceHandicap, currentBest }) {
   const maximumRounds = Number(roundsRange.max);
+  const loyalTeeIsRelevant = currentBest.kind === "handicap" || Number(currentBest.credits) <= 20;
+  const substantialCreditAdvice = !["loyaltee", "handicap"].includes(currentBest.kind) && Number(currentBest.credits) > 20;
 
   // Wanneer handicapregistratie gewenst is, blijft LoyalTee ook als expliciete
   // flexibele combinatie beschikbaar, zelfs als een speelrecht goedkoper is.
-  if (forceHandicap && currentBest.kind !== "loyaltee") {
+  if (forceHandicap && currentBest.kind !== "loyaltee" && loyalTeeIsRelevant) {
     const loyalTeeCombo = sortedPlans({ course, format, rounds, youth, canPlayOffPeak, forceHandicap })
       .find((plan) => plan.kind === "loyaltee");
     if (loyalTeeCombo) {
@@ -401,7 +403,9 @@ function findNextOption({ course, format, rounds, youth, canPlayOffPeak, forceHa
   }
 
   const alternative = sortedPlans({ course, format, rounds, youth, canPlayOffPeak, forceHandicap })
-    .find((plan) => plan.label !== currentBest.label);
+    .find((plan) => plan.label !== currentBest.label
+      && (!substantialCreditAdvice || !["loyaltee", "handicap"].includes(plan.kind))
+      && (plan.kind !== "loyaltee" || loyalTeeIsRelevant));
   return alternative ? { plan: alternative, fromRounds: null, annualCost: alternative.comparisonPrice } : null;
 }
 

@@ -11,11 +11,38 @@
     <link rel="stylesheet" href="wordpress/wp-content/plugins/hgc-credit-calculator/styles.css" />
   </head>
   <body>
-    <main class="hgc-calculator" data-calculator-mode="choice">
+    <main class="hgc-calculator hgc-calculator--launcher" data-calculator-mode="launcher">
+      <section class="calculator-shell launcher-shell" id="hgc-calculator-start" aria-labelledby="hgc-launcher-title">
+        <div class="launcher-hero">
+          <div class="launcher-hero-copy">
+            <p class="eyebrow">Persoonlijke keuzehulp</p>
+            <h2 id="hgc-launcher-title">Vind het speelrecht dat écht bij je past</h2>
+            <p>Persoonlijk advies op basis van waar, hoe vaak en wanneer jij golft.</p>
+          </div>
+          <div class="launcher-logo-card"><img src="wordpress/wp-content/plugins/hgc-credit-calculator/assets/hgc-logo.png" alt="Hollandsche Golfclub" /></div>
+        </div>
+        <div class="launcher-body">
+          <div class="launcher-heading"><span class="step-number">START</span><div><h3>Wat wil je ontdekken?</h3><p>Kies één van de twee routes. Je krijgt direct een heldere, persoonlijke uitkomst.</p></div></div>
+          <div class="launcher-options">
+            <button class="launcher-option" type="button" data-launch-mode="choice">
+              <span class="launcher-option-icon" aria-hidden="true">01</span>
+              <span class="launcher-option-copy"><span class="launcher-tag">Ik oriënteer mij</span><strong>Welk speelrecht past bij mij?</strong><small>Je speelt al of wilt gaan spelen en zoekt het pakket dat het beste bij jouw golfjaar past.</small><span class="launcher-link">Start de keuzehulp <b aria-hidden="true">→</b></span></span>
+            </button>
+            <button class="launcher-option launcher-option--comparison" type="button" data-launch-href="vergelijking.html">
+              <span class="launcher-option-icon" aria-hidden="true">€</span>
+              <span class="launcher-option-copy"><span class="launcher-tag">Ik wil vergelijken</span><strong>Kan ik voordeliger golfen?</strong><small>Vergelijk je huidige golfkosten met een passend speelrecht van Hollandsche Golfclub.</small><span class="launcher-link">Start de vergelijking <b aria-hidden="true">→</b></span></span>
+            </button>
+          </div>
+          <div class="launcher-assurance"><span aria-hidden="true">✓</span><p><strong>Binnen 2 minuten jouw uitkomst</strong>Gratis, vrijblijvend en zonder persoonsgegevens.</p></div>
+        </div>
+      </section>
+      <div class="calculator-stage" data-mode-panel="choice" hidden>
+        <button class="launcher-back" type="button" data-back-to-launcher><span aria-hidden="true">←</span> Andere berekening kiezen</button>
+        <div class="hgc-calculator" data-calculator-mode="choice">
       <section class="calculator-shell" id="calculator" aria-labelledby="calculator-title">
         <div class="calculator-topbar">
           <div><p class="eyebrow">Jouw keuzehulp</p><h2 id="calculator-title">Ontdek jouw beste speelrecht</h2></div>
-          <p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 2</p>
+          <div class="calculator-topbar-meta"><img class="calculator-brand-logo" src="wordpress/wp-content/plugins/hgc-credit-calculator/assets/hgc-logo.png" alt="Hollandsche Golfclub" /><p class="step-label" aria-live="polite">Stap <strong id="current-step">1</strong> van 2</p></div>
         </div>
         <div class="progress" aria-hidden="true"><span class="progress-bar" id="progress-bar"></span></div>
         <form id="calculator-form" novalidate>
@@ -25,16 +52,16 @@
               <article class="round-plan-card">
                 <div class="round-plan-title"><span class="choice-icon">9</span><div><h4>Grote baan</h4><p>Volwaardige golfbaan</p></div></div>
                 <div class="field-group">
-                  <div class="field-label-row"><label for="large-rounds-number">Hoeveel rondes per jaar?</label><div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="150" value="20" inputmode="numeric" /><span>rondes</span></div></div>
-                  <input id="large-rounds" class="range" type="range" min="0" max="150" value="20" /><div class="range-scale"><span>0</span><span>150</span></div>
+                <div class="field-label-row"><label for="large-rounds-number">Hoeveel rondes per jaar?</label><div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div></div>
+                  <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" /><div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
                 </div>
                 <div class="field-group field-group--last"><label id="large-course-label" for="large-course">Op welke grote baan speel je meestal?</label><select id="large-course" aria-labelledby="large-course-label" required></select><p class="field-help" id="large-course-help">De baan bepaalt hoeveel credits een ronde kost.</p></div>
               </article>
               <article class="round-plan-card">
                 <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Shortgolfbaan</p></div></div>
                 <div class="field-group">
-                  <div class="field-label-row"><label for="small-rounds-number">Hoeveel rondes per jaar?</label><div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="150" value="10" inputmode="numeric" /><span>rondes</span></div></div>
-                  <input id="small-rounds" class="range" type="range" min="0" max="150" value="10" /><div class="range-scale"><span>0</span><span>150</span></div>
+                <div class="field-label-row"><label for="small-rounds-number">Hoeveel rondes per jaar?</label><div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div></div>
+                  <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" /><div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
                 </div>
                 <div class="field-group field-group--last"><label id="small-course-label" for="small-course">Op welke kleine baan speel je meestal?</label><select id="small-course" aria-labelledby="small-course-label" required></select><p class="field-help" id="small-course-help">Voor Shortgolf gelden andere creditwaarden.</p></div>
               </article>
@@ -52,8 +79,11 @@
           </section>
         </form>
       </section>
+        </div>
+      </div>
     </main>
     <script src="wordpress/wp-content/plugins/hgc-credit-calculator/hgc-config.js"></script>
     <script src="wordpress/wp-content/plugins/hgc-credit-calculator/calculator.js"></script>
+    <script src="wordpress/wp-content/plugins/hgc-credit-calculator/launcher.js"></script>
   </body>
 </html>

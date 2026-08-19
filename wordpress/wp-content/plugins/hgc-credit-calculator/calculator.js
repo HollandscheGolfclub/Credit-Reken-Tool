@@ -176,7 +176,8 @@ function showStep(stepNumber) {
 }
 
 function normaliseRounds(value) {
-  return Math.min(150, Math.max(0, Math.round(Number(value) || 0)));
+  const maximum = Math.max(Number(largeRoundsRange.max), Number(smallRoundsRange.max));
+  return Math.min(maximum, Math.max(0, Math.round(Number(value) || 0)));
 }
 
 function updateRangeFill(range) {
@@ -234,7 +235,11 @@ function packagePlan(packages, requiredCredits, productName, group) {
     .map((plan, credits) => plan ? { ...plan, credits } : null)
     .filter((plan) => plan && plan.credits + 1e-8 >= requiredCredits)
     .sort((a, b) => a.price - b.price || a.credits - b.credits || a.count - b.count);
-  const best = options[0];
+  const largestPackage = usable[usable.length - 1];
+  const recommendStarterPackage = Boolean(hgcConfig.settings.preferSinglePackage) && requiredCredits > largestPackage.credits;
+  const best = recommendStarterPackage
+    ? { price: largestPackage.price, count: 1, items: [largestPackage], credits: largestPackage.credits }
+    : options[0];
   if (!best) return null;
 
   const counts = best.items.reduce((all, item) => {
@@ -242,24 +247,33 @@ function packagePlan(packages, requiredCredits, productName, group) {
     all[key] = { item, count: (all[key]?.count || 0) + 1 };
     return all;
   }, {});
-  const parts = Object.values(counts)
-    .sort((a, b) => a.item.credits - b.item.credits)
+  const orderedPackages = Object.values(counts)
+    .sort((a, b) => b.item.credits - a.item.credits);
+  const parts = orderedPackages
     .map(({ item, count }) => `${count > 1 ? `${count} × ` : ""}${decimal.format(item.credits)} credits`);
-  const first = [...best.items].sort((a, b) => a.credits - b.credits)[0];
-  const instruction = best.count > 1
-    ? `Start met ${decimal.format(first.credits)} credits. Zodra je credits op zijn, neem je het volgende speelrecht uit deze combinatie: ${parts.join(" + ")}.`
+  const first = orderedPackages[0].item;
+  const followUps = orderedPackages
+    .flatMap(({ item, count }) => Array(count - (item.credits === first.credits ? 1 : 0)).fill(item))
+    .map((item) => `${decimal.format(item.credits)} credits`);
+  const instruction = recommendStarterPackage
+    ? `Start met ${decimal.format(best.credits)} credits. Zodra deze op zijn, kun je direct verlengen met het speelrecht dat dan het beste bij je resterende golfplannen past.`
+    : best.count > 1
+    ? `Start met het speelrecht van ${decimal.format(first.credits)} credits. Alleen als je die credits binnen jouw golfjaar opmaakt, verleng je met ${followUps.join(" en daarna met ")}. Zo koop je niet alles vooraf. Totale ruimte: ${decimal.format(best.credits)} credits.`
     : `Met ${decimal.format(best.credits)} credits heb je voldoende ruimte voor jouw verwachte rondes.`;
 
   return {
     type: "credits",
     group,
-    name: best.count === 1 ? (best.items[0].name || `${productName} – ${best.credits} credits`) : `${productName} – ${parts.join(" + ")}`,
+    name: best.count === 1 ? (best.items[0].name || `${productName} – ${best.credits} credits`) : `Start met ${productName} – ${decimal.format(first.credits)} credits`,
     productName,
     price: best.price,
     credits: best.credits,
     requiredCredits,
     count: best.count,
     packageItems: best.items,
+    packageParts: parts,
+    firstPackage: first,
+    isStarterPlan: recommendStarterPackage,
     instruction,
   };
 }
@@ -297,9 +311,15 @@ function candidatePlans(context) {
   packageChoices.forEach((choice) => {
     const plan = packagePlan(choice.packages, standardCredits, choice.name, choice.group);
     if (plan) {
-      plan.largeBaseCost = standardCredits > 0 ? largeCourse.largeRate * (plan.price / standardCredits) : 0;
-      plan.smallBaseCost = standardCredits > 0 ? smallCourse.shortRate * (plan.price / standardCredits) : 0;
-      plan.detail = `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
+      plan.availablePackages = choice.packages;
+      plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
+      plan.largeBaseCost = plan.credits > 0 ? largeCourse.largeRate * (plan.price / plan.credits) : 0;
+      plan.smallBaseCost = plan.credits > 0 ? smallCourse.shortRate * (plan.price / plan.credits) : 0;
+      plan.detail = plan.isStarterPlan
+        ? `Je verwacht circa ${decimal.format(standardCredits)} credits nodig te hebben. Begin met het grootste speelrecht van ${decimal.format(plan.credits)} credits en verleng pas wanneer die credits daadwerkelijk op zijn.`
+        : plan.count > 1
+        ? `Voor jouw opgegeven speelvolume zijn circa ${decimal.format(standardCredits)} credits nodig. De voordeligste route is ${plan.packageParts.join(" + ")} (${decimal.format(plan.credits)} credits totaal).`
+        : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
       candidates.push(addRegistration(plan, handicapPrice));
     }
   });
@@ -309,8 +329,11 @@ function candidatePlans(context) {
     const shortCredits = smallRounds * shortGolfRate;
     const shortPlan = packagePlan(hgcConfig.shortGolfPackages, shortCredits, "Hollandsche Golfclub Shortgolf-speelrecht", "shortgolf");
     if (shortPlan) {
+      shortPlan.availablePackages = hgcConfig.shortGolfPackages;
       shortPlan.type = "shortgolf";
       const largeGreenFees = largeRounds * loyalFee(largeCourse, "large");
+      shortPlan.packageBasePrice = shortPlan.price;
+      shortPlan.nonPackageCost = largeGreenFees;
       shortPlan.price += largeGreenFees;
       shortPlan.largeBaseCost = loyalFee(largeCourse, "large");
       shortPlan.smallBaseCost = shortPlan.packageItems.reduce((sum, item) => sum + item.price, 0) / smallRounds;
@@ -331,9 +354,13 @@ function candidatePlans(context) {
     localChoices.forEach((choice) => {
       const plan = packagePlan(choice.packages, localCredits, choice.name, choice.group);
       if (!plan) return;
-      plan.largeBaseCost = localCredits > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localCredits) : 0;
-      plan.smallBaseCost = localCredits > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localCredits) : 0;
-      plan.detail = `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
+      plan.availablePackages = choice.packages;
+      plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
+      plan.largeBaseCost = plan.credits > 0 ? Number(local.largeRoundRate || 0) * (plan.price / plan.credits) : 0;
+      plan.smallBaseCost = plan.credits > 0 ? Number(local.shortRoundRate || 0) * (plan.price / plan.credits) : 0;
+      plan.detail = plan.isStarterPlan
+        ? `Je verwacht circa ${decimal.format(localCredits)} lokale credits nodig te hebben. Begin met ${decimal.format(plan.credits)} credits en verleng pas wanneer die daadwerkelijk op zijn.`
+        : `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd.`;
       candidates.push(addRegistration(plan, handicapPrice));
     });
   }
@@ -384,14 +411,17 @@ function candidatePlans(context) {
 
   const sorted = candidates
     .map((plan) => {
-      const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / totalRounds;
+      const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / (Number(plan.coveredRounds) || totalRounds);
       return {
         ...plan,
+        selectionCost: plan.isStarterPlan && Number(plan.requiredCredits) > Number(plan.credits)
+          ? (Number(plan.price) / Number(plan.credits)) * Number(plan.requiredCredits) + Number(plan.registrationPrice || 0)
+          : plan.annualCost,
         largeRoundCost: largeRounds ? Number(plan.largeBaseCost || 0) + shared : null,
         smallRoundCost: smallRounds ? Number(plan.smallBaseCost || 0) + shared : null,
       };
     })
-    .sort((a, b) => a.annualCost - b.annualCost || a.group.localeCompare(b.group));
+    .sort((a, b) => a.selectionCost - b.selectionCost || a.group.localeCompare(b.group));
   const creditPlans = sorted.filter((plan) => plan.type === "credits" || plan.type === "shortgolf");
   if (standardCredits >= 20 && creditPlans.length) {
     return [...creditPlans, ...sorted.filter((plan) => !creditPlans.includes(plan))];
@@ -406,14 +436,49 @@ function calculate() {
   const smallCourse = selectedCourse(smallCourseSelect);
   const youth = ageCategory.value === "youth";
   const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak: offPeak.checked });
+  const best = plans[0];
+  const loyalTeeIsRelevant = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) <= 20;
+  const substantialCreditAdvice = (best.type === "credits" || best.type === "shortgolf") && Number(best.credits) > 20;
+  const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
+  const nextPackage = substantialCreditAdvice ? nextLargerCreditOption(best, handicapPrice) : null;
+  const alternative = loyalTeeIsRelevant
+    ? plans.find((plan) => plan.type === "loyaltee")
+    : substantialCreditAdvice
+      ? nextPackage
+      : plans.find((plan) => plan.group !== best?.group && plan.type !== "loyaltee");
   return {
     largeRounds,
     smallRounds,
     largeCourse,
     smallCourse,
-    handicapPrice: youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice),
-    best: plans[0],
-    alternative: plans.find((plan) => plan.group !== plans[0]?.group),
+    handicapPrice,
+    best,
+    alternative,
+  };
+}
+
+function nextLargerCreditOption(plan, handicapPrice) {
+  if (!Array.isArray(plan.availablePackages) || !plan.availablePackages.length) return null;
+  const next = plan.availablePackages
+    .map((item) => ({ ...item, credits: Number(item.credits), price: Number(item.price) }))
+    .filter((item) => item.credits > Number(plan.credits) && Number.isFinite(item.price))
+    .sort((a, b) => a.credits - b.credits)[0];
+  if (!next) return null;
+
+  const extraCredits = next.credits - Number(plan.credits);
+  const extraCost = next.price - Number(plan.packageBasePrice ?? plan.price);
+  const totalPrice = next.price + Number(plan.nonPackageCost || 0);
+  return {
+    type: plan.type,
+    group: `${plan.group}-upgrade-${next.credits}`,
+    name: next.name || `${plan.productName} – ${decimal.format(next.credits)} credits`,
+    productName: plan.productName,
+    credits: next.credits,
+    price: totalPrice,
+    registrationPrice: handicapPrice,
+    annualCost: totalPrice + handicapPrice,
+    isUpgradeOption: true,
+    detail: `Je krijgt ${decimal.format(extraCredits)} credits extra voor ${euro.format(extraCost)} meer dan het geadviseerde speelrecht. Zo heb je meer ruimte als je vaker wilt spelen.`,
   };
 }
 
@@ -463,6 +528,10 @@ function renderResult(result) {
     ? `Handicapregistratie is het geadviseerde product en bevat ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees.`
     : `In dit totaal zit ${euro.format(result.handicapPrice)} voor handicapregistratie. De ${hgcConfig.handicapRegistration.vouchers} persoonlijke greenfees zijn extra rondes en zijn niet van je credits afgetrokken.`;
   const alternative = result.alternative;
+  const totalCostLabel = best.isStarterPlan ? "Kosten om te starten" : best.count > 1 ? "Geschatte totale kosten" : "Verwachte kosten per jaar";
+  const totalCostNote = best.isStarterPlan ? `voor ${decimal.format(best.credits)} credits, inclusief handicapregistratie` : best.count > 1 ? "voor jouw opgegeven speelvolume, inclusief handicapregistratie" : "inclusief handicapregistratie";
+  const recommendationEyebrow = best.isStarterPlan ? "Ons advies" : best.count > 1 ? "Jouw voordeligste route" : "Kies jouw speelrecht";
+  const webshopLabel = best.isStarterPlan ? `Kies ${decimal.format(best.credits)} credits` : best.count > 1 ? `Start met ${decimal.format(best.firstPackage.credits)} credits` : "Bekijk in de webshop";
 
   resultContent.innerHTML = `
     <div class="result-hero">
@@ -473,21 +542,21 @@ function renderResult(result) {
     </div>
 
     <div class="choice-costs">
-      <article class="choice-costs-total"><p>Verwachte kosten per jaar</p><strong>${euro.format(best.annualCost)}</strong><span>inclusief handicapregistratie</span></article>
+      <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${euro.format(best.annualCost)}</strong><span>${totalCostNote}</span></article>
       ${costCard("Grote baan", best.largeRoundCost, "effectief per ronde")}
       ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde")}
     </div>
 
     <article class="recommendation recommendation--featured">
       <div class="recommendation-main">
-        <p class="eyebrow">Kies jouw speelrecht</p>
+        <p class="eyebrow">${recommendationEyebrow}</p>
         <h4>${brandText(best.name)}</h4>
         <p>${best.detail}</p>
         <p class="package-instruction">${best.instruction}</p>
         <p class="registration-note">${registrationText}</p>
       </div>
       <div class="recommendation-actions">
-        <a class="button button--primary button--cta" href="${planLink(best)}">Bekijk in de webshop <span>→</span></a>
+        <a class="button button--primary button--cta" href="${planLink(best)}">${webshopLabel} <span>→</span></a>
         <a class="button button--secondary" href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Meer over speelrechten</a>
       </div>
     </article>
@@ -495,9 +564,11 @@ function renderResult(result) {
     ${alternative ? `
       <article class="next-option">
         <div>
-          <p class="eyebrow">Andere passende optie</p>
+          <p class="eyebrow">${alternative.isUpgradeOption ? "Meer speelruimte" : "Andere passende optie"}</p>
           <h4>${brandText(alternative.name)}</h4>
-          <p>Deze ruimere of andere keuze komt uit op circa <strong>${euro.format(alternative.annualCost)} per jaar</strong>. ${alternative.detail}</p>
+          <p>${alternative.isStarterPlan
+            ? `Met deze optie start je voor <strong>${euro.format(alternative.annualCost)}</strong> en kun je later verlengen.`
+            : `Deze ruimere of andere keuze komt uit op circa <strong>${euro.format(alternative.annualCost)} per jaar</strong>.`} ${alternative.detail}</p>
         </div>
         <div class="next-option-actions"><a class="next-option-link" href="${planLink(alternative)}">Meer informatie →</a></div>
       </article>

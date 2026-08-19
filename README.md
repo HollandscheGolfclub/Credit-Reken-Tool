@@ -15,14 +15,16 @@ De live site gebruikt `DISALLOW_FILE_MODS = true`. De plugin staat daarom direct
 
 De beveiligingsinstelling hoeft niet aangepast te worden. Als alternatief kan de map uit `dist/hgc-credit-calculator.zip` via SFTP naar `wp-content/plugins/` worden geüpload.
 
-## Twee varianten plaatsen
+## Gecombineerd of als twee varianten plaatsen
 
-Gebruik bij voorkeur twee aparte WordPress-pagina's:
+`[hgc_calculator]` toont eerst een verzorgde keuze tussen de twee rekenroutes en opent daarna de gekozen berekening op dezelfde pagina.
+
+De routes kunnen daarnaast nog steeds los op aparte WordPress-pagina's worden geplaatst:
 
 - `[hgc_calculator mode="keuzehulp"]` of `[hgc_keuzehulp]` voor de huidige speelrechtkeuze.
 - `[hgc_calculator mode="vergelijking"]` of `[hgc_besparingscalculator]` voor de vergelijking met huidige golfkosten.
 
-`[hgc_calculator]` en `[hgc_rekentool]` blijven voor bestaande pagina's standaard de keuzehulp tonen. Link vanuit social media of een knop rechtstreeks naar de betreffende WordPress-pagina.
+`[hgc_rekentool]` toont eveneens de gecombineerde start. Link vanuit social media desgewenst rechtstreeks naar een pagina met één van de losse varianten.
 
 Een iframe via een pagina-URL is alleen nodig wanneer de calculator op een andere website of een ander domein moet worden geplaatst. Controleer dan eerst `X-Frame-Options`, de Content Security Policy, cookie-instellingen en de automatische iframehoogte.
 
@@ -48,7 +50,7 @@ Voor een nieuwe WordPress-versie:
 1. Verhoog `Version` en `HGC_CALCULATOR_VERSION` in `hgc-credit-calculator.php`.
 2. Verhoog `Stable tag` in `readme.txt`.
 3. Commit en push de wijzigingen naar GitHub.
-4. Maak en push een tag, bijvoorbeeld `v1.2.0`.
+4. Maak en push een tag, bijvoorbeeld `v1.3.0`.
 
 De workflow `.github/workflows/release.yml` verpakt de deploymap automatisch als `hgc-credit-calculator.zip` en plaatst dit bestand bij een GitHub Release. Op de beveiligde live site blijft Git-deploy de primaire updater, omdat dashboardupdates door `DISALLOW_FILE_MODS` zijn geblokkeerd.
 

@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp en kostenvergelijker van de Hollandsche Golfclub.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.2.0');
+define('HGC_CALCULATOR_VERSION', '1.3.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -75,11 +75,15 @@ function hgc_calculator_shortcode(array $atts = array()): string
 {
     static $rendered_modes = array();
 
-    $atts = shortcode_atts(array('mode' => 'keuzehulp'), $atts, 'hgc_calculator');
-    $requested_mode = sanitize_key((string) ($atts['mode'] ?? 'keuzehulp'));
-    $mode = in_array($requested_mode, array('vergelijking', 'comparison', 'besparing'), true)
-        ? 'comparison'
-        : 'choice';
+    $atts = shortcode_atts(array('mode' => 'start'), $atts, 'hgc_calculator');
+    $requested_mode = sanitize_key((string) ($atts['mode'] ?? 'start'));
+    if (in_array($requested_mode, array('vergelijking', 'comparison', 'besparing'), true)) {
+        $mode = 'comparison';
+    } elseif (in_array($requested_mode, array('keuzehulp', 'choice', 'advies'), true)) {
+        $mode = 'choice';
+    } else {
+        $mode = 'start';
+    }
 
     if (!empty($rendered_modes[$mode])) {
         return '';
@@ -110,16 +114,27 @@ function hgc_calculator_shortcode(array $atts = array()): string
         'window.hgcConfig = ' . wp_json_encode(hgc_calculator_config(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';',
         'after'
     );
-    wp_enqueue_script(
-        'hgc-calculator-' . $mode,
-        HGC_CALCULATOR_URL . ($mode === 'comparison' ? 'comparison.js' : 'calculator.js'),
-        array('hgc-calculator-config'),
-        (string) filemtime(HGC_CALCULATOR_DIR . ($mode === 'comparison' ? 'comparison.js' : 'calculator.js')),
-        true
-    );
+    $scripts = $mode === 'start'
+        ? array('calculator.js', 'comparison.js', 'launcher.js')
+        : array($mode === 'comparison' ? 'comparison.js' : 'calculator.js');
+    $dependencies = array('hgc-calculator-config');
+    foreach ($scripts as $script) {
+        $handle = 'hgc-calculator-' . basename($script, '.js');
+        wp_enqueue_script(
+            $handle,
+            HGC_CALCULATOR_URL . $script,
+            $dependencies,
+            (string) filemtime(HGC_CALCULATOR_DIR . $script),
+            true
+        );
+        $dependencies = array($handle);
+    }
 
     ob_start();
-    include HGC_CALCULATOR_DIR . ($mode === 'comparison' ? 'templates/comparison.php' : 'templates/calculator.php');
+    $template = $mode === 'start'
+        ? 'templates/launcher.php'
+        : ($mode === 'comparison' ? 'templates/comparison.php' : 'templates/calculator.php');
+    include HGC_CALCULATOR_DIR . $template;
     return (string) ob_get_clean();
 }
 add_shortcode('hgc_calculator', 'hgc_calculator_shortcode');
