@@ -182,16 +182,22 @@
                     }
                     const extraRounds = Number(plan.greenFeeExtraRounds || 0);
                     if (extraRounds > 0) {
-                      // Deze route rekent het tekort af op de grote baan. Dat mag nooit
-                      // meer rondes betreffen dan de bezoeker daar speelt.
-                      if (extraRounds > largeRounds + 1e-8) {
-                        report("greenfee-bijspelen-meer-dan-grote-rondes", { ...context, group: plan.group, extraRounds, largeRounds });
+                      // Een Shortgolf-speelrecht rekent het tekort af op de kleine
+                      // baan, de overige speelrechten op de grote. In beide gevallen
+                      // nooit meer rondes dan de bezoeker daar speelt.
+                      const opKleine = plan.type === "shortgolf";
+                      const bijRondes = opKleine ? smallRounds : largeRounds;
+                      const bijTarief = Number(opKleine ? smallCourse.shortGreenFee : largeCourse.greenFee);
+                      if (extraRounds > bijRondes + 1e-8) {
+                        report("greenfee-bijspelen-meer-rondes-dan-gespeeld", { ...context, group: plan.group, extraRounds, bijRondes });
                       }
-                      const verwacht = extraRounds * Number(largeCourse.greenFee);
-                      if (Math.abs(Number(plan.greenFeeExtraTotal) - verwacht) > 0.001) {
+                      if (Math.abs(Number(plan.greenFeeExtraTotal) - extraRounds * bijTarief) > 0.001) {
                         report("greenfee-bijspelen-telt-niet-op", { ...context, group: plan.group, totaal: plan.greenFeeExtraTotal });
                       }
-                      if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.greenFeeExtraTotal)) > 0.001) {
+                      // Een Shortgolf-speelrecht kan daarnaast grote rondes op greenfee
+                      // hebben; die zitten in reducedGreenFeeTotal.
+                      const bijTotaal = Number(plan.greenFeeExtraTotal) + Number(plan.reducedGreenFeeTotal || 0);
+                      if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - bijTotaal) > 0.001) {
                         report("greenfee-bijspelen-weegt-niet-mee", { ...context, group: plan.group });
                       }
                       if (covers) {
@@ -228,7 +234,8 @@
                     if (Math.abs(Number(plan.reducedGreenFeeTotal) - greenFeeRounds * fee) > 0.001) {
                       report("greenfeetotaal-telt-niet-op", { ...context, group: plan.group, totaal: plan.reducedGreenFeeTotal });
                     }
-                    if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.reducedGreenFeeTotal)) > 0.001) {
+                    const greenfeeSom = Number(plan.reducedGreenFeeTotal) + Number(plan.greenFeeExtraTotal || 0);
+                    if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - greenfeeSom) > 0.001) {
                       report("greenfee-weegt-niet-mee-in-keuze", { ...context, group: plan.group });
                     }
                     if (Number(plan.largeBaseCost || 0) !== 0) {
@@ -538,7 +545,8 @@
           if (Math.abs(Number(shortGolf.reducedGreenFeeTotal) - largeRounds * testFee) > 0.001) {
             report("greenfeetotaal-onjuist", { ...context, totaal: shortGolf.reducedGreenFeeTotal });
           }
-          if (Math.abs(Number(shortGolf.selectionCost) - Number(shortGolf.annualCost) - largeRounds * testFee) > 0.001) {
+          const extraSom = Number(shortGolf.greenFeeExtraTotal || 0);
+          if (Math.abs(Number(shortGolf.selectionCost) - Number(shortGolf.annualCost) - largeRounds * testFee - extraSom) > 0.001) {
             report("greenfee-weegt-niet-mee-in-keuze", context);
           }
           if (Number(shortGolf.reducedGreenFeeTotal) > 0 && Number(shortGolf.annualCost) !== Number(shortGolf.price) + Number(shortGolf.registrationPrice)) {

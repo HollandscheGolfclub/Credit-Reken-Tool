@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.14.0
+Stable tag: 1.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.15.0 =
+* Een kleiner Shortgolf-speelrecht met de resterende kleine-baanrondes op greenfee doet nu mee als kandidaat. Die route bestond alleen voor de grote baan, waardoor de keuzehulp bij 40 rondes op de kleine baan van Almkreek LoyalTee adviseerde voor EUR 539,10 terwijl Shortgolf met 20 credits op EUR 538,50 uitkomt.
+* De bijspeelroute rekent het tekort nu af op de baan waar de rondes liggen: een Shortgolf-speelrecht op de kleine baan, de overige speelrechten op de grote.
 
 = 1.14.0 =
 * De greenfeetarieven van de kleine banen staan er nu in, overgenomen uit de flyer Hollandsche Golfclub Greenfees 2026. Per baan is zowel het normale als het gereduceerde tarief vastgelegd, voor de grote en de kleine baan.

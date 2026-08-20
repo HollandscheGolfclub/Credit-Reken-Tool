@@ -404,6 +404,47 @@ function candidatePlans(context) {
           ? `${shortCoverage} Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
           : shortCoverage;
       candidates.push(addRegistration(shortPlan, handicapPrice));
+
+      // Naast het speelrecht dat alle kleine rondes dekt, is een kleiner
+      // Shortgolf-speelrecht met de resterende rondes op greenfee vaak
+      // voordeliger. Die route kan alleen mee wanneer voor de kleine baan een
+      // gereduceerd tarief bekend is.
+      const smallFee = Number(smallCourse && smallCourse.shortGreenFee);
+      if (Number.isFinite(smallFee) && smallFee > 0) {
+        hgcConfig.shortGolfPackages.forEach((item) => {
+          const credits = Number(item.credits);
+          const price = Number(item.price);
+          const shortfall = shortCredits - credits;
+          if (!Number.isFinite(credits) || !Number.isFinite(price) || shortfall <= 1e-8) return;
+          const extraRounds = shortfall / shortGolfRate;
+          if (extraRounds > smallRounds + 1e-8) return;
+          const plan = {
+            type: "shortgolf",
+            group: `shortgolf-greenfee-${credits}`,
+            name: item.name || `Hollandsche Golfclub Shortgolf – ${decimal.format(credits)} credits`,
+            productName: "Hollandsche Golfclub Shortgolf-speelrecht",
+            price,
+            credits,
+            requiredCredits: shortCredits,
+            coversRounds: false,
+            count: 1,
+            packageItems: [{ ...item, credits, price }],
+            availablePackages: hgcConfig.shortGolfPackages,
+            cheaperRoute: null,
+            greenFeeExtraRounds: extraRounds,
+            greenFeeExtraTotal: extraRounds * smallFee,
+            reducedGreenFeeRounds: payGreenFee ? largeRounds : 0,
+            reducedGreenFeeTotal: greenFeeCost,
+            uncoveredLargeRounds: payGreenFee ? 0 : largeRounds,
+            coveredRounds: smallRounds * Math.min(1, credits / shortCredits),
+            largeBaseCost: 0,
+            smallBaseCost: price / smallRounds,
+            detail: `${decimal.format(credits)} Shortgolf-credits dekken ${Math.floor(credits / shortGolfRate)} van je ${smallRounds} rondes op de kleine baan.`,
+            instruction: `Je ${roundWord(Math.round(extraRounds * 10) / 10)} op de kleine baan na die credits reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
+          };
+          candidates.push(addRegistration(plan, handicapPrice));
+        });
+      }
     }
   }
 
