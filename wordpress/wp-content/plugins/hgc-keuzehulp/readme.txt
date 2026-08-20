@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.3
+Stable tag: 1.10.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.4 =
+* De knop "Opnieuw controleren" op de updatepagina werkt nu ook voor deze plugin. De laatst gevonden release werd zes uur bewaard, waardoor WordPress na een nieuwe release nog uren meldde dat alles up-to-date was.
+* Is GitHub onbereikbaar, dan wordt dat een kwartier onthouden. Zonder dat deed iedere updatecontrole opnieuw een verzoek met tien seconden wachttijd.
 
 = 1.10.3 =
 * De bedragen in de kostenkaarten boven het advies stonden klein en grijs in plaats van groot en donker. De opmaakregel voor de toelichting onder het bedrag pakte ook de tekst van het bedrag zelf mee, omdat dat in een span binnen de strong staat. Die regel geldt nu alleen voor de toelichting.

@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.10.3
+ * Version: 1.10.4
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.10.3');
+define('HGC_CALCULATOR_VERSION', '1.10.4');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -179,7 +179,9 @@ final class HGC_Calculator_GitHub_Updater
             return $transient;
         }
 
-        $release = $this->get_release();
+        // Klikt een beheerder op "Opnieuw controleren", dan moet onze eigen cache
+        // ook opzij; anders blijft WordPress tot zes uur de vorige release melden.
+        $release = $this->get_release(!empty($_GET['force-check']));
         if (!$release || empty($release['version']) || empty($release['package'])) {
             return $transient;
         }
@@ -228,11 +230,12 @@ final class HGC_Calculator_GitHub_Updater
         return $information;
     }
 
-    private function get_release(): ?array
+    private function get_release(bool $force = false): ?array
     {
         $cached = get_site_transient(self::CACHE_KEY);
-        if (is_array($cached)) {
-            return $cached;
+        if (!$force && is_array($cached)) {
+            // Een mislukte poging bewaren we ook, maar dan als lege uitkomst.
+            return empty($cached['version']) ? null : $cached;
         }
 
         $headers = array(
@@ -251,11 +254,15 @@ final class HGC_Calculator_GitHub_Updater
         );
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            // Kort onthouden dat het misging, zodat een onbereikbaar GitHub niet bij
+            // iedere controle een verzoek van tien seconden kost.
+            set_site_transient(self::CACHE_KEY, array('failed' => true), 15 * MINUTE_IN_SECONDS);
             return null;
         }
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!is_array($data) || empty($data['tag_name'])) {
+            set_site_transient(self::CACHE_KEY, array('failed' => true), 15 * MINUTE_IN_SECONDS);
             return null;
         }
 
