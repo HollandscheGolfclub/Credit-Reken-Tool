@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.6.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.7.0 =
+* Per baan is het gereduceerde greenfeetarief voor een ronde van 9 holes op de grote baan in te vullen onder Instellingen.
+* De keuzehulp rekent de grote-baanrondes van een Shortgolf-speelrecht tegen dat tarief mee, zodat de vergelijking met een algemeen speelrecht eerlijk is. Bij 60 kleine en 8 grote rondes komt Shortgolf daarmee als advies naar voren.
+* Het greenfeetarief zelf wordt niet aan de bezoeker getoond. Het zit verwerkt in het totaalbedrag; er verschijnt geen tarief per ronde en geen kostenkaart voor de grote baan.
+* Zolang een tarief leeg is, verandert er niets: het advies meldt dan dat de grote-baanrondes buiten het speelrecht vallen.
 
 = 1.6.1 =
 * Een algemeen speelrecht vermeldt dat je onbeperkt medespelers kunt introduceren tegen een gereduceerd greenfeetarief.

@@ -32,6 +32,7 @@ Onder **Instellingen > Hollandsche Golfclub Calculator** kan een beheerder zonde
 - golfbanen toevoegen, aanpassen en verwijderen;
 - aparte creditwaarden voor algemene en Shortgolf-speelrechten wijzigen;
 - de drempelwaarden voor het speelbeeld instellen die bepalen welk advies een bezoeker ziet;
+- per baan het gereduceerde greenfeetarief voor een ronde van 9 holes op de grote baan invullen;
 - algemene, daluren-, jeugd- en Shortgolf-pakketten toevoegen of verwijderen;
 - handicapregistratie, links en voordelen aanpassen;
 - alle waarden terugzetten naar de standaardconfiguratie uit GitHub.
@@ -88,7 +89,9 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
   - vanaf 85% kleine-baanrondes adviseert de keuzehulp een Shortgolf-speelrecht, omdat Shortgolf-credits op de kleine baan voordeliger zijn. Het advies vermeldt dat de resterende grote-baanrondes buiten dat speelrecht vallen en apart worden afgerekend;
   - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
   - daarbuiten, bijvoorbeeld bij een verhouding van 70:30, adviseert de keuzehulp een algemeen creditspeelrecht.
-- De keuzehulp rekent nooit met greenfeetarieven. Rondes die buiten een speelrecht vallen krijgen geen prijs per ronde, zodat er geen bedrag wordt getoond dat de club niet heeft vastgesteld.
+- Is per baan het gereduceerde greenfeetarief voor de grote baan ingevuld, dan rekent de keuzehulp de grote-baanrondes van een Shortgolf-speelrecht daartegen mee. Zo wordt de vergelijking met een algemeen speelrecht eerlijk: bij 60 kleine en 8 grote rondes komt een Shortgolf-speelrecht met gereduceerde rondes op de grote baan lager uit dan een algemeen speelrecht dat alles dekt.
+- **Het greenfeetarief zelf wordt nooit aan de bezoeker getoond.** Het bedrag zit verwerkt in het totaal, maar er verschijnt geen tarief per ronde en ook geen kostenkaart "Grote baan", omdat die het tarief zou verraden. Een rekencontrole met een testtarief bewaakt dat.
+- Is het tarief voor een baan leeg, dan rekent de keuzehulp niet met greenfees. Het advies meldt dan dat de grote-baanrondes buiten het speelrecht vallen, en er wordt geen bedrag getoond dat de club niet heeft vastgesteld.
 - Handicapregistratie zit standaard in ieder bedrag. In het advies staat een schakelaar waarmee de bezoeker die kosten uit het beeld haalt. Dat wisselt alleen de getoonde bedragen en laat het voordeel "Handicapregistratie bij de Hollandsche Golfclub" uit de lijst verdwijnen; de aanbeveling zelf verandert niet, omdat de registratieprijs voor ieder speelrecht gelijk is.
 - Bij een gemengd speelbeeld staan de voordelen per kaart, zodat de Shortgolf-kaart de Shortgolf-voordelen toont en niet die van het algemene speelrecht.
 - De keuzehulp rekent uitsluitend met creditwaarden, speelrechtprijzen en de prijs van handicapregistratie.
@@ -103,6 +106,8 @@ Laat de Hollandsche Golfclub deze aannames controleren voordat de keuzehulp publ
 `tests/audit-matrix.js` controleert de aanbevelingen over alle banen, producttypen, leeftijden, dalurenkeuzes en relevante grenswaarden. De audit controleert ook pakketdekking, toegestane producten, alternatieven en of de kosten per baantype optellen tot het getoonde totaal.
 
 Iedere aanbeveling wordt gecontroleerd op dekking: geen enkel plan mag minder credits bevatten dan er nodig zijn, en de geadviseerde credits moeten optellen uit pakketten die daadwerkelijk in het aanbod staan. Een voordeligere route moet de rondes ook dekken, uit meer dan één pakket bestaan en werkelijk goedkoper zijn.
+
+`runHgcGreenFeeAudit` rekent met een testtarief van € 37,77 op een kopie van iedere baan en controleert dat het greenfeebedrag correct in de prijs zit, dat het jaarbedrag optelt, dat het tarief nergens in de uitvoer verschijnt, dat de kostenkaart voor de grote baan ontbreekt en dat het advies het gereduceerde tarief benoemt in plaats van de rondes als ongedekt te melden. Het testtarief is een ongebruikelijk bedrag, zodat een toevallige overeenkomst met een ander bedrag in de uitvoer uitgesloten is.
 
 `runHgcProfileAudit` controleert daarnaast de zone-indeling tegen de ingestelde drempelwaarden, of een Shortgolf-speelrecht alleen in de juiste zones meedoet, of een gemengd speelbeeld inderdaad twee opties oplevert, en of het bedrag achter de schakelaar exact de speelrechtprijs zonder handicapregistratie is.
 

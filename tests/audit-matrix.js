@@ -140,6 +140,19 @@
                       report("voordeligere-route-is-een-pakket", { ...context, group: plan.group });
                     }
                   }
+                  const greenFeeRounds = Number(plan.reducedGreenFeeRounds || 0);
+                  if (greenFeeRounds) {
+                    const fee = Number(largeCourse.greenFee);
+                    if (greenFeeRounds !== largeRounds) {
+                      report("greenfee-rondes-wijken-af", { ...context, group: plan.group, greenFeeRounds });
+                    }
+                    if (Number(plan.uncoveredLargeRounds || 0) !== 0) {
+                      report("greenfee-en-ongedekt-tegelijk", { ...context, group: plan.group });
+                    }
+                    if (Math.abs(Number(plan.price) - Number(plan.packageBasePrice) - greenFeeRounds * fee) > 0.001) {
+                      report("greenfee-prijs-telt-niet-op", { ...context, group: plan.group, prijs: plan.price, basis: plan.packageBasePrice });
+                    }
+                  }
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
                     report("shortgolf-outside-profile", { ...context, group: plan.group });
                   }
@@ -360,6 +373,90 @@
       }
     }
     return { cases, cardsChecked, errorCounts, errors };
+  };
+
+  window.runHgcGreenFeeAudit = function runHgcGreenFeeAudit() {
+    const { candidatePlans, recommendationFor, renderResult, resultContent } = window.hgcCalculatorAudit;
+    // Een ongebruikelijk bedrag, zodat een toevallige overeenkomst met een ander
+    // bedrag in de uitvoer uitgesloten is.
+    const testFee = 37.77;
+    const shownFee = new Intl.NumberFormat("nl-NL", { minimumFractionDigits: 2 }).format(testFee);
+    const roundPairs = [[1, 20], [2, 30], [5, 40], [8, 60], [10, 60], [20, 60], [25, 28], [10, 10], [30, 30]];
+    const largeCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.largeRate));
+    const smallCourses = hgcConfig.courses.filter((course) => Number.isFinite(course.shortGolfRate));
+    const errors = [];
+    const errorCounts = {};
+    let cases = 0;
+    let greenFeePlans = 0;
+    let shortGolfAdvised = 0;
+    let configuredCourses = largeCourses.filter((course) => Number(course.greenFee) > 0).length;
+
+    function report(code, context) {
+      errorCounts[code] = (errorCounts[code] || 0) + 1;
+      if (errors.length < 50) errors.push({ code, ...context });
+    }
+
+    for (const largeCourse of largeCourses) {
+      for (const smallCourse of smallCourses) {
+        for (const [largeRounds, smallRounds] of roundPairs) {
+          const context = { largeRounds, smallRounds, largeCourse: largeCourse.id, smallCourse: smallCourse.id };
+          const withFee = { ...largeCourse, greenFee: testFee };
+          const input = { largeRounds, smallRounds, largeCourse: withFee, smallCourse, youth: false, canPlayOffPeak: false };
+          cases += 1;
+
+          let plans;
+          let result;
+          try {
+            plans = candidatePlans(input);
+            result = recommendationFor(input);
+            renderResult(result);
+          } catch (error) {
+            report("exception", { ...context, message: error.message });
+            continue;
+          }
+
+          const shortGolf = plans.find((plan) => plan.type === "shortgolf");
+          const zone = window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone;
+          if (zone !== "credits" && !shortGolf) {
+            report("shortgolf-plan-ontbreekt", { ...context, zone });
+            continue;
+          }
+          if (!shortGolf) continue;
+
+          greenFeePlans += 1;
+          if (Number(shortGolf.reducedGreenFeeRounds) !== largeRounds) {
+            report("greenfee-rondes-niet-verwerkt", { ...context, rondes: shortGolf.reducedGreenFeeRounds });
+          }
+          if (Math.abs(Number(shortGolf.price) - Number(shortGolf.packageBasePrice) - largeRounds * testFee) > 0.001) {
+            report("greenfee-niet-in-prijs", { ...context, prijs: shortGolf.price, basis: shortGolf.packageBasePrice });
+          }
+          if (Math.abs(Number(shortGolf.annualCost) - Number(shortGolf.price) - Number(shortGolf.registrationPrice)) > 0.001) {
+            report("jaarbedrag-telt-niet-op", context);
+          }
+
+          // Het tarief zelf mag nergens in de uitvoer staan, en de kosten per
+          // ronde op de grote baan mogen het niet verraden.
+          const shown = resultContent.textContent;
+          if (shown.includes(shownFee)) {
+            report("greenfeetarief-zichtbaar", { ...context, tarief: shownFee });
+          }
+          if (result.best.type === "shortgolf") {
+            shortGolfAdvised += 1;
+            const labels = [...resultContent.querySelectorAll(".choice-costs article p")].map((node) => node.textContent);
+            if (labels.includes("Grote baan")) {
+              report("kosten-per-ronde-grote-baan-getoond", context);
+            }
+            if (!/gereduceerde greenfeetarief/.test(shown)) {
+              report("gereduceerd-tarief-niet-benoemd", context);
+            }
+            if (/buiten dit speelrecht/.test(shown)) {
+              report("rondes-onterecht-als-ongedekt-gemeld", context);
+            }
+          }
+        }
+      }
+    }
+    return { cases, configuredCourses, greenFeePlans, shortGolfAdvised, errorCounts, errors };
   };
 
   window.runHgcRoundSweepAudit = function runHgcRoundSweepAudit() {

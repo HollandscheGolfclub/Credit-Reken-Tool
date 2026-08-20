@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Credit Calculator
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.6.1
+ * Version: 1.7.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.6.1');
+define('HGC_CALCULATOR_VERSION', '1.7.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -48,8 +48,10 @@ function hgc_calculator_config(): array
     }
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $id = $course['id'] ?? '';
-        if (!array_key_exists('shortGolfRate', $course)) {
-            $saved['courses'][$index]['shortGolfRate'] = $default_courses[$id]['shortGolfRate'] ?? null;
+        foreach (array('shortGolfRate', 'greenFee') as $field) {
+            if (!array_key_exists($field, $course)) {
+                $saved['courses'][$index][$field] = $default_courses[$id][$field] ?? null;
+            }
         }
     }
     foreach (($defaults['settings'] ?? array()) as $key => $value) {
@@ -67,7 +69,7 @@ function hgc_calculator_config(): array
         $saved['handicapRegistration'] ?? array(),
         $defaults['handicapRegistration'] ?? array()
     );
-    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'provisional', 'note'));
+    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'provisional', 'note'));
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $saved['courses'][$index] = array_intersect_key($course, $course_keys);
     }

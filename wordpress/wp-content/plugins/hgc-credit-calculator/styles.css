@@ -220,6 +220,7 @@
 .hgc-calculator .recommendation li + li { margin-top: 4px; }
 .hgc-calculator .package-instruction { padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
 .hgc-calculator .registration-switch { margin: 0 0 22px; }
+.hgc-calculator .greenfee-note { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--green); background: #f3f7e9; color: var(--ink); font-size: 13px; font-weight: 650; }
 .hgc-calculator .coverage-warning { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--orange); background: #fdf2e6; color: var(--ink); font-size: 13px; font-weight: 650; }
 .hgc-calculator .registration-note { margin-bottom: 0 !important; font-size: 12px; }
 

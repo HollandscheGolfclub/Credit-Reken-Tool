@@ -263,6 +263,7 @@ final class HGC_Calculator_Admin
                 'largeRate' => $this->number($row['largeRate'] ?? null, null),
                 'shortRate' => $this->number($row['shortRate'] ?? null, null),
                 'shortGolfRate' => $this->number($row['shortGolfRate'] ?? null, null),
+                'greenFee' => $this->number($row['greenFee'] ?? null, null),
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
             );
@@ -329,6 +330,11 @@ final class HGC_Calculator_Admin
                 <?php $this->nullable_number('Algemeen speelrecht: grote baan', "config[courses][$index][largeRate]", $course['largeRate'] ?? null); ?>
                 <?php $this->nullable_number('Algemeen speelrecht: kleine baan', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
                 <?php $this->nullable_number('Shortgolf-speelrecht: kleine baan', "config[courses][$index][shortGolfRate]", $course['shortGolfRate'] ?? null); ?>
+            </div>
+            <h4>Gereduceerde greenfee grote baan</h4>
+            <p class="hgc-admin-hint">Het gereduceerde greenfeetarief voor één ronde van 9 holes op de grote baan, zoals dat geldt voor spelers met een speelrecht. De keuzehulp gebruikt dit bedrag om te bepalen of een Shortgolf-speelrecht met losse rondes op de grote baan voordeliger is. Het tarief zelf wordt nooit aan de bezoeker getoond, alleen verwerkt in het totaalbedrag. Laat het leeg zolang het tarief niet vaststaat; de keuzehulp rekent dan niet met greenfees.</p>
+            <div class="hgc-admin-grid hgc-admin-grid--two">
+                <?php $this->nullable_number('Gereduceerde greenfee per ronde van 9 holes', "config[courses][$index][greenFee]", $course['greenFee'] ?? null, 0.01, '€'); ?>
             </div>
             <div class="hgc-admin-grid hgc-admin-grid--two">
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>

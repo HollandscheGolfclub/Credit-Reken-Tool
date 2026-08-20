@@ -69,7 +69,7 @@ await loaded;
 const auditSource = await readFile(new URL("./audit-matrix.js", import.meta.url), "utf8");
 await command("Runtime.evaluate", { expression: auditSource });
 const evaluation = await command("Runtime.evaluate", {
-  expression: "JSON.stringify({ matrix: window.runHgcMatrixAudit(), profile: window.runHgcProfileAudit(), text: window.runHgcTextAudit(), sweep: window.runHgcRoundSweepAudit() })",
+  expression: "JSON.stringify({ matrix: window.runHgcMatrixAudit(), profile: window.runHgcProfileAudit(), text: window.runHgcTextAudit(), greenfee: window.runHgcGreenFeeAudit(), sweep: window.runHgcRoundSweepAudit() })",
   returnByValue: true,
   awaitPromise: true,
 });
