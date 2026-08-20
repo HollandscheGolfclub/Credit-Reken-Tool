@@ -456,7 +456,46 @@
         }
       }
     }
-    return { cases, configuredCourses, greenFeePlans, shortGolfAdvised, errorCounts, errors };
+    let realCases = 0;
+    let realGreenFeePlans = 0;
+    for (const largeCourse of largeCourses.filter((course) => Number(course.greenFee) > 0)) {
+      for (const smallCourse of smallCourses) {
+        for (const [largeRounds, smallRounds] of roundPairs) {
+          const context = { largeRounds, smallRounds, largeCourse: largeCourse.id, smallCourse: smallCourse.id, tarief: largeCourse.greenFee };
+          realCases += 1;
+          let result;
+          try {
+            result = recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse, youth: false, canPlayOffPeak: false });
+            renderResult(result);
+          } catch (error) {
+            report("echte-tarieven-exception", { ...context, message: error.message });
+            continue;
+          }
+          if (result.best.type !== "shortgolf") continue;
+          realGreenFeePlans += 1;
+
+          if (Number(result.best.reducedGreenFeeRounds) !== largeRounds) {
+            report("echte-tarieven-rondes-niet-verwerkt", { ...context, rondes: result.best.reducedGreenFeeRounds });
+          }
+          if (Math.abs(Number(result.best.price) - Number(result.best.packageBasePrice) - largeRounds * Number(largeCourse.greenFee)) > 0.001) {
+            report("echte-tarieven-prijs-telt-niet-op", context);
+          }
+          const labels = [...resultContent.querySelectorAll(".choice-costs article p")].map((node) => node.textContent);
+          if (labels.includes("Grote baan")) {
+            report("echte-tarieven-kosten-grote-baan-getoond", context);
+          }
+          const shown = resultContent.textContent;
+          if (!/gereduceerde greenfeetarief/.test(shown)) {
+            report("echte-tarieven-tarief-niet-benoemd", context);
+          }
+          if (/buiten dit speelrecht/.test(shown)) {
+            report("echte-tarieven-onterecht-ongedekt", context);
+          }
+        }
+      }
+    }
+
+    return { cases, realCases, configuredCourses, greenFeePlans, realGreenFeePlans, shortGolfAdvised, errorCounts, errors };
   };
 
   window.runHgcRoundSweepAudit = function runHgcRoundSweepAudit() {

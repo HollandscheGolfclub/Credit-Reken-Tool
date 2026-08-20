@@ -332,9 +332,9 @@ final class HGC_Calculator_Admin
                 <?php $this->nullable_number('Shortgolf-speelrecht: kleine baan', "config[courses][$index][shortGolfRate]", $course['shortGolfRate'] ?? null); ?>
             </div>
             <h4>Gereduceerde greenfee grote baan</h4>
-            <p class="hgc-admin-hint">Het gereduceerde greenfeetarief voor één ronde van 9 holes op de grote baan, zoals dat geldt voor spelers met een speelrecht. De keuzehulp gebruikt dit bedrag om te bepalen of een Shortgolf-speelrecht met losse rondes op de grote baan voordeliger is. Het tarief zelf wordt nooit aan de bezoeker getoond, alleen verwerkt in het totaalbedrag. Laat het leeg zolang het tarief niet vaststaat; de keuzehulp rekent dan niet met greenfees.</p>
+            <p class="hgc-admin-hint">Het gereduceerde greenfeetarief voor één ronde op de grote baan, zoals dat geldt voor spelers met een speelrecht. Een ronde volgt het aantal holes dat hierboven bij deze baan staat, dus meestal 9 holes. De keuzehulp gebruikt dit bedrag om te bepalen of een Shortgolf-speelrecht met rondes op de grote baan voordeliger is. Het tarief zelf wordt nooit aan de bezoeker getoond, alleen verwerkt in het totaalbedrag. Laat het leeg zolang het tarief niet vaststaat; de keuzehulp rekent dan niet met greenfees.</p>
             <div class="hgc-admin-grid hgc-admin-grid--two">
-                <?php $this->nullable_number('Gereduceerde greenfee per ronde van 9 holes', "config[courses][$index][greenFee]", $course['greenFee'] ?? null, 0.01, '€'); ?>
+                <?php $this->nullable_number('Gereduceerde greenfee per ronde grote baan', "config[courses][$index][greenFee]", $course['greenFee'] ?? null, 0.01, '€'); ?>
             </div>
             <div class="hgc-admin-grid hgc-admin-grid--two">
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>

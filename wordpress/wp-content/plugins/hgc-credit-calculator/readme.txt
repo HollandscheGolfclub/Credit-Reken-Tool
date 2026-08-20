@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.7.1 =
+* De gereduceerde greenfeetarieven van de grote baan zijn ingevuld voor veertien golfparken, overgenomen uit de flyer Hollandsche Golfclub Greenfees 2026.
+* Voor Golfpark Naarderbos staat geen tarief op die flyer; ShortGolf Utrecht heeft geen grote baan. Die twee velden blijven leeg.
 
 = 1.7.0 =
 * Per baan is het gereduceerde greenfeetarief voor een ronde van 9 holes op de grote baan in te vullen onder Instellingen.

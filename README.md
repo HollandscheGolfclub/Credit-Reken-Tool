@@ -32,7 +32,7 @@ Onder **Instellingen > Hollandsche Golfclub Calculator** kan een beheerder zonde
 - golfbanen toevoegen, aanpassen en verwijderen;
 - aparte creditwaarden voor algemene en Shortgolf-speelrechten wijzigen;
 - de drempelwaarden voor het speelbeeld instellen die bepalen welk advies een bezoeker ziet;
-- per baan het gereduceerde greenfeetarief voor een ronde van 9 holes op de grote baan invullen;
+- per baan het gereduceerde greenfeetarief voor een ronde op de grote baan invullen;
 - algemene, daluren-, jeugd- en Shortgolf-pakketten toevoegen of verwijderen;
 - handicapregistratie, links en voordelen aanpassen;
 - alle waarden terugzetten naar de standaardconfiguratie uit GitHub.
@@ -89,6 +89,8 @@ Laat de launcher bij `index.html` en de map `wordpress/` staan.
   - vanaf 85% kleine-baanrondes adviseert de keuzehulp een Shortgolf-speelrecht, omdat Shortgolf-credits op de kleine baan voordeliger zijn. Het advies vermeldt dat de resterende grote-baanrondes buiten dat speelrecht vallen en apart worden afgerekend;
   - tussen 40% en 60% kleine-baanrondes is het speelbeeld gemengd. De keuzehulp legt de keuze dan bij de bezoeker met twee kaarten: groen voor het algemene speelrecht dat alle rondes dekt, oranje voor Shortgolf;
   - daarbuiten, bijvoorbeeld bij een verhouding van 70:30, adviseert de keuzehulp een algemeen creditspeelrecht.
+- De gereduceerde greenfeetarieven komen uit de flyer "Hollandsche Golfclub Greenfees 2026", geldig vanaf 1 januari 2026. Een ronde volgt het aantal holes van de betreffende baan: bij Reymerswael 12 holes, bij de overige banen 9. Voor Golfpark Naarderbos staat geen tarief op die flyer en ShortGolf Utrecht heeft geen grote baan; die twee velden zijn leeg.
+- De flyer noemt het gereduceerde tarief bij LoyalTee-leden, bij introducees van golfers met een speelrecht en bij een tijdelijk non-qualifying baan. Dat een speelrechthouder zelf tegen dat tarief op een grote baan speelt, staat er niet letterlijk; laat dat bevestigen voordat de bedragen als definitief gelden.
 - Is per baan het gereduceerde greenfeetarief voor de grote baan ingevuld, dan rekent de keuzehulp de grote-baanrondes van een Shortgolf-speelrecht daartegen mee. Zo wordt de vergelijking met een algemeen speelrecht eerlijk: bij 60 kleine en 8 grote rondes komt een Shortgolf-speelrecht met gereduceerde rondes op de grote baan lager uit dan een algemeen speelrecht dat alles dekt.
 - **Het greenfeetarief zelf wordt nooit aan de bezoeker getoond.** Het bedrag zit verwerkt in het totaal, maar er verschijnt geen tarief per ronde en ook geen kostenkaart "Grote baan", omdat die het tarief zou verraden. Een rekencontrole met een testtarief bewaakt dat.
 - Is het tarief voor een baan leeg, dan rekent de keuzehulp niet met greenfees. Het advies meldt dan dat de grote-baanrondes buiten het speelrecht vallen, en er wordt geen bedrag getoond dat de club niet heeft vastgesteld.
