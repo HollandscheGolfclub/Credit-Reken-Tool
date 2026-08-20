@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.15.0
+Stable tag: 1.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.16.0 =
+* De keuzehulp houdt de ladder van de flyer aan: handicapregistratie, dan LoyalTee, dan een speelrecht. Vanaf 20 rondes per jaar is een speelrecht het advies, ook wanneer per ronde afrekenen daar nog een paar tientjes goedkoper uitvalt.
+* Dat was nodig omdat de keuzehulp puur op prijs sorteerde. Bij 25 rondes op de grote en 25 op de kleine baan adviseerde zij LoyalTee voor EUR 945,50 tegen EUR 1.011,17 voor een speelrecht, een verschil van zeven procent, terwijl de flyer daar een speelrecht bij zet.
+* De grens staat als feeRouteMaxRounds onder Instellingen en is standaard 20 rondes.
 
 = 1.15.0 =
 * Een kleiner Shortgolf-speelrecht met de resterende kleine-baanrondes op greenfee doet nu mee als kandidaat. Die route bestond alleen voor de grote baan, waardoor de keuzehulp bij 40 rondes op de kleine baan van Almkreek LoyalTee adviseerde voor EUR 539,10 terwijl Shortgolf met 20 credits op EUR 538,50 uitkomt.

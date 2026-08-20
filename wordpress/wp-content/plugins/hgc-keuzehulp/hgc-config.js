@@ -22,6 +22,10 @@ window.hgcConfig = {
     // Ligt het speelrecht dat alle rondes dekt binnen deze marge van de
     // goedkoopste route, dan legt de keuzehulp de keuze bij de bezoeker.
     dualAdviceMarginPercent: 15,
+    // Vanaf dit aantal rondes per jaar adviseert de keuzehulp een speelrecht en
+    // niet langer handicapregistratie of LoyalTee, zoals de flyer die ladder
+    // ook aanhoudt: heel af en toe, af en toe, regelmatig tot heel vaak.
+    feeRouteMaxRounds: 20,
   },
   // Bij handicapregistratie horen twee vrije rondes van 9 holes per kalenderjaar.
   handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5, vouchers: 2 },

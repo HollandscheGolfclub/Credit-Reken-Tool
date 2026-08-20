@@ -488,7 +488,12 @@ function candidatePlans(context) {
   // deze routes niet eerlijk beprijzen en bieden we ze niet aan.
   const largeFits = largeRounds === 0 || (Number.isFinite(fee(largeCourse, "greenFee")) && Number.isFinite(fee(largeCourse, "greenFeeFull")));
   const smallFits = smallRounds === 0 || (Number.isFinite(fee(smallCourse, "shortGreenFee")) && Number.isFinite(fee(smallCourse, "shortGreenFeeFull")));
-  const feeRoutesFit = !youth && loyalTee && totalRounds > 0 && largeFits && smallFits;
+  // Boven de ingestelde grens hoort een speelrecht het advies te zijn, ook al is
+  // per ronde afrekenen daar soms nog een paar tientjes goedkoper. Zo houdt de
+  // keuzehulp de ladder van de flyer aan.
+  const feeRouteMax = Number(hgcConfig.settings.feeRouteMaxRounds ?? 20);
+  const binnenGrens = !Number.isFinite(feeRouteMax) || totalRounds <= feeRouteMax;
+  const feeRoutesFit = !youth && loyalTee && totalRounds > 0 && binnenGrens && largeFits && smallFits;
 
   if (feeRoutesFit) {
     // Wie alleen handicapregistratie heeft betaalt het volle tarief; met LoyalTee
