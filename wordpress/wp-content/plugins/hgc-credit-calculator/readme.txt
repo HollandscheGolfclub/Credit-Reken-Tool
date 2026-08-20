@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.8.1
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,13 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 == Changelog ==
 
+= 1.9.0 =
+* Golfpark Maastricht International en Golfpark Naarderbos hebben vastgestelde creditwaarden: Maastricht 1 credit voor de grote baan en 0,8 voor de kleine, Naarderbos 0,9 en 0,5. De markering "voorlopige waarden" is bij beide banen weg.
+* Beide banen hebben nu ook een kleine baan in de keuzehulp.
+* De gereduceerde greenfee van de grote baan staat erbij: Maastricht EUR 40,00 en Naarderbos EUR 24,00, het volledige tarief min 20 procent.
+* Voor Maastricht en Naarderbos is nog geen Shortgolf-creditwaarde bekend, dus daar adviseert de keuzehulp geen Shortgolf-speelrecht.
+* De route met meerdere aankopen staat niet meer als tweede advies. Zijn twee kleinere speelrechten samen goedkoper, dan staat nu het kleinere speelrecht eronder met de melding dat het de opgegeven rondes niet dekt en dat er een nieuw speelrecht bij kan zodra de credits op zijn.
+
 = 1.8.1 =
 * Handicapregistratie zit standaard niet meer in de getoonde bedragen. Een speelrecht van 60 credits staat er voor EUR 1.030,00 en een Shortgolf-speelrecht van 60 credits voor EUR 585,00.
 * De bezoeker kan handicapregistratie in het advies zelf aanvinken; de bedragen lopen dan op naar EUR 1.089,50 en EUR 644,50.
@@ -57,7 +64,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 = 1.6.0 =
 * Het geadviseerde speelrecht dekt altijd alle opgegeven rondes. Zijn er 31,2 credits nodig, dan adviseert de keuzehulp 60 credits in plaats van een instappakket van 20 credits.
-* Zijn meerdere kleinere pakketten samen goedkoper, dan staat die route als tweede advies onder het hoofdadvies, met het aantal aankopen en het bedrag.
+* Zijn meerdere kleinere pakketten samen goedkoper, dan staat het kleinere speelrecht als tweede advies onder het hoofdadvies, met de melding dat het de rondes niet dekt.
 * Bestaat er geen speelrecht dat de rondes in één keer dekt, dan noemt het advies de benodigde combinatie expliciet, bijvoorbeeld 2 x 20 credits bij een jeugdspeelrecht.
 * Het advies toont geen instapprijs meer die het opgegeven golfjaar niet dekt.
 

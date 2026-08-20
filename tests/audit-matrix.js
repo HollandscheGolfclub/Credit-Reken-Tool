@@ -2,10 +2,13 @@
   function expectedAlternative(best) {
     const packages = Array.isArray(best.availablePackages) ? best.availablePackages : [];
     const credits = Number(best.credits);
-    if (best.cheaperRoute) return Number(best.cheaperRoute.credits);
+    const smaller = packages.map((item) => Number(item.credits)).filter((value) => value < credits).sort((a, b) => b - a)[0] ?? null;
+    // Is een route met meerdere aankopen goedkoper, dan staat het kleinere
+    // speelrecht als tweede advies onder het hoofdadvies.
+    if (best.cheaperRoute && smaller !== null) return smaller;
     if (credits === 200) return null;
     if (credits === 120) {
-      return packages.map((item) => Number(item.credits)).filter((value) => value < 120).sort((a, b) => b - a)[0] ?? null;
+      return smaller;
     }
     if (credits === 20 || credits === 60) {
       return packages.map((item) => Number(item.credits)).filter((value) => value > credits).sort((a, b) => a - b)[0] ?? null;
@@ -305,22 +308,9 @@
         report("bedrag-wijkt-af", { ...context, amount, expected });
       }
 
-      if (plan.cheaperRoute) {
-        const line = card.querySelector(".cheaper-route-note");
-        if (!line) {
-          report("voordeligere-route-niet-op-kaart", context);
-        } else {
-          const shownAmount = line.querySelector(".switchable").textContent.replace(/\s/g, "");
-          const expectedAmount = shownAmountFor({
-            annualCost: Number(plan.cheaperRoute.price) + Number(plan.registrationPrice || 0),
-            registrationPrice: plan.registrationPrice,
-          });
-          if (shownAmount !== expectedAmount) {
-            report("voordeligere-route-bedrag-wijkt-af", { ...context, shownAmount, expectedAmount });
-          }
-        }
-      } else if (card.querySelector(".cheaper-route-note")) {
-        report("voordeligere-route-zonder-reden", context);
+      // De route met meerdere aankopen tonen we niet meer, op geen enkele kaart.
+      if (card.querySelector(".cheaper-route-note")) {
+        report("voordeligere-route-alsnog-op-kaart", context);
       }
 
       const shown = [...card.querySelectorAll(".advice-card-benefits li")].map((item) => item.textContent.replace(/^✓/, ""));
@@ -375,13 +365,20 @@
             if (Number(result.best.uncoveredLargeRounds || 0) > 0 && !/buiten dit speelrecht/.test(shown)) {
               report("ongedekte-rondes-niet-gemeld", context);
             }
-            // Bestaat er een voordeligere route met meerdere speelrechten, dan
-            // hoort die als tweede advies onder het hoofdadvies te staan.
+            // Een route met meerdere aankopen tonen we niet. Is die route
+            // goedkoper, dan hoort het kleinere speelrecht als tweede advies
+            // eronder te staan, met de melding dat het de rondes niet dekt en
+            // dat er daarna een nieuw speelrecht bij komt.
+            if (/Voordeliger, in meerdere aankopen/.test(shown)) {
+              report("voordeligere-route-alsnog-getoond", context);
+            }
             if (result.best.cheaperRoute) {
-              if (!result.alternative || !result.alternative.isCheaperRoute) {
-                report("voordeligere-route-niet-als-tweede-advies", context);
-              } else if (!/Voordeliger, in meerdere aankopen/.test(shown)) {
-                report("voordeligere-route-niet-aangekondigd", context);
+              if (!result.alternative || !result.alternative.isSmallerOption) {
+                report("kleiner-speelrecht-niet-als-tweede-advies", context);
+              } else if (!/credits tekort/.test(shown)) {
+                report("tekort-niet-benoemd", context);
+              } else if (!/nieuw speelrecht aanschaffen/.test(shown)) {
+                report("nieuw-speelrecht-niet-benoemd", context);
               }
             }
           }

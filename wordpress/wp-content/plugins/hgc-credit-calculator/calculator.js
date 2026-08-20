@@ -418,7 +418,11 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
     : Number(best.credits) === 20 || Number(best.credits) === 60
       ? nextLargerCreditOption(best, handicapPrice)
       : null;
-  const alternative = cheaperRouteOption(best, handicapPrice)
+  // Is een route met meerdere aankopen goedkoper, dan tonen we die route niet.
+  // In plaats daarvan staat het kleinere speelrecht eronder, met de melding dat
+  // het niet al de opgegeven rondes dekt en dat de bezoeker een nieuw speelrecht
+  // kan aanschaffen zodra de credits op zijn.
+  const alternative = (best.cheaperRoute ? nextSmallerCreditOption(best, handicapPrice) : null)
     || (Number(best.credits) === 200 ? null : adjacentPackage);
   const profile = playProfile(largeRounds, smallRounds);
   const creditsOption = plans.find((plan) => plan.type === "credits") || null;
@@ -448,33 +452,6 @@ function calculate() {
     youth: ageCategory.value === "youth",
     canPlayOffPeak: offPeak.checked,
   });
-}
-
-// Meerdere kleinere pakketten kunnen samen goedkoper zijn dan het speelrecht dat
-// alles in één keer dekt. Die route staat als tweede advies onder het hoofdadvies.
-function cheaperRouteOption(plan, handicapPrice) {
-  const route = plan.cheaperRoute;
-  if (!route) return null;
-
-  const totalPrice = Number(route.price) + Number(plan.nonPackageCost || 0);
-  const saving = Number(plan.price) - totalPrice;
-  const lessRoom = Number(plan.credits) - Number(route.credits);
-  const roomText = lessRoom > 0 ? ` en houdt ${decimal.format(lessRoom)} credits minder ruimte over` : "";
-  return {
-    type: plan.type,
-    group: `${plan.group}-cheaper-${route.credits}`,
-    name: `${plan.productName} – ${route.parts.join(" + ")}`,
-    productName: plan.productName,
-    credits: route.credits,
-    requiredCredits: plan.requiredCredits,
-    count: route.count,
-    price: totalPrice,
-    nonPackageCost: Number(plan.nonPackageCost || 0),
-    registrationPrice: handicapPrice,
-    annualCost: totalPrice + handicapPrice,
-    isCheaperRoute: true,
-    detail: `Je koopt ${decimal.format(route.count)} speelrechten in plaats van één: ${route.parts.join(" + ")}, samen ${decimal.format(route.credits)} credits. Dat dekt al je opgegeven rondes en is ${euro.format(saving)} voordeliger, maar je koopt ${decimal.format(route.count)} keer${roomText}.`,
-  };
 }
 
 function nextLargerCreditOption(plan, handicapPrice) {
@@ -511,6 +488,7 @@ function nextSmallerCreditOption(plan, handicapPrice) {
   if (!previous) return null;
 
   const fewerCredits = Number(plan.credits) - previous.credits;
+  const shortfall = Number(plan.requiredCredits) - previous.credits;
   const saving = Number(plan.packageBasePrice ?? plan.price) - previous.price;
   const totalPrice = previous.price + Number(plan.nonPackageCost || 0);
   return {
@@ -523,7 +501,7 @@ function nextSmallerCreditOption(plan, handicapPrice) {
     registrationPrice: handicapPrice,
     annualCost: totalPrice + handicapPrice,
     isSmallerOption: true,
-    detail: `Je start met ${decimal.format(fewerCredits)} credits minder en betaalt ${euro.format(saving)} minder voor het speelrecht. Dit dekt niet al je verwachte rondes; zodra de credits op zijn, kun je verlengen.`,
+    detail: `Je start met ${decimal.format(fewerCredits)} credits minder en betaalt ${euro.format(saving)} minder voor het speelrecht. ${shortfall > 0 ? `Dat dekt niet al je opgegeven rondes: je komt ${decimal.format(shortfall)} credits tekort.` : "Dat dekt niet al je opgegeven rondes."} Zodra die credits op zijn, kun je een nieuw speelrecht aanschaffen.`,
   };
 }
 
@@ -599,15 +577,6 @@ function roundWord(count) {
   return `${count} ronde${count === 1 ? "" : "s"}`;
 }
 
-// Ook op een keuzekaart hoort de voordeligere route met meerdere speelrechten
-// zichtbaar te zijn.
-function cheaperRouteLine(plan) {
-  const route = plan.cheaperRoute;
-  if (!route) return "";
-  const total = Number(route.price) + Number(plan.registrationPrice || 0);
-  return `<p class="cheaper-route-note"><strong>Voordeliger, in meerdere aankopen:</strong> ${route.parts.join(" + ")} dekt je rondes ook en kost ${switchableAmount(total, Number(route.price))}.</p>`;
-}
-
 function amountNote(plan, whenCovered) {
   return plan.count > 1 ? `voor ${decimal.format(plan.count)} speelrechten samen` : whenCovered;
 }
@@ -644,7 +613,6 @@ function choiceCard(plan, options) {
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
       <p class="advice-card-instruction">${plan.instruction}</p>
-      ${cheaperRouteLine(plan)}
       <p class="advice-card-benefits-title">Hierbij hoort</p>
       <ul class="advice-card-benefits">${benefitList(plan)}</ul>
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
@@ -752,9 +720,9 @@ function renderSingleAdvice(result) {
     ${alternative ? `
       <article class="next-option">
         <div>
-          <p class="eyebrow">${alternative.isCheaperRoute ? "Voordeliger, in meerdere aankopen" : alternative.isUpgradeOption ? "Meer speelruimte" : alternative.isSmallerOption ? "Voordeliger instappen" : "Andere passende optie"}</p>
+          <p class="eyebrow">${alternative.isUpgradeOption ? "Meer speelruimte" : alternative.isSmallerOption ? "Voordeliger instappen" : "Andere passende optie"}</p>
           <h4>${brandText(alternative.name)}</h4>
-          <p class="next-option-amount">${planAmount(alternative)}<small>${alternative.isCheaperRoute ? `voor ${decimal.format(alternative.count)} speelrechten samen` : "per golfjaar"}</small></p>
+          <p class="next-option-amount">${planAmount(alternative)}<small>per golfjaar</small></p>
           <p>${alternative.detail}</p>
         </div>
         <div class="next-option-actions"><a class="next-option-link" href="${planLink(alternative)}">Meer informatie →</a></div>
