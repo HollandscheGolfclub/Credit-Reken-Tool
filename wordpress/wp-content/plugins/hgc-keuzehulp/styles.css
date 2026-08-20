@@ -235,6 +235,7 @@
 
 /* Gemengd speelbeeld: de bezoeker kiest zelf tussen beide speelrechten. */
 .hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.hgc-calculator .advice-choice--stacked { grid-template-columns: 1fr; }
 .hgc-calculator .advice-card { padding: 28px; border: 2px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; background: white; box-shadow: 0 10px 28px rgba(48, 62, 40, .06); }
 .hgc-calculator .advice-card > * { flex: 0 0 auto; height: auto; max-height: none; min-height: 0; overflow: visible; }
 .hgc-calculator .advice-card > .button { margin-top: auto; }

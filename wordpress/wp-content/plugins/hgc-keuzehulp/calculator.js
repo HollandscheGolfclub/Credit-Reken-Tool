@@ -882,7 +882,7 @@ function renderRouteChoice(result) {
 
     ${registrationSwitch(result.handicapPrice)}
 
-    <div class="advice-choice">
+    <div class="advice-choice advice-choice--stacked">
       ${choiceCard(zuinig, {
         variant: "credits",
         question: "Weet je zeker dat je niet vaker speelt?",

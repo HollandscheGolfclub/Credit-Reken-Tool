@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.16.1
+Stable tag: 1.17.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.17.0 =
+* Liggen twee routes van hetzelfde speelrecht dicht bij elkaar, dan staan die adviezen nu onder elkaar in plaats van naast elkaar. Over de volle breedte past de toelichting op twee regels in plaats van zes.
+* De keuze tussen een HGC-speelrecht en een Shortgolf-speelrecht blijft naast elkaar staan; daar vergelijkt de bezoeker twee baantypen en dan helpt het om ze naast elkaar te zien.
 
 = 1.16.1 =
 * De keuzehulp gebruikt de volle breedte die de pagina hem geeft. De vaste maat van 1060 pixels is eruit, zodat twee kaarten naast elkaar meer ruimte krijgen en minder tekst hoeft af te breken.
