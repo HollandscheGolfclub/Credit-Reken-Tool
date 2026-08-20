@@ -205,7 +205,7 @@
 .hgc-calculator .choice-costs .choice-costs-total { border-color: #cadd98; background: #f5f9e9; }
 .hgc-calculator .choice-costs p { margin: 0 0 12px; color: var(--ink-soft); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .hgc-calculator .choice-costs strong { display: block; color: var(--ink); font: 700 29px/1 "Montserrat", sans-serif; }
-.hgc-calculator .choice-costs span { display: block; margin-top: 7px; color: var(--ink-soft); font-size: 12px; }
+.hgc-calculator .choice-costs article > span { display: block; margin-top: 7px; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .comparison { padding: 40px 0 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 22px; }
 .hgc-calculator .comparison article { padding: 24px; border: 1px solid var(--line); border-radius: 6px; }
 .hgc-calculator .comparison article p { margin-bottom: 15px; color: var(--ink-soft); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
