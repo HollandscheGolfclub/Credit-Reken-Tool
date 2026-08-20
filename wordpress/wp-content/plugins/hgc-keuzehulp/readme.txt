@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.16.0
+Stable tag: 1.16.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.16.1 =
+* De keuzehulp gebruikt de volle breedte die de pagina hem geeft. De vaste maat van 1060 pixels is eruit, zodat twee kaarten naast elkaar meer ruimte krijgen en minder tekst hoeft af te breken.
+* Een advieskaart kan zijn inhoud niet meer afkappen, ook niet wanneer het thema hoogtes of overflow oplegt.
+* De knop staat onderaan de kaart. Staan er twee kaarten met verschillende inhoud naast elkaar, dan komt de lege ruimte boven de knop terecht in plaats van tussen de kop en de voordelenlijst.
 
 = 1.16.0 =
 * De keuzehulp houdt de ladder van de flyer aan: handicapregistratie, dan LoyalTee, dan een speelrecht. Vanaf 20 rondes per jaar is een speelrecht het advies, ook wanneer per ronde afrekenen daar nog een paar tientjes goedkoper uitvalt.

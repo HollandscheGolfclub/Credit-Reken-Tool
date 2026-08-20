@@ -63,7 +63,7 @@
 .hgc-calculator .launcher-assurance span { flex: 0 0 24px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: white; background: #84ae1d; font-size: 11px; font-weight: 800; }
 .hgc-calculator .launcher-assurance p { margin: 0; line-height: 1.45; }
 .hgc-calculator .launcher-assurance strong { display: block; color: #3f4b3b; font-size: 12px; }
-.hgc-calculator .calculator-stage { max-width: 1060px; margin: 0 auto; }
+.hgc-calculator .calculator-stage { max-width: none; margin: 0 auto; }
 .hgc-calculator .calculator-stage > .hgc-calculator { padding: 0; overflow: visible; background: transparent; }
 .hgc-calculator .launcher-back { margin: 0 0 13px; padding: 9px 4px; border: 0; color: #526e24; background: transparent; cursor: pointer; font-size: 13px; font-weight: 700; }
 .hgc-calculator .launcher-back:hover { color: #304411; text-decoration: underline; }
@@ -73,7 +73,7 @@
 .hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator p { margin-top: 0; }
 .hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator .result-hero h3 { font-family: "Montserrat", Arial, sans-serif; }
 
-.hgc-calculator .calculator-shell { scroll-margin-top: 18px; max-width: 1060px; margin: 0 auto; background: var(--paper); border: 1px solid #dfe5d8; border-radius: var(--radius); box-shadow: 0 14px 42px rgba(48, 62, 40, .1); position: relative; z-index: 2; overflow: hidden; }
+.hgc-calculator .calculator-shell { scroll-margin-top: 18px; max-width: none; margin: 0 auto; background: var(--paper); border: 1px solid #dfe5d8; border-radius: var(--radius); box-shadow: 0 14px 42px rgba(48, 62, 40, .1); position: relative; z-index: 2; overflow: hidden; }
 .hgc-calculator .calculator-topbar { padding: 34px 44px 24px; display: flex; justify-content: space-between; align-items: end; }
 .hgc-calculator .calculator-topbar { color: var(--ink); background: linear-gradient(135deg, #ffffff 0%, #f3f7e9 100%); }
 .hgc-calculator .calculator-topbar .eyebrow { color: #61831d; }
@@ -236,6 +236,8 @@
 /* Gemengd speelbeeld: de bezoeker kiest zelf tussen beide speelrechten. */
 .hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .hgc-calculator .advice-card { padding: 28px; border: 2px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; background: white; box-shadow: 0 10px 28px rgba(48, 62, 40, .06); }
+.hgc-calculator .advice-card > * { flex: 0 0 auto; height: auto; max-height: none; min-height: 0; overflow: visible; }
+.hgc-calculator .advice-card > .button { margin-top: auto; }
 .hgc-calculator .advice-card--credits { border-color: #bdd375; background: linear-gradient(135deg, #fff 0%, #f8fbef 100%); }
 .hgc-calculator .advice-card--shortgolf { border-color: #f4c088; background: linear-gradient(135deg, #fff 0%, #fff6ec 100%); }
 .hgc-calculator .advice-card-question { margin-bottom: 14px; padding-bottom: 13px; border-bottom: 1px solid #e7ece0; color: var(--ink); font-size: 15px; font-weight: 800; }
