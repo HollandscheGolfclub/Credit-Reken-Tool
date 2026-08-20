@@ -31,7 +31,7 @@
             <div class="round-plan-title"><span class="choice-icon">9</span><div><h4>Grote baan</h4><p>Volwaardige golfbaan</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
-                <label for="large-rounds-number">Hoeveel rondes per jaar?</label>
+                <label for="large-rounds-number">Rondes per jaar</label>
                 <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div>
               </div>
               <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" />
@@ -45,10 +45,10 @@
           </article>
 
           <article class="round-plan-card">
-            <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Shortgolfbaan</p></div></div>
+            <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Baan met korte holes</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
-                <label for="small-rounds-number">Hoeveel rondes per jaar?</label>
+                <label for="small-rounds-number">Rondes per jaar</label>
                 <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div>
               </div>
               <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" />

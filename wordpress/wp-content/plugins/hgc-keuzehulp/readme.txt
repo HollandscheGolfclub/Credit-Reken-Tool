@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.4
+Stable tag: 1.10.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.5 =
+* Het gemarkeerde blok onderaan de advieskaart verschijnt alleen nog wanneer een speelrecht de opgegeven rondes niet dekt. Dekt het wel, dan zei dat blok hetzelfde als de regel erboven.
+* Koppen breken niet meer af op een los woord.
+* Het label "Hoeveel rondes per jaar?" is "Rondes per jaar" geworden, zodat het op een regel past.
+* De kleine baan heet nu overal kleine baan; het woord Shortgolf is voorbehouden aan het speelrecht.
 
 = 1.10.4 =
 * De knop "Opnieuw controleren" op de updatepagina werkt nu ook voor deze plugin. De laatst gevonden release werd zes uur bewaard, waardoor WordPress na een nieuwe release nog uren meldde dat alles up-to-date was.

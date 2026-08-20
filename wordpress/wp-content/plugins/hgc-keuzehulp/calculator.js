@@ -594,7 +594,7 @@ function choiceCard(plan, options) {
       <h4>${brandText(plan.name)}</h4>
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
-      <p class="advice-card-instruction">${plan.instruction}</p>
+      ${plan.coversRounds ? "" : `<p class="advice-card-instruction">${plan.instruction}</p>`}
       <p class="advice-card-benefits-title">Hierbij hoort</p>
       <ul class="advice-card-benefits">${benefitList(plan)}</ul>
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
@@ -693,7 +693,7 @@ function renderSingleAdvice(result) {
         <h4>${brandText(best.name)}</h4>
         <p class="recommendation-amount">${planAmount(best)}<small>${totalCostNote}</small></p>
         <p>${best.detail}</p>
-        <p class="package-instruction">${best.instruction}</p>
+        ${best.coversRounds ? "" : `<p class="package-instruction">${best.instruction}</p>`}
       </div>
       <div class="recommendation-actions">
         <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">${webshopLabel} <span>→</span></a>

@@ -26,7 +26,7 @@
    hyphens aanzet, veranderde anders de weergave op de live site. */
 .hgc-calculator { line-height: 1.55; }
 .hgc-calculator, .hgc-calculator * { -webkit-hyphens: manual; hyphens: manual; }
-.hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator h5, .hgc-calculator h6 { margin-top: 0; color: var(--ink); font-family: "Montserrat", Arial, sans-serif; text-transform: none; text-shadow: none; }
+.hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator h5, .hgc-calculator h6 { margin-top: 0; color: var(--ink); font-family: "Montserrat", Arial, sans-serif; text-transform: none; text-shadow: none; text-wrap: balance; }
 .hgc-calculator p, .hgc-calculator li, .hgc-calculator small, .hgc-calculator strong, .hgc-calculator label, .hgc-calculator span { color: inherit; }
 
 /* Gecombineerde start: één rustige entree voor beide rekenroutes. */
