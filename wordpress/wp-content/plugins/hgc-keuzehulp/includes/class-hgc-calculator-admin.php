@@ -200,6 +200,7 @@ final class HGC_Calculator_Admin
         $mixed_to = $this->percentage($raw['settings']['mixedProfileToPercent'] ?? null, 60);
         $config['settings']['mixedProfileFromPercent'] = min($mixed_from, $mixed_to);
         $config['settings']['mixedProfileToPercent'] = max($mixed_from, $mixed_to);
+        $config['settings']['dualAdviceMarginPercent'] = $this->percentage($raw['settings']['dualAdviceMarginPercent'] ?? null, 15);
 
         foreach (array('adultPrice', 'youthPrice') as $key) {
             $config['handicapRegistration'][$key] = $this->number($raw['handicapRegistration'][$key] ?? 0);

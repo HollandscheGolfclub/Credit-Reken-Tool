@@ -19,6 +19,9 @@ window.hgcConfig = {
     // speelbeeld gemengd en legt de keuzehulp de keuze bij de bezoeker.
     mixedProfileFromPercent: 40,
     mixedProfileToPercent: 60,
+    // Ligt het speelrecht dat alle rondes dekt binnen deze marge van de
+    // goedkoopste route, dan legt de keuzehulp de keuze bij de bezoeker.
+    dualAdviceMarginPercent: 15,
   },
   handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5 },
   links: {

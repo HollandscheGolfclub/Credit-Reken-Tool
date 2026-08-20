@@ -35,7 +35,7 @@
         report("credits-tellen-niet-op", { ...context, group: best.group, sum, credits: best.credits });
       }
     }
-    const expected = expectedAlternative(best);
+    const expected = result.routeChoice ? null : expectedAlternative(best);
     if (expected === null && alternative) {
       report("unexpected-alternative", { ...context, credits: best.credits, alternativeCredits: alternative.credits });
     }
@@ -362,6 +362,22 @@
               report("exception", { ...context, message: error.message });
               continue;
             }
+            // Bij twee gelijkwaardige routes staan er twee kaarten en is er geen
+            // derde kaart met een alternatief.
+            if (result.routeChoice) {
+              const kaarten = [...resultContent.querySelectorAll(".advice-card")];
+              if (kaarten.length !== 2) {
+                report("routekeuze-heeft-geen-twee-kaarten", { ...context, kaarten: kaarten.length });
+              } else {
+                checkCard(kaarten[0], result.routeChoice.greenFee, { ...context, kaart: "greenfee" });
+                checkCard(kaarten[1], result.routeChoice.covering, { ...context, kaart: "dekkend" });
+              }
+              if (result.alternative) {
+                report("routekeuze-met-derde-kaart", context);
+              }
+              continue;
+            }
+            if (result.choice) {
 
             const registrationRows = [...resultContent.querySelectorAll("li")].filter((item) => /handicapregistratie/i.test(item.textContent));
             if (!registrationRows.length) {
@@ -383,7 +399,6 @@
             }
             applyRegistrationSwitch(handicapDefault());
 
-            if (result.choice) {
               checkCard(resultContent.querySelector(".advice-card--credits"), result.choice.credits, { ...context, kaart: "credits" });
               checkCard(resultContent.querySelector(".advice-card--shortgolf"), result.choice.shortGolf, { ...context, kaart: "shortgolf" });
               continue;
@@ -393,7 +408,6 @@
             if (Number(result.best.uncoveredLargeRounds || 0) > 0 && !/buiten dit speelrecht/.test(shown)) {
               report("ongedekte-rondes-niet-gemeld", context);
             }
-            // Dekt het advies de rondes niet, dan hoort dat in de tekst te staan.
             // Dekt het advies de rondes niet, dan hoort de uitvoer te zeggen hoe
             // de rest wordt afgerekend: een nieuw speelrecht, of per ronde greenfee.
             const legtUit = /nieuw speelrecht aanschaffen/.test(shown) || /gereduceerde greenfeetarief/.test(shown);

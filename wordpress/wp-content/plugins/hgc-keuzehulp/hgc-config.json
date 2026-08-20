@@ -4,7 +4,8 @@
     "includeHandicapByDefault": false,
     "shortGolfSharePercent": 85,
     "mixedProfileFromPercent": 40,
-    "mixedProfileToPercent": 60
+    "mixedProfileToPercent": 60,
+    "dualAdviceMarginPercent": 15
   },
   "handicapRegistration": { "adultPrice": 59.5, "youthPrice": 27.5 },
   "links": {

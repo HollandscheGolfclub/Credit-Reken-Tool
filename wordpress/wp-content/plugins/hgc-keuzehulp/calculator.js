@@ -366,7 +366,7 @@ function candidatePlans(context) {
           largeBaseCost: largeRate * (price / standardCredits),
           smallBaseCost: Number(smallCourse.shortRate) * (price / standardCredits),
           detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het grootste deel van je rondes.`,
-          instruction: `De ${decimal.format(rounded)} rondes die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`,
+          instruction: `De ${decimal.format(rounded)} rondes die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
         };
         candidates.push(addRegistration(plan, handicapPrice));
       });
@@ -444,6 +444,19 @@ function candidatePlans(context) {
   return sorted;
 }
 
+// Twee routes zijn gelijkwaardig zodra het dekkende speelrecht binnen de
+// ingestelde marge van de goedkoopste route valt. Daaronder adviseert de
+// keuzehulp gewoon de goedkoopste.
+function routeChoiceFor(best, plans) {
+  if (!best || best.coversRounds) return null;
+  if (!Number(best.greenFeeExtraRounds || 0)) return null;
+  const margin = Number(hgcConfig.settings.dualAdviceMarginPercent ?? 15) / 100;
+  const covering = plans.find((plan) => plan.type === best.type && plan.coversRounds);
+  if (!covering) return null;
+  if (Number(covering.selectionCost) > Number(best.selectionCost) * (1 + margin)) return null;
+  return { greenFee: best, covering };
+}
+
 function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak }) {
   const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak });
   const best = plans[0];
@@ -453,18 +466,22 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
     : Number(best.credits) === 20 || Number(best.credits) === 60
       ? nextLargerCreditOption(best, handicapPrice)
       : null;
-  // Is een route met meerdere aankopen goedkoper, dan tonen we die route niet.
-  // In plaats daarvan staat het kleinere speelrecht eronder, met de melding dat
-  // het niet al de opgegeven rondes dekt en dat de bezoeker een nieuw speelrecht
-  // kan aanschaffen zodra de credits op zijn.
-  const alternative = (best.cheaperRoute ? nextSmallerCreditOption(best, handicapPrice) : null)
-    || (Number(best.credits) === 200 ? null : adjacentPackage);
   const profile = playProfile(largeRounds, smallRounds);
   const creditsOption = plans.find((plan) => plan.type === "credits") || null;
   const shortGolfOption = plans.find((plan) => plan.type === "shortgolf") || null;
   const choice = profile.zone === "mixed" && creditsOption && shortGolfOption
     ? { credits: creditsOption, shortGolf: shortGolfOption }
     : null;
+  // Bij een gemengd speelbeeld ligt er al een keuze voor; twee keuzes tegelijk
+  // zouden de bezoeker overvragen.
+  const routeChoice = choice ? null : routeChoiceFor(best, plans);
+  // Is een route met meerdere aankopen goedkoper, dan tonen we die route niet.
+  // In plaats daarvan staat het kleinere speelrecht eronder. Bij een dubbele
+  // kaart staat de tweede route al naast het advies, dus dan geen derde kaart.
+  const alternative = routeChoice
+    ? null
+    : (best.cheaperRoute ? nextSmallerCreditOption(best, handicapPrice) : null)
+      || (Number(best.credits) === 200 ? null : adjacentPackage);
   return {
     largeRounds,
     smallRounds,
@@ -473,6 +490,7 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
     handicapPrice,
     profile,
     choice,
+    routeChoice,
     best,
     alternative,
   };
@@ -700,6 +718,47 @@ function renderChoice(result) {
   `;
 }
 
+// Ligt de goedkoopste route dicht bij het speelrecht dat alle rondes dekt, dan
+// is er geen goed antwoord dat de keuzehulp voor de bezoeker kan geven. Dan
+// legt zij de keuze bij hem, met dezelfde twee kaarten als bij gemengd spel.
+function renderRouteChoice(result) {
+  const zuinig = result.routeChoice.greenFee;
+  const ruim = result.routeChoice.covering;
+  const ruimte = Math.round((Number(ruim.credits) - Number(ruim.requiredCredits)) * 10) / 10;
+
+  resultContent.innerHTML = `
+    <div class="result-hero">
+      <span class="result-check" aria-hidden="true">✓</span>
+      <p class="eyebrow">Jouw advies</p>
+      <h3>Twee speelrechten liggen hier dicht bij elkaar</h3>
+      <p>Gebaseerd op ${roundSummary(result)}. Wat het beste uitkomt, hangt ervan af of je precies zoveel speelt als je nu opgaf.</p>
+    </div>
+
+    ${registrationSwitch(result.handicapPrice)}
+
+    <div class="advice-choice">
+      ${choiceCard(zuinig, {
+        variant: "credits",
+        question: "Weet je zeker dat je niet vaker speelt?",
+        product: brandText(zuinig.productName),
+        amountNote: "voor het speelrecht",
+        coverage: `Dit speelrecht dekt de rondes die binnen ${decimal.format(zuinig.credits)} credits passen. Je betaalt dus alleen voor de credits die je nodig hebt.`,
+        buttonClass: "button--primary",
+      })}
+      ${choiceCard(ruim, {
+        variant: "credits",
+        question: "Speel je misschien vaker dan je nu opgaf?",
+        product: brandText(ruim.productName),
+        amountNote: "voor al je rondes",
+        coverage: `Dit speelrecht dekt al je opgegeven rondes en houdt ${decimal.format(ruimte)} credits over voor rondes die je nu nog niet inplant.`,
+        buttonClass: "button--primary",
+      })}
+    </div>
+
+    ${disclaimer()}
+  `;
+}
+
 function renderSingleAdvice(result) {
   const best = result.best;
   const alternative = result.alternative;
@@ -773,6 +832,8 @@ function renderSingleAdvice(result) {
 function renderResult(result) {
   if (result.choice) {
     renderChoice(result);
+  } else if (result.routeChoice) {
+    renderRouteChoice(result);
   } else {
     renderSingleAdvice(result);
   }

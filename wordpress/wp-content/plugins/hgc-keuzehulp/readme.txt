@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.11.0
+Stable tag: 1.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.12.0 =
+* Liggen twee routes dicht bij elkaar, dan legt de keuzehulp de keuze bij de bezoeker met twee kaarten naast elkaar, net als bij een gemengd speelbeeld. Bij 35 rondes op een baan van 1 credit staat links 20 credits voor EUR 485,00 met de rondes daarna per ronde afgerekend, en rechts 60 credits voor EUR 1.030,00 met 25 credits ruimte over.
+* De marge waarbinnen twee routes gelijkwaardig zijn, staat onder Instellingen en is standaard 15 procent. Daarbuiten adviseert de keuzehulp gewoon de goedkoopste route.
+* Bij zo'n dubbele kaart staat er geen derde kaart met een alternatief meer onder.
+* Het advies bij bijspelen op greenfee noemt nu ook de andere mogelijkheid: een nieuw speelrecht van hetzelfde aantal credits.
 
 = 1.11.0 =
 * Een kleiner speelrecht met de resterende rondes tegen het gereduceerde greenfeetarief doet nu mee als volwaardige optie. Wie 30 credits nodig heeft, krijgt daardoor 20 credits voor EUR 485,00 geadviseerd in plaats van 60 credits voor EUR 1.030,00. Het omslagpunt ligt rond 40 credits; daarboven dekt het grotere speelrecht alles en is dat weer het advies.
