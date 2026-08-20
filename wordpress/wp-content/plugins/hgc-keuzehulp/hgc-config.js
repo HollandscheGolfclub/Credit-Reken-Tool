@@ -23,7 +23,19 @@ window.hgcConfig = {
     // goedkoopste route, dan legt de keuzehulp de keuze bij de bezoeker.
     dualAdviceMarginPercent: 15,
   },
-  handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5 },
+  // Bij handicapregistratie horen twee vrije rondes van 9 holes per kalenderjaar.
+  handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5, vouchers: 2 },
+
+  // LoyalTee geeft korting op de greenfee zonder speelrecht. Het gereduceerde
+  // tarief per baan is het tarief mét die korting; het volle tarief leidt de
+  // keuzehulp daaruit af met hetzelfde percentage.
+  loyalTee: {
+    name: "Hollandsche Golfclub LoyalTee",
+    membershipPrice: 54,
+    discountPercentage: 20,
+    ballCredit: 25,
+    excludedCourseIds: ["shortgolf-utrecht"],
+  },
   links: {
     webshop: "https://www.hollandschegolfclub.nl/webshop/",
     playingRights: "https://www.hollandschegolfclub.nl/hgc-speelrechten/",
@@ -101,6 +113,13 @@ window.hgcConfig = {
     "Na opgebruikte credits kun je een nieuw speelrecht kiezen",
     "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub",
   ],
+  loyalTeeBenefits: [
+    "20% korting op de greenfee van de HGC-golfbanen",
+    "€ 25 ballentegoed",
+    "Te combineren met handicapregistratie",
+    "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub",
+  ],
+
   handicapBenefits: [
     "Officiële NGF-handicapregistratie",
     "Digitale NGF-pas via Hollandsche Golfclub en GOLF.NL",

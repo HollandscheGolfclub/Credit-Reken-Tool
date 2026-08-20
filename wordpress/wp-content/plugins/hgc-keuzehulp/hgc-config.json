@@ -7,7 +7,14 @@
     "mixedProfileToPercent": 60,
     "dualAdviceMarginPercent": 15
   },
-  "handicapRegistration": { "adultPrice": 59.5, "youthPrice": 27.5 },
+  "handicapRegistration": { "adultPrice": 59.5, "youthPrice": 27.5, "vouchers": 2 },
+  "loyalTee": {
+    "name": "Hollandsche Golfclub LoyalTee",
+    "membershipPrice": 54,
+    "discountPercentage": 20,
+    "ballCredit": 25,
+    "excludedCourseIds": ["shortgolf-utrecht"]
+  },
   "links": {
     "webshop": "https://www.hollandschegolfclub.nl/webshop/",
     "playingRights": "https://www.hollandschegolfclub.nl/hgc-speelrechten/",
@@ -83,6 +90,12 @@
     "Op de grote banen spelen tegen een gereduceerd greenfeetarief",
     "Een speelrecht afgestemd op jouw kleine-baanrondes",
     "Na opgebruikte credits kun je een nieuw speelrecht kiezen",
+    "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub"
+  ],
+  "loyalTeeBenefits": [
+    "20% korting op de greenfee van de HGC-golfbanen",
+    "€ 25 ballentegoed",
+    "Te combineren met handicapregistratie",
     "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub"
   ],
   "handicapBenefits": [

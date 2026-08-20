@@ -430,6 +430,79 @@ function candidatePlans(context) {
     });
   }
 
+  // De flyer kent twee routes zonder speelrecht: handicapregistratie voor wie
+  // heel af en toe golft, en LoyalTee voor wie af en toe golft. Beide rekenen de
+  // rondes per stuk af, dus we bieden ze alleen aan wanneer alle rondes op de
+  // grote baan vallen; voor de kleine baan is geen greenfeetarief vastgesteld.
+  const loyalTee = hgcConfig.loyalTee || null;
+  const discount = Number(loyalTee && loyalTee.discountPercentage) / 100;
+  const reducedFee = Number(largeCourse && largeCourse.greenFee);
+  // Het tarief in de configuratie is het tarief mét LoyalTee-korting; het volle
+  // tarief volgt daaruit met hetzelfde percentage.
+  const fullFee = Number.isFinite(reducedFee) && discount > 0 && discount < 1 ? reducedFee / (1 - discount) : NaN;
+  const feeRoutesFit = !youth && largeRounds > 0 && smallRounds === 0 && Number.isFinite(fullFee) && Number.isFinite(reducedFee);
+
+  if (feeRoutesFit) {
+    const vouchers = Math.max(0, Number(hgcConfig.handicapRegistration.vouchers || 0));
+    const paidRounds = Math.max(0, largeRounds - vouchers);
+    const freeRounds = Math.min(largeRounds, vouchers);
+    const registratie = {
+      type: "handicap",
+      group: "handicap",
+      name: "Hollandsche Golfclub Handicapregistratie",
+      productName: "Hollandsche Golfclub Handicapregistratie",
+      price: handicapPrice,
+      credits: 0,
+      requiredCredits: 0,
+      coversRounds: false,
+      count: 1,
+      packageItems: [],
+      availablePackages: [],
+      cheaperRoute: null,
+      greenFeeExtraRounds: paidRounds,
+      greenFeeExtraTotal: paidRounds * fullFee,
+      coveredRounds: freeRounds,
+      largeBaseCost: handicapPrice / largeRounds,
+      smallBaseCost: 0,
+      registrationPrice: 0,
+      annualCost: handicapPrice,
+      detail: `Bij handicapregistratie horen ${roundWord(vouchers)} van 9 holes per kalenderjaar, die je gratis speelt.`,
+      instruction: paidRounds > 0
+        ? `Je ${roundWord(paidRounds)} na die vrije rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+        : `Je ${roundWord(largeRounds)} vallen binnen de vrije rondes, dus je betaalt verder niets per ronde.`,
+    };
+    candidates.push(registratie);
+
+    const excluded = Array.isArray(loyalTee.excludedCourseIds) ? loyalTee.excludedCourseIds : [];
+    if (!excluded.includes(largeCourse.id)) {
+      const lidmaatschap = Number(loyalTee.membershipPrice);
+      const loyal = {
+        type: "loyaltee",
+        group: "loyaltee",
+        name: loyalTee.name,
+        productName: loyalTee.name,
+        price: lidmaatschap,
+        credits: 0,
+        requiredCredits: 0,
+        coversRounds: false,
+        count: 1,
+        packageItems: [],
+        availablePackages: [],
+        cheaperRoute: null,
+        greenFeeExtraRounds: paidRounds,
+        greenFeeExtraTotal: paidRounds * reducedFee,
+        coveredRounds: 0,
+        largeBaseCost: lidmaatschap / largeRounds,
+        smallBaseCost: 0,
+        detail: `Met LoyalTee speel je zonder speelrecht tegen ${decimal.format(Number(loyalTee.discountPercentage))}% korting op de greenfee.`,
+        instruction: paidRounds > 0
+          ? `Je ${roundWord(paidRounds)} na de vrije rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${roundWord(largeRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
+      };
+      candidates.push(addRegistration(loyal, handicapPrice));
+    }
+  }
+
   const sorted = candidates
     .map((plan) => {
       const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / totalRounds;
@@ -559,7 +632,11 @@ function nextSmallerCreditOption(plan, handicapPrice) {
 }
 
 function planBenefits(plan) {
-  const source = plan.type === "shortgolf"
+  const source = plan.type === "handicap"
+    ? hgcConfig.handicapBenefits
+    : plan.type === "loyaltee"
+      ? hgcConfig.loyalTeeBenefits
+      : plan.type === "shortgolf"
     ? hgcConfig.shortGolfBenefits
     : plan.group.startsWith("local-")
       ? hgcConfig.localBenefits
