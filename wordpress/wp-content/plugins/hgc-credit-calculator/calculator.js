@@ -357,15 +357,14 @@ function candidatePlans(context) {
 
       shortPlan.availablePackages = hgcConfig.shortGolfPackages;
       shortPlan.type = "shortgolf";
-      shortPlan.packageBasePrice = shortPlan.price;
-      shortPlan.nonPackageCost = greenFeeCost;
       shortPlan.reducedGreenFeeRounds = payGreenFee ? largeRounds : 0;
+      // Weegt mee in de keuze via selectionCost, maar niet in het getoonde bedrag.
+      shortPlan.reducedGreenFeeTotal = greenFeeCost;
       shortPlan.uncoveredLargeRounds = payGreenFee ? 0 : largeRounds;
-      shortPlan.price = shortPlan.price + greenFeeCost;
-      shortPlan.largeBaseCost = payGreenFee ? reducedGreenFee : 0;
-      shortPlan.smallBaseCost = shortPlan.packageBasePrice / smallRounds;
+      shortPlan.largeBaseCost = 0;
+      shortPlan.smallBaseCost = shortPlan.price / smallRounds;
       shortPlan.detail = payGreenFee
-        ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan speel je tegen het gereduceerde greenfeetarief voor speelrechthouders; dat zit in dit bedrag.`
+        ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
         : largeRounds > 0
           ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
           : `${decimal.format(shortCredits)} Shortgolf-credits nodig voor je kleine rondes; ${decimal.format(shortPlan.credits)} credits geadviseerd.`;
@@ -401,7 +400,7 @@ function candidatePlans(context) {
       const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / totalRounds;
       return {
         ...plan,
-        selectionCost: plan.annualCost,
+        selectionCost: Number(plan.annualCost) + Number(plan.reducedGreenFeeTotal || 0),
         largeRoundCost: largeRounds ? Number(plan.largeBaseCost || 0) + shared : null,
         smallRoundCost: smallRounds ? Number(plan.smallBaseCost || 0) + shared : null,
       };
@@ -679,11 +678,9 @@ function renderChoice(result) {
         variant: "shortgolf",
         question: "Speel je voornamelijk op de kleine baan?",
         product: brandText(shortGolf.productName),
-        amountNote: Number(shortGolf.reducedGreenFeeRounds || 0)
-          ? amountNote(shortGolf, "voor al je rondes")
-          : amountNote(shortGolf, `voor je ${smallRoundsText}`),
+        amountNote: amountNote(shortGolf, `voor je ${smallRoundsText}`),
         coverage: Number(shortGolf.reducedGreenFeeRounds || 0)
-          ? `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}. Je ${largeRoundsText} speel je tegen het gereduceerde greenfeetarief voor speelrechthouders; die rondes zitten in dit bedrag.`
+          ? `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}. Je ${largeRoundsText} reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
           : `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}. Je ${largeRoundsText} ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`,
         buttonClass: "button--shortgolf",
       })}
@@ -731,7 +728,7 @@ function renderSingleAdvice(result) {
       ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde", registrationShare)}
     </div>
     ${uncoveredLargeRounds ? `<p class="coverage-warning">Je ${roundWord(uncoveredLargeRounds)} op de grote baan ${uncoveredLargeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht. Die reken je apart af op de baan.</p>` : ""}
-    ${greenFeeRounds ? `<p class="greenfee-note">Je ${roundWord(greenFeeRounds)} op de grote baan speel je tegen het gereduceerde greenfeetarief voor speelrechthouders. Die rondes zijn in het genoemde bedrag meegerekend.</p>` : ""}
+    ${greenFeeRounds ? `<p class="greenfee-note">Je ${roundWord(greenFeeRounds)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders. Dat bedrag zit niet in de prijs hierboven.</p>` : ""}
 
     <article class="recommendation recommendation--featured${isShortGolf ? " recommendation--shortgolf" : ""}">
       <div class="recommendation-main">

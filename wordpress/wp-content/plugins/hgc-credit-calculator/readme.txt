@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.8.0 =
+* De gereduceerde greenfees wegen mee bij het bepalen van het advies, maar blijven buiten het getoonde bedrag. Dat bedrag is de prijs van het speelrecht zelf.
+* Het advies vermeldt dat de rondes op de grote baan per ronde worden afgerekend tegen het gereduceerde greenfeetarief en dat dat bedrag niet in de prijs zit.
 
 = 1.7.1 =
 * De gereduceerde greenfeetarieven van de grote baan zijn ingevuld voor veertien golfparken, overgenomen uit de flyer Hollandsche Golfclub Greenfees 2026.

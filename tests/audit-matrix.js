@@ -149,8 +149,14 @@
                     if (Number(plan.uncoveredLargeRounds || 0) !== 0) {
                       report("greenfee-en-ongedekt-tegelijk", { ...context, group: plan.group });
                     }
-                    if (Math.abs(Number(plan.price) - Number(plan.packageBasePrice) - greenFeeRounds * fee) > 0.001) {
-                      report("greenfee-prijs-telt-niet-op", { ...context, group: plan.group, prijs: plan.price, basis: plan.packageBasePrice });
+                    if (Math.abs(Number(plan.reducedGreenFeeTotal) - greenFeeRounds * fee) > 0.001) {
+                      report("greenfeetotaal-telt-niet-op", { ...context, group: plan.group, totaal: plan.reducedGreenFeeTotal });
+                    }
+                    if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.reducedGreenFeeTotal)) > 0.001) {
+                      report("greenfee-weegt-niet-mee-in-keuze", { ...context, group: plan.group });
+                    }
+                    if (Number(plan.largeBaseCost || 0) !== 0) {
+                      report("greenfee-in-kosten-per-ronde", { ...context, group: plan.group });
                     }
                   }
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
@@ -427,8 +433,14 @@
           if (Number(shortGolf.reducedGreenFeeRounds) !== largeRounds) {
             report("greenfee-rondes-niet-verwerkt", { ...context, rondes: shortGolf.reducedGreenFeeRounds });
           }
-          if (Math.abs(Number(shortGolf.price) - Number(shortGolf.packageBasePrice) - largeRounds * testFee) > 0.001) {
-            report("greenfee-niet-in-prijs", { ...context, prijs: shortGolf.price, basis: shortGolf.packageBasePrice });
+          if (Math.abs(Number(shortGolf.reducedGreenFeeTotal) - largeRounds * testFee) > 0.001) {
+            report("greenfeetotaal-onjuist", { ...context, totaal: shortGolf.reducedGreenFeeTotal });
+          }
+          if (Math.abs(Number(shortGolf.selectionCost) - Number(shortGolf.annualCost) - largeRounds * testFee) > 0.001) {
+            report("greenfee-weegt-niet-mee-in-keuze", context);
+          }
+          if (Number(shortGolf.reducedGreenFeeTotal) > 0 && Number(shortGolf.annualCost) !== Number(shortGolf.price) + Number(shortGolf.registrationPrice)) {
+            report("greenfee-in-getoond-bedrag", context);
           }
           if (Math.abs(Number(shortGolf.annualCost) - Number(shortGolf.price) - Number(shortGolf.registrationPrice)) > 0.001) {
             report("jaarbedrag-telt-niet-op", context);
@@ -477,8 +489,11 @@
           if (Number(result.best.reducedGreenFeeRounds) !== largeRounds) {
             report("echte-tarieven-rondes-niet-verwerkt", { ...context, rondes: result.best.reducedGreenFeeRounds });
           }
-          if (Math.abs(Number(result.best.price) - Number(result.best.packageBasePrice) - largeRounds * Number(largeCourse.greenFee)) > 0.001) {
-            report("echte-tarieven-prijs-telt-niet-op", context);
+          if (Math.abs(Number(result.best.reducedGreenFeeTotal) - largeRounds * Number(largeCourse.greenFee)) > 0.001) {
+            report("echte-tarieven-greenfeetotaal-onjuist", context);
+          }
+          if (Math.abs(Number(result.best.annualCost) - Number(result.best.price) - Number(result.best.registrationPrice)) > 0.001) {
+            report("echte-tarieven-greenfee-in-bedrag", context);
           }
           const labels = [...resultContent.querySelectorAll(".choice-costs article p")].map((node) => node.textContent);
           if (labels.includes("Grote baan")) {
