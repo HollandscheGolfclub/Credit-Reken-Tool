@@ -61,7 +61,8 @@
     const shortGolfPossible = !context.youth
       && context.smallRounds > 0
       && Number.isFinite(Number(result.smallCourse && result.smallCourse.shortGolfRate));
-    if (zone === "mixed" && shortGolfPossible && !result.choice) {
+    const perRondeWint = ["handicap", "loyaltee"].includes(best.type);
+    if (zone === "mixed" && shortGolfPossible && !perRondeWint && !result.choice) {
       report("missing-choice-in-mixed-zone", { ...context, zone });
     }
     if (zone !== "mixed" && result.choice) {
@@ -140,25 +141,33 @@
                   }
                   const perRonde = ["handicap", "loyaltee"].includes(plan.type);
                   if (perRonde) {
-                    // Handicapregistratie rekent met het volle tarief, LoyalTee met
-                    // het gereduceerde. Beide alleen op de grote baan.
-                    const korting = Number(hgcConfig.loyalTee.discountPercentage) / 100;
-                    const gereduceerd = Number(largeCourse.greenFee);
-                    const vol = gereduceerd / (1 - korting);
+                    // Deze routes rekenen per ronde af: handicapregistratie tegen het
+                    // volle tarief, LoyalTee tegen het gereduceerde. De vrije rondes
+                    // gaan naar de duurste rondes, dus eerst de grote baan.
                     const vrij = Number(hgcConfig.handicapRegistration.vouchers || 0);
-                    const verwachteRondes = Math.max(0, largeRounds - vrij);
-                    const verwachtTarief = plan.type === "handicap" ? vol : gereduceerd;
+                    const vrijGroot = Math.min(largeRounds, vrij);
+                    const vrijKlein = Math.min(smallRounds, Math.max(0, vrij - vrijGroot));
+                    const betaaldGroot = largeRounds - vrijGroot;
+                    const betaaldKlein = smallRounds - vrijKlein;
+                    const vol = plan.type === "handicap";
+                    const tariefGroot = Number(vol ? largeCourse.greenFeeFull : largeCourse.greenFee);
+                    const tariefKlein = Number(vol ? smallCourse.shortGreenFeeFull : smallCourse.shortGreenFee);
+                    if (largeRounds > 0 && !Number.isFinite(tariefGroot)) {
+                      report("per-ronde-route-zonder-tarief-grote-baan", { ...context, group: plan.group });
+                    }
+                    if (smallRounds > 0 && !Number.isFinite(tariefKlein)) {
+                      report("per-ronde-route-zonder-tarief-kleine-baan", { ...context, group: plan.group });
+                    }
+                    const verwachteRondes = betaaldGroot + betaaldKlein;
+                    const verwachtTotaal = betaaldGroot * (tariefGroot || 0) + betaaldKlein * (tariefKlein || 0);
                     if (Math.abs(Number(plan.greenFeeExtraRounds) - verwachteRondes) > 1e-8) {
                       report("per-ronde-route-rondes-wijken-af", { ...context, group: plan.group, rondes: plan.greenFeeExtraRounds, verwachteRondes });
                     }
-                    if (Math.abs(Number(plan.greenFeeExtraTotal) - verwachteRondes * verwachtTarief) > 0.001) {
-                      report("per-ronde-route-telt-niet-op", { ...context, group: plan.group, totaal: plan.greenFeeExtraTotal });
+                    if (Math.abs(Number(plan.greenFeeExtraTotal) - verwachtTotaal) > 0.001) {
+                      report("per-ronde-route-telt-niet-op", { ...context, group: plan.group, totaal: plan.greenFeeExtraTotal, verwachtTotaal });
                     }
                     if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.greenFeeExtraTotal)) > 0.001) {
                       report("per-ronde-route-weegt-niet-mee", { ...context, group: plan.group });
-                    }
-                    if (smallRounds !== 0) {
-                      report("per-ronde-route-bij-kleine-baan", { ...context, group: plan.group });
                     }
                     if (plan.coversRounds) {
                       report("per-ronde-route-beweert-dekking", { ...context, group: plan.group });
@@ -301,7 +310,8 @@
               if (expectedZone !== "credits" && shortGolfPossible && !hasShortGolf) {
                 report("missing-shortgolf-plan", context);
               }
-              if (expectedZone === "mixed" && shortGolfPossible) {
+              const perRondeWint = ["handicap", "loyaltee"].includes(result.best.type);
+              if (expectedZone === "mixed" && shortGolfPossible && !perRondeWint) {
                 if (!result.choice) {
                   report("missing-choice", context);
                 } else {

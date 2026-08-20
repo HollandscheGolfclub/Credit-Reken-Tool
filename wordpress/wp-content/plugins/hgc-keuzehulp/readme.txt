@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.13.0
+Stable tag: 1.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,13 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.14.0 =
+* De greenfeetarieven van de kleine banen staan er nu in, overgenomen uit de flyer Hollandsche Golfclub Greenfees 2026. Per baan is zowel het normale als het gereduceerde tarief vastgelegd, voor de grote en de kleine baan.
+* Daardoor gelden de routes handicapregistratie en LoyalTee nu ook voor wie op de kleine baan speelt, en voor wie beide baantypen combineert. Eerder konden die routes alleen worden aangeboden aan spelers die uitsluitend de grote baan lopen.
+* De twee vrije rondes van de handicapregistratie gaan naar de duurste rondes, dus eerst de grote baan.
+* Bij een gemengd speelbeeld verschijnt de keuze tussen twee speelrechten alleen nog wanneer een speelrecht ook werkelijk het goedkoopst is. Was een route die per ronde afrekent goedkoper, dan toonde de keuzehulp twee speelrechtkaarten terwijl het beste advies elders lag.
+* Op de kaart voor handicapregistratie staat geen schakelaar meer om de registratie mee te rekenen: het getoonde bedrag is die registratie zelf.
 
 = 1.13.0 =
 * De keuzehulp kent nu de hele ladder van de flyer "Maak hier je keuze". Naast de speelrechten kan zij ook handicapregistratie adviseren voor wie heel af en toe golft, en LoyalTee voor wie af en toe golft.

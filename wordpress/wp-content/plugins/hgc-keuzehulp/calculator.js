@@ -435,53 +435,70 @@ function candidatePlans(context) {
   // rondes per stuk af, dus we bieden ze alleen aan wanneer alle rondes op de
   // grote baan vallen; voor de kleine baan is geen greenfeetarief vastgesteld.
   const loyalTee = hgcConfig.loyalTee || null;
-  const discount = Number(loyalTee && loyalTee.discountPercentage) / 100;
-  const reducedFee = Number(largeCourse && largeCourse.greenFee);
-  // Het tarief in de configuratie is het tarief mét LoyalTee-korting; het volle
-  // tarief volgt daaruit met hetzelfde percentage.
-  const fullFee = Number.isFinite(reducedFee) && discount > 0 && discount < 1 ? reducedFee / (1 - discount) : NaN;
-  const feeRoutesFit = !youth && largeRounds > 0 && smallRounds === 0 && Number.isFinite(fullFee) && Number.isFinite(reducedFee);
+  const vouchers = Math.max(0, Number(hgcConfig.handicapRegistration.vouchers || 0));
+  // De vrije rondes gaan naar de duurste rondes, en de grote baan is op iedere
+  // baan duurder dan de kleine.
+  const freeLarge = Math.min(largeRounds, vouchers);
+  const freeSmall = Math.min(smallRounds, Math.max(0, vouchers - freeLarge));
+  const paidLarge = largeRounds - freeLarge;
+  const paidSmall = smallRounds - freeSmall;
+  const fee = (course, key) => Number(course && course[key]);
+  // Per baantype waar rondes liggen moet een tarief bekend zijn, anders kunnen we
+  // deze routes niet eerlijk beprijzen en bieden we ze niet aan.
+  const largeFits = largeRounds === 0 || (Number.isFinite(fee(largeCourse, "greenFee")) && Number.isFinite(fee(largeCourse, "greenFeeFull")));
+  const smallFits = smallRounds === 0 || (Number.isFinite(fee(smallCourse, "shortGreenFee")) && Number.isFinite(fee(smallCourse, "shortGreenFeeFull")));
+  const feeRoutesFit = !youth && loyalTee && totalRounds > 0 && largeFits && smallFits;
 
   if (feeRoutesFit) {
-    const vouchers = Math.max(0, Number(hgcConfig.handicapRegistration.vouchers || 0));
-    const paidRounds = Math.max(0, largeRounds - vouchers);
-    const freeRounds = Math.min(largeRounds, vouchers);
-    const registratie = {
-      type: "handicap",
-      group: "handicap",
-      name: "Hollandsche Golfclub Handicapregistratie",
-      productName: "Hollandsche Golfclub Handicapregistratie",
-      price: handicapPrice,
-      credits: 0,
-      requiredCredits: 0,
-      coversRounds: false,
-      count: 1,
-      packageItems: [],
-      availablePackages: [],
-      cheaperRoute: null,
-      greenFeeExtraRounds: paidRounds,
-      greenFeeExtraTotal: paidRounds * fullFee,
-      coveredRounds: freeRounds,
-      largeBaseCost: handicapPrice / largeRounds,
-      smallBaseCost: 0,
-      registrationPrice: 0,
-      annualCost: handicapPrice,
-      detail: `Bij handicapregistratie horen ${roundWord(vouchers)} van 9 holes per kalenderjaar, die je gratis speelt.`,
-      instruction: paidRounds > 0
-        ? `Je ${roundWord(paidRounds)} na die vrije rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
-        : `Je ${roundWord(largeRounds)} vallen binnen de vrije rondes, dus je betaalt verder niets per ronde.`,
-    };
-    candidates.push(registratie);
+    // Wie alleen handicapregistratie heeft betaalt het volle tarief; met LoyalTee
+    // geldt het gereduceerde tarief.
+    const perRonde = (largeKey, smallKey) => paidLarge * (fee(largeCourse, largeKey) || 0) + paidSmall * (fee(smallCourse, smallKey) || 0);
+    const paidRounds = paidLarge + paidSmall;
+    const freeRounds = freeLarge + freeSmall;
+    const vrijeRondesTekst = vouchers > 0
+      ? `Bij handicapregistratie horen ${roundWord(vouchers)} van 9 holes per kalenderjaar, die je gratis speelt.`
+      : "Met handicapregistratie speel je op elke HGC-baan tegen het greenfeetarief.";
 
-    const excluded = Array.isArray(loyalTee.excludedCourseIds) ? loyalTee.excludedCourseIds : [];
-    if (!excluded.includes(largeCourse.id)) {
-      const lidmaatschap = Number(loyalTee.membershipPrice);
-      const loyal = {
+    const routes = [
+      {
+        type: "handicap",
+        group: "handicap",
+        name: "Hollandsche Golfclub Handicapregistratie",
+        price: handicapPrice,
+        registration: false,
+        total: perRonde("greenFeeFull", "shortGreenFeeFull"),
+        detail: vrijeRondesTekst,
+        instruction: paidRounds > 0
+          ? `Je ${roundWord(paidRounds)} na die vrije rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes, dus je betaalt verder niets per ronde.`,
+      },
+      {
         type: "loyaltee",
         group: "loyaltee",
         name: loyalTee.name,
-        productName: loyalTee.name,
-        price: lidmaatschap,
+        price: Number(loyalTee.membershipPrice),
+        registration: true,
+        total: perRonde("greenFee", "shortGreenFee"),
+        detail: `Met LoyalTee speel je zonder speelrecht tegen ${decimal.format(Number(loyalTee.discountPercentage))}% korting op de greenfee.`,
+        instruction: paidRounds > 0
+          ? `Je ${roundWord(paidRounds)} na de vrije rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
+      },
+    ];
+
+    const excluded = Array.isArray(loyalTee.excludedCourseIds) ? loyalTee.excludedCourseIds : [];
+    const loyalTeeGeldt = ![largeRounds > 0 ? largeCourse.id : null, smallRounds > 0 ? smallCourse.id : null]
+      .filter(Boolean)
+      .some((id) => excluded.includes(id));
+
+    routes.forEach((route) => {
+      if (route.type === "loyaltee" && !loyalTeeGeldt) return;
+      const plan = {
+        type: route.type,
+        group: route.group,
+        name: route.name,
+        productName: route.name,
+        price: route.price,
         credits: 0,
         requiredCredits: 0,
         coversRounds: false,
@@ -490,17 +507,19 @@ function candidatePlans(context) {
         availablePackages: [],
         cheaperRoute: null,
         greenFeeExtraRounds: paidRounds,
-        greenFeeExtraTotal: paidRounds * reducedFee,
-        coveredRounds: 0,
-        largeBaseCost: lidmaatschap / largeRounds,
-        smallBaseCost: 0,
-        detail: `Met LoyalTee speel je zonder speelrecht tegen ${decimal.format(Number(loyalTee.discountPercentage))}% korting op de greenfee.`,
-        instruction: paidRounds > 0
-          ? `Je ${roundWord(paidRounds)} na de vrije rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
-          : `Je ${roundWord(largeRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
+        greenFeeExtraTotal: route.total,
+        coveredRounds: freeRounds,
+        largeBaseCost: route.price / totalRounds,
+        smallBaseCost: route.price / totalRounds,
+        detail: route.detail,
+        instruction: route.instruction,
       };
-      candidates.push(addRegistration(loyal, handicapPrice));
-    }
+      if (route.registration) {
+        candidates.push(addRegistration(plan, handicapPrice));
+      } else {
+        candidates.push({ ...plan, registrationPrice: 0, annualCost: route.price });
+      }
+    });
   }
 
   const sorted = candidates
@@ -542,7 +561,11 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
   const profile = playProfile(largeRounds, smallRounds);
   const creditsOption = plans.find((plan) => plan.type === "credits") || null;
   const shortGolfOption = plans.find((plan) => plan.type === "shortgolf") || null;
-  const choice = profile.zone === "mixed" && creditsOption && shortGolfOption
+  // Een keuze tussen twee speelrechten hoort er alleen te staan wanneer een
+  // speelrecht ook werkelijk het goedkoopst is. Wint een route die per ronde
+  // afrekent, dan is dat het advies en niet die keuze.
+  const speelrechtWint = ["credits", "shortgolf"].includes(best.type);
+  const choice = profile.zone === "mixed" && speelrechtWint && creditsOption && shortGolfOption
     ? { credits: creditsOption, shortGolf: shortGolfOption }
     : null;
   // Bij een gemengd speelbeeld ligt er al een keuze voor; twee keuzes tegelijk
@@ -852,7 +875,11 @@ function renderSingleAdvice(result) {
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds && !greenFeeExtraRounds;
   const totalCostLabel = "Verwachte kosten per jaar";
   const totalCostNote = "per golfjaar";
-  const recommendationEyebrow = isShortGolf
+  const recommendationEyebrow = best.type === "handicap"
+    ? "Je golft heel af en toe"
+    : best.type === "loyaltee"
+      ? "Je golft af en toe"
+      : isShortGolf
     ? "Speel je voornamelijk op de kleine baan"
     : "Kies jouw speelrecht";
   const webshopLabel = "Bekijk in de webshop";
@@ -865,7 +892,7 @@ function renderSingleAdvice(result) {
       <p>Gebaseerd op ${roundSummary(result)}.</p>
     </div>
 
-    ${registrationSwitch(result.handicapPrice)}
+    ${best.type === "handicap" ? "" : registrationSwitch(result.handicapPrice)}
 
     <div class="choice-costs">
       <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${planAmount(best)}</strong><span>${totalCostNote}</span></article>
