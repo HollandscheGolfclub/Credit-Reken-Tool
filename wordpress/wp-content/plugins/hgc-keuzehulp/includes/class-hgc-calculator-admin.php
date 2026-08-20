@@ -194,7 +194,6 @@ final class HGC_Calculator_Admin
         $config = hgc_calculator_config();
         $config['year'] = absint($raw['year'] ?? $config['year'] ?? date('Y'));
 
-        $config['settings']['preferSinglePackage'] = true;
         $config['settings']['includeHandicapByDefault'] = !empty($raw['settings']['includeHandicapByDefault']);
         $config['settings']['shortGolfSharePercent'] = $this->percentage($raw['settings']['shortGolfSharePercent'] ?? null, 85);
         $mixed_from = $this->percentage($raw['settings']['mixedProfileFromPercent'] ?? null, 40);

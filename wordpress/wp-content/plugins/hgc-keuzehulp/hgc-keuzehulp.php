@@ -1,20 +1,20 @@
 <?php
 /**
- * Plugin Name: Hollandsche Golfclub Credit Calculator
+ * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.9.0
+ * Version: 1.10.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Requires at least: 6.0
  * Requires PHP: 7.4
- * Text Domain: hgc-credit-calculator
+ * Text Domain: hgc-keuzehulp
  */
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.9.0');
+define('HGC_CALCULATOR_VERSION', '1.10.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -160,8 +160,8 @@ add_action('init', 'hgc_calculator_register_shortcode_hint');
 final class HGC_Calculator_GitHub_Updater
 {
     private const REPOSITORY = 'HollandscheGolfclub/Credit-Reken-Tool';
-    private const SLUG = 'hgc-credit-calculator';
-    private const ASSET_NAME = 'hgc-credit-calculator.zip';
+    private const SLUG = 'hgc-keuzehulp';
+    private const ASSET_NAME = 'hgc-keuzehulp.zip';
     private const CACHE_KEY = 'hgc_calculator_github_release';
 
     private string $plugin_file;
@@ -212,7 +212,7 @@ final class HGC_Calculator_GitHub_Updater
         }
 
         $information = new stdClass();
-        $information->name = 'Hollandsche Golfclub Credit Calculator';
+        $information->name = 'Hollandsche Golfclub Keuzehulp';
         $information->slug = self::SLUG;
         $information->version = $release['version'];
         $information->author = '<a href="https://www.hollandschegolfclub.nl/">Hollandsche Golfclub</a>';

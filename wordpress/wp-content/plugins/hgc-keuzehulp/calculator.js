@@ -203,19 +203,6 @@ function connectRange(range, number) {
   });
 }
 
-function groupPackages(items) {
-  const counts = items.reduce((all, item) => {
-    const key = String(item.credits);
-    all[key] = { item, count: (all[key]?.count || 0) + 1 };
-    return all;
-  }, {});
-  return Object.values(counts).sort((a, b) => b.item.credits - a.item.credits);
-}
-
-function describePackages(orderedPackages) {
-  return orderedPackages.map(({ item, count }) => `${count > 1 ? `${count} × ` : ""}${decimal.format(item.credits)} credits`);
-}
-
 function packagePlan(packages, requiredCredits, productName, group) {
   if (!Array.isArray(packages) || !packages.length || requiredCredits <= 0) return null;
   const usable = packages
@@ -250,47 +237,40 @@ function packagePlan(packages, requiredCredits, productName, group) {
     .sort((a, b) => a.price - b.price || a.credits - b.credits || a.count - b.count);
   const singleCoveringPackage = usable.find((item) => item.credits + 1e-8 >= requiredCredits) || null;
   const cheapestRoute = options[0];
-  const preferSinglePackage = Boolean(hgcConfig.settings.preferSinglePackage);
+  const largestPackage = usable[usable.length - 1];
 
-  // Het geadviseerde speelrecht dekt altijd alle opgegeven rondes. Eén
-  // speelrecht heeft daarbij voorrang, ook wanneer meerdere kleinere pakketten
-  // samen goedkoper uitvallen; die goedkopere route komt als tweede advies.
-  const chosen = preferSinglePackage && singleCoveringPackage
-    ? { price: singleCoveringPackage.price, count: 1, items: [singleCoveringPackage], credits: singleCoveringPackage.credits }
-    : cheapestRoute;
-  if (!chosen) return null;
+  // Het advies is altijd één speelrecht. Dekt geen enkel speelrecht de rondes
+  // in één keer, dan adviseren we het grootste speelrecht en melden we dat er
+  // een nieuw speelrecht bij kan zodra de credits op zijn. Meerdere aankopen
+  // stapelen we nooit in één advies met één prijs.
+  const chosenPackage = singleCoveringPackage || largestPackage;
+  const chosen = { price: chosenPackage.price, count: 1, items: [chosenPackage], credits: chosenPackage.credits };
+  const coversRounds = chosen.credits + 1e-8 >= requiredCredits;
+  const instruction = coversRounds
+    ? `Met ${decimal.format(chosen.credits)} credits heb je voldoende ruimte voor jouw verwachte rondes.`
+    : `Er bestaat geen groter speelrecht dan ${decimal.format(chosen.credits)} credits. Zodra die credits op zijn, kun je een nieuw speelrecht aanschaffen.`;
 
-  const orderedPackages = groupPackages(chosen.items);
-  const parts = describePackages(orderedPackages);
-  const first = orderedPackages[0].item;
-  const followUps = orderedPackages
-    .flatMap(({ item, count }) => Array(count - (item.credits === first.credits ? 1 : 0)).fill(item))
-    .map((item) => `${decimal.format(item.credits)} credits`);
-  const instruction = chosen.count > 1
-    ? `Geen enkel speelrecht dekt dit in één keer. Je hebt ${parts.join(" + ")} nodig, samen ${decimal.format(chosen.credits)} credits. Begin met ${decimal.format(first.credits)} credits en koop daarna ${followUps.join(" en ")}.`
-    : `Met ${decimal.format(chosen.credits)} credits heb je voldoende ruimte voor jouw verwachte rondes.`;
-
-  const cheaperRoute = chosen.count === 1 && cheapestRoute && cheapestRoute.price + 1e-8 < chosen.price
+  // Zijn meerdere kleinere speelrechten samen goedkoper, dan tonen we die route
+  // niet; ze bepaalt alleen dat het kleinere speelrecht als tweede advies komt.
+  const cheaperRoute = cheapestRoute && cheapestRoute.count > 1 && cheapestRoute.price + 1e-8 < chosen.price
     ? {
         credits: cheapestRoute.credits,
         price: cheapestRoute.price,
         count: cheapestRoute.count,
-        parts: describePackages(groupPackages(cheapestRoute.items)),
       }
     : null;
 
   return {
     type: "credits",
     group,
-    name: chosen.count === 1 ? (chosen.items[0].name || `${productName} – ${chosen.credits} credits`) : `${productName} – ${parts.join(" + ")}`,
+    name: chosen.items[0].name || `${productName} – ${chosen.credits} credits`,
     productName,
     price: chosen.price,
     credits: chosen.credits,
     requiredCredits,
-    count: chosen.count,
+    coversRounds,
+    count: 1,
     packageItems: chosen.items,
-    packageParts: parts,
-    firstPackage: first,
     cheaperRoute,
     instruction,
   };
@@ -337,9 +317,9 @@ function candidatePlans(context) {
       plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
       plan.largeBaseCost = standardCredits > 0 ? largeCourse.largeRate * (plan.price / standardCredits) : 0;
       plan.smallBaseCost = standardCredits > 0 ? smallCourse.shortRate * (plan.price / standardCredits) : 0;
-      plan.detail = plan.count > 1
-        ? `Voor jouw opgegeven speelvolume zijn circa ${decimal.format(standardCredits)} credits nodig. Dat dek je met ${plan.packageParts.join(" + ")}, samen ${decimal.format(plan.credits)} credits.`
-        : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`;
+      plan.detail = plan.coversRounds
+        ? `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
+        : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
       candidates.push(addRegistration(plan, handicapPrice));
     }
   });
@@ -363,11 +343,17 @@ function candidatePlans(context) {
       shortPlan.uncoveredLargeRounds = payGreenFee ? 0 : largeRounds;
       shortPlan.largeBaseCost = 0;
       shortPlan.smallBaseCost = shortPlan.price / smallRounds;
+      // Dekt het grootste Shortgolf-speelrecht de rondes niet, dan noemen we
+      // hoeveel rondes het wél dekt in plaats van te doen alsof alles gedekt is.
+      const coveredSmallRounds = Math.floor(shortPlan.credits / shortGolfRate);
+      const shortCoverage = shortPlan.coversRounds
+        ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd.`
+        : `${decimal.format(shortPlan.credits)} Shortgolf-credits dekken ${coveredSmallRounds} van je ${smallRounds} rondes op de kleine baan.`;
       shortPlan.detail = payGreenFee
-        ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
+        ? `${shortCoverage} Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
         : largeRounds > 0
-          ? `${decimal.format(shortCredits)} Shortgolf-credits dekken je ${smallRounds} rondes op de kleine baan; ${decimal.format(shortPlan.credits)} credits geadviseerd. Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
-          : `${decimal.format(shortCredits)} Shortgolf-credits nodig voor je kleine rondes; ${decimal.format(shortPlan.credits)} credits geadviseerd.`;
+          ? `${shortCoverage} Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
+          : shortCoverage;
       candidates.push(addRegistration(shortPlan, handicapPrice));
     }
   }
@@ -388,9 +374,9 @@ function candidatePlans(context) {
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
       plan.largeBaseCost = localCredits > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localCredits) : 0;
       plan.smallBaseCost = localCredits > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localCredits) : 0;
-      plan.detail = plan.count > 1
-        ? `Voor jouw opgegeven speelvolume zijn circa ${decimal.format(localCredits)} lokale credits nodig. Dat dek je met ${plan.packageParts.join(" + ")}, samen ${decimal.format(plan.credits)} credits.`
-        : `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`;
+      plan.detail = plan.coversRounds
+        ? `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
+        : `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
       candidates.push(addRegistration(plan, handicapPrice));
     });
   }
@@ -577,10 +563,6 @@ function roundWord(count) {
   return `${count} ronde${count === 1 ? "" : "s"}`;
 }
 
-function amountNote(plan, whenCovered) {
-  return plan.count > 1 ? `voor ${decimal.format(plan.count)} speelrechten samen` : whenCovered;
-}
-
 function benefitList(plan) {
   return planBenefits(plan)
     .map((benefit) => {
@@ -643,18 +625,24 @@ function renderChoice(result) {
         variant: "credits",
         question: "Speel je voornamelijk op de grote baan?",
         product: brandText(credits.productName),
-        amountNote: amountNote(credits, "voor al je rondes"),
-        coverage: `Dit speelrecht dekt zowel je ${largeRoundsText} als je ${smallRoundsText}.`,
+        amountNote: "voor al je rondes",
+        coverage: credits.coversRounds
+          ? `Dit speelrecht dekt zowel je ${largeRoundsText} als je ${smallRoundsText}.`
+          : `Dit speelrecht dekt een deel van je ${largeRoundsText} en je ${smallRoundsText}.`,
         buttonClass: "button--primary",
       })}
       ${choiceCard(shortGolf, {
         variant: "shortgolf",
         question: "Speel je voornamelijk op de kleine baan?",
         product: brandText(shortGolf.productName),
-        amountNote: amountNote(shortGolf, `voor je ${smallRoundsText}`),
-        coverage: Number(shortGolf.reducedGreenFeeRounds || 0)
-          ? `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}. Je ${largeRoundsText} reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
-          : `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}. Je ${largeRoundsText} ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`,
+        amountNote: `voor je ${smallRoundsText}`,
+        coverage: `${shortGolf.coversRounds
+          ? `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}.`
+          : `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt een deel van je ${smallRoundsText}.`
+        } ${Number(shortGolf.reducedGreenFeeRounds || 0)
+          ? `Je ${largeRoundsText} reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${largeRoundsText} ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
+        }`,
         buttonClass: "button--shortgolf",
       })}
     </div>
@@ -674,16 +662,12 @@ function renderSingleAdvice(result) {
   // Het greenfeetarief wordt nooit als bedrag getoond, dus ook niet als kosten
   // per ronde op de grote baan.
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
-  const totalCostLabel = best.count > 1 ? "Geschatte totale kosten" : "Verwachte kosten per jaar";
-  const totalCostNote = best.count > 1 ? `voor ${decimal.format(best.count)} speelrechten samen` : "per golfjaar";
+  const totalCostLabel = "Verwachte kosten per jaar";
+  const totalCostNote = "per golfjaar";
   const recommendationEyebrow = isShortGolf
     ? "Speel je voornamelijk op de kleine baan"
-    : best.count > 1
-      ? "Jouw passende route"
-      : "Kies jouw speelrecht";
-  const webshopLabel = best.count > 1
-    ? `Begin met ${decimal.format(best.firstPackage.credits)} credits`
-    : "Bekijk in de webshop";
+    : "Kies jouw speelrecht";
+  const webshopLabel = "Bekijk in de webshop";
 
   resultContent.innerHTML = `
     <div class="result-hero">

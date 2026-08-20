@@ -129,8 +129,19 @@
                   if (Math.abs(reconstructed - Number(plan.annualCost)) > 0.01) {
                     report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
                   }
-                  if (Number(plan.credits) + 1e-8 < Number(plan.requiredCredits)) {
-                    report("advies-dekt-de-rondes-niet", { ...context, group: plan.group, credits: plan.credits, nodig: plan.requiredCredits });
+                  if (Number(plan.count) !== 1 || (Array.isArray(plan.packageItems) && plan.packageItems.length !== 1)) {
+                    report("advies-uit-meerdere-aankopen", { ...context, group: plan.group, count: plan.count });
+                  }
+                  const covers = Number(plan.credits) + 1e-8 >= Number(plan.requiredCredits);
+                  if (covers !== Boolean(plan.coversRounds)) {
+                    report("dekking-vlag-wijkt-af", { ...context, group: plan.group, coversRounds: plan.coversRounds });
+                  }
+                  if (!covers) {
+                    // Dan hoort dit het grootste speelrecht uit het aanbod te zijn.
+                    const largest = Math.max(...(Array.isArray(plan.availablePackages) ? plan.availablePackages : []).map((item) => Number(item.credits)));
+                    if (Number(plan.credits) !== largest) {
+                      report("advies-dekt-niet-en-is-niet-het-grootste", { ...context, group: plan.group, credits: plan.credits, largest, nodig: plan.requiredCredits });
+                    }
                   }
                   if (plan.cheaperRoute) {
                     if (Number(plan.cheaperRoute.credits) + 1e-8 < Number(plan.requiredCredits)) {
@@ -364,6 +375,10 @@
             const shown = resultContent.textContent;
             if (Number(result.best.uncoveredLargeRounds || 0) > 0 && !/buiten dit speelrecht/.test(shown)) {
               report("ongedekte-rondes-niet-gemeld", context);
+            }
+            // Dekt het advies de rondes niet, dan hoort dat in de tekst te staan.
+            if (result.best.coversRounds === false && !/nieuw speelrecht aanschaffen/.test(shown)) {
+              report("onvoldoende-dekking-niet-gemeld", context);
             }
             // Een route met meerdere aankopen tonen we niet. Is die route
             // goedkoper, dan hoort het kleinere speelrecht als tweede advies

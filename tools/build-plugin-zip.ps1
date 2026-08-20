@@ -1,5 +1,5 @@
 <#
-    Bouwt dist/hgc-credit-calculator.zip voor handmatige upload in WordPress.
+    Bouwt dist/hgc-keuzehulp.zip voor handmatige upload in WordPress.
 
     Gebruik NIET Compress-Archive: Windows PowerShell 5.1 schrijft backslashes
     als padscheiding in het archief. WordPress maakt daardoor geen pluginmap aan
@@ -10,9 +10,9 @@
 $ErrorActionPreference = 'Stop'
 
 $root    = Split-Path -Parent $PSScriptRoot
-$source  = Join-Path $root 'wordpress\wp-content\plugins\hgc-credit-calculator'
+$source  = Join-Path $root 'wordpress\wp-content\plugins\hgc-keuzehulp'
 $distDir = Join-Path $root 'dist'
-$zipPath = Join-Path $distDir 'hgc-credit-calculator.zip'
+$zipPath = Join-Path $distDir 'hgc-keuzehulp.zip'
 
 if (-not (Test-Path $source)) { throw "Pluginmap niet gevonden: $source" }
 if (-not (Test-Path $distDir)) { New-Item -ItemType Directory $distDir | Out-Null }

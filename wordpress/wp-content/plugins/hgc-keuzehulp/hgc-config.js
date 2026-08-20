@@ -9,7 +9,6 @@
 window.hgcConfig = {
   year: 2026,
   settings: {
-    preferSinglePackage: true,
     // Staat handicapregistratie standaard in de getoonde bedragen? De bezoeker
     // kan hem in het advies zelf aanvinken.
     includeHandicapByDefault: false,

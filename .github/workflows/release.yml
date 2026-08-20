@@ -19,15 +19,15 @@ jobs:
         shell: bash
         run: |
           mkdir -p build
-          cp -R wordpress/wp-content/plugins/hgc-credit-calculator build/hgc-credit-calculator
+          cp -R wordpress/wp-content/plugins/hgc-keuzehulp build/hgc-keuzehulp
           cd build
-          zip -r ../hgc-credit-calculator.zip hgc-credit-calculator
+          zip -r ../hgc-keuzehulp.zip hgc-keuzehulp
 
       - name: GitHub Release publiceren
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh release create "${GITHUB_REF_NAME}" hgc-credit-calculator.zip \
-            --title "HGC Credit Calculator ${GITHUB_REF_NAME}" \
+          gh release create "${GITHUB_REF_NAME}" hgc-keuzehulp.zip \
+            --title "HGC Keuzehulp ${GITHUB_REF_NAME}" \
             --generate-notes

@@ -1,9 +1,9 @@
-=== Hollandsche Golfclub Credit Calculator ===
+=== Hollandsche Golfclub Keuzehulp ===
 Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,8 +11,8 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 
 == Installatie ==
 
-1. Upload `hgc-credit-calculator.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
-2. Activeer Hollandsche Golfclub Credit Calculator.
+1. Upload `hgc-keuzehulp.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
+2. Activeer Hollandsche Golfclub Keuzehulp.
 3. Plaats `[hgc_calculator]` om de gekozen HGC-speelrechtkeuzehulp direct te tonen.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
@@ -26,11 +26,16 @@ De plugin controleert de nieuwste publieke GitHub Release van:
 https://github.com/HollandscheGolfclub/Credit-Reken-Tool
 
 Een release moet een bestand met exact deze naam bevatten:
-`hgc-credit-calculator.zip`
+`hgc-keuzehulp.zip`
 
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.0 =
+* Het advies bestaat altijd uit één speelrecht. Dekt geen enkel speelrecht de opgegeven rondes, dan adviseert de keuzehulp het grootste speelrecht met de melding hoeveel het dekt, in plaats van een samengesteld advies als "120 credits + 2 x 20 credits" met een prijs voor drie aankopen.
+* Bij jeugd- en dalurenspeelrechten bestaat alleen een pakket van 20 credits. Wie daar meer credits nodig heeft, ziet dus dat ene speelrecht met de melding dat het een deel van de rondes dekt.
+* De instelling "Eén speelrecht heeft voorrang" is vervallen; dat is nu altijd zo.
 
 = 1.9.0 =
 * Golfpark Maastricht International en Golfpark Naarderbos hebben vastgestelde creditwaarden: Maastricht 1 credit voor de grote baan en 0,8 voor de kleine, Naarderbos 0,9 en 0,5. De markering "voorlopige waarden" is bij beide banen weg.
