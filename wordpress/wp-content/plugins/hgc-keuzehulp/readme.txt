@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.6
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,13 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.11.0 =
+* Een kleiner speelrecht met de resterende rondes tegen het gereduceerde greenfeetarief doet nu mee als volwaardige optie. Wie 30 credits nodig heeft, krijgt daardoor 20 credits voor EUR 485,00 geadviseerd in plaats van 60 credits voor EUR 1.030,00. Het omslagpunt ligt rond 40 credits; daarboven dekt het grotere speelrecht alles en is dat weer het advies.
+* Bij zo'n advies verschijnt geen prijs per ronde voor de grote baan, want die zou alleen de credits bevatten en dus te laag uitkomen.
+* Teksten aangepast op verzoek van de club: HGC-keuzehulp, Het best passende speelrecht, Hoe ziet je golfjaar eruit, en rondes per 12 maanden in plaats van per jaar.
+* De term algemeen speelrecht is HGC-speelrecht geworden.
+* De baantypen heten nu Par 3/4/5-baan en Shortgolfbaan / Par 3-baan.
 
 = 1.10.6 =
 * Een onafgerond templatebestand dat nog in ontwikkeling is, zat per ongeluk in het pakket van 1.10.5. Het werd door geen enkele shortcode gebruikt en kon dus niets stukmaken, maar hoort niet in een release.

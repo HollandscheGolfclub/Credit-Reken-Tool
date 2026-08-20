@@ -113,7 +113,7 @@
 .hgc-calculator .choice-icon--flag { font-family: inherit; }
 .hgc-calculator .field-row { display: grid; grid-template-columns: 1.35fr .65fr; gap: 18px; }
 .hgc-calculator .round-plan-grid { margin-bottom: 30px; display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid #dce5d3; border-radius: 10px; background: #fff; box-shadow: 0 10px 28px rgba(48,62,40,.06); }
-.hgc-calculator .round-plan-card { min-width: 0; padding: 28px 30px; display: grid; grid-template-columns: 190px minmax(240px, .9fr) minmax(300px, 1.1fr); align-items: start; gap: 28px; border: 0; background: transparent; }
+.hgc-calculator .round-plan-card { min-width: 0; padding: 28px 30px; display: grid; grid-template-columns: 178px minmax(285px, 1fr) minmax(280px, 1fr); align-items: start; gap: 28px; border: 0; background: transparent; }
 .hgc-calculator .round-plan-card + .round-plan-card { border-top: 1px solid #e5eadf; }
 .hgc-calculator .round-plan-card:first-child { border-radius: 9px 9px 0 0; }
 .hgc-calculator .round-plan-card:last-child { border-radius: 0 0 9px 9px; }

@@ -136,8 +136,25 @@
                   if (covers !== Boolean(plan.coversRounds)) {
                     report("dekking-vlag-wijkt-af", { ...context, group: plan.group, coversRounds: plan.coversRounds });
                   }
-                  if (!covers) {
-                    // Dan hoort dit het grootste speelrecht uit het aanbod te zijn.
+                  const extraRounds = Number(plan.greenFeeExtraRounds || 0);
+                  if (extraRounds > 0) {
+                    // Deze route rekent het tekort af op de grote baan. Dat mag nooit
+                    // meer rondes betreffen dan de bezoeker daar speelt.
+                    if (extraRounds > largeRounds + 1e-8) {
+                      report("greenfee-bijspelen-meer-dan-grote-rondes", { ...context, group: plan.group, extraRounds, largeRounds });
+                    }
+                    const verwacht = extraRounds * Number(largeCourse.greenFee);
+                    if (Math.abs(Number(plan.greenFeeExtraTotal) - verwacht) > 0.001) {
+                      report("greenfee-bijspelen-telt-niet-op", { ...context, group: plan.group, totaal: plan.greenFeeExtraTotal });
+                    }
+                    if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.greenFeeExtraTotal)) > 0.001) {
+                      report("greenfee-bijspelen-weegt-niet-mee", { ...context, group: plan.group });
+                    }
+                    if (covers) {
+                      report("greenfee-bijspelen-terwijl-alles-gedekt-is", { ...context, group: plan.group });
+                    }
+                  } else if (!covers) {
+                    // Zonder die route hoort dit het grootste speelrecht te zijn.
                     const largest = Math.max(...(Array.isArray(plan.availablePackages) ? plan.availablePackages : []).map((item) => Number(item.credits)));
                     if (Number(plan.credits) !== largest) {
                       report("advies-dekt-niet-en-is-niet-het-grootste", { ...context, group: plan.group, credits: plan.credits, largest, nodig: plan.requiredCredits });
@@ -176,7 +193,7 @@
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
                     report("shortgolf-outside-profile", { ...context, group: plan.group });
                   }
-                  if (youth && plan.group !== "youth") report("adult-plan-for-youth", { ...context, group: plan.group });
+                  if (youth && !String(plan.group).startsWith("youth")) report("adult-plan-for-youth", { ...context, group: plan.group });
                   if (!canPlayOffPeak && String(plan.group).includes("offpeak")) report("offpeak-without-selection", { ...context, group: plan.group });
                 }
               }
@@ -377,7 +394,10 @@
               report("ongedekte-rondes-niet-gemeld", context);
             }
             // Dekt het advies de rondes niet, dan hoort dat in de tekst te staan.
-            if (result.best.coversRounds === false && !/nieuw speelrecht aanschaffen/.test(shown)) {
+            // Dekt het advies de rondes niet, dan hoort de uitvoer te zeggen hoe
+            // de rest wordt afgerekend: een nieuw speelrecht, of per ronde greenfee.
+            const legtUit = /nieuw speelrecht aanschaffen/.test(shown) || /gereduceerde greenfeetarief/.test(shown);
+            if (result.best.coversRounds === false && !legtUit) {
               report("onvoldoende-dekking-niet-gemeld", context);
             }
             // Een route met meerdere aankopen tonen we niet. Is die route

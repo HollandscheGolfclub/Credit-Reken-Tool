@@ -158,7 +158,7 @@ function updateCourseHelp() {
   }
   if (small) {
     const shortGolfRate = Number.isFinite(small.shortGolfRate) ? small.shortGolfRate : small.shortRate;
-    smallCourseHelp.textContent = `Per ronde: ${decimal.format(small.shortRate)} credit met een algemeen speelrecht en ${decimal.format(shortGolfRate)} credit met een Shortgolf-speelrecht.`;
+    smallCourseHelp.textContent = `Per ronde: ${decimal.format(small.shortRate)} credit met een HGC-speelrecht en ${decimal.format(shortGolfRate)} credit met een Shortgolf-speelrecht.`;
     if (small.note) smallCourseHelp.textContent += ` ${small.note}`;
   }
 }
@@ -324,6 +324,55 @@ function candidatePlans(context) {
     }
   });
 
+  // Een kleiner speelrecht met de resterende rondes op greenfee kan flink
+  // voordeliger zijn dan het speelrecht dat alles dekt. Die route rekenen we
+  // mee als kandidaat, zodat het advies niet duurder uitvalt dan nodig. Het
+  // greenfeebedrag weegt via selectionCost mee en blijft buiten de prijs.
+  const largeGreenFee = Number(largeCourse && largeCourse.greenFee);
+  const largeRate = Number(largeCourse && largeCourse.largeRate);
+  const canPlayOnGreenFee = largeRounds > 0 && standardCredits > 0
+    && Number.isFinite(largeGreenFee) && largeGreenFee > 0
+    && Number.isFinite(largeRate) && largeRate > 0;
+  if (canPlayOnGreenFee) {
+    packageChoices.forEach((choice) => {
+      (choice.packages || []).forEach((item) => {
+        const credits = Number(item.credits);
+        const price = Number(item.price);
+        if (!Number.isFinite(credits) || !Number.isFinite(price) || credits <= 0) return;
+        const shortfall = standardCredits - credits;
+        if (shortfall <= 1e-8) return;
+        // Het tekort rekenen we af op de grote baan, want alleen daar staat een
+        // tarief vast. Past het tekort niet in de grote rondes, dan kunnen we
+        // deze route niet eerlijk beprijzen en bieden we hem niet aan.
+        const extraRounds = shortfall / largeRate;
+        if (extraRounds > largeRounds + 1e-8) return;
+        const rounded = Math.round(extraRounds * 10) / 10;
+        const plan = {
+          type: "credits",
+          group: `${choice.group}-greenfee-${credits}`,
+          name: item.name || `${choice.name} – ${decimal.format(credits)} credits`,
+          productName: choice.name,
+          price,
+          credits,
+          requiredCredits: standardCredits,
+          coversRounds: false,
+          count: 1,
+          packageItems: [{ ...item, credits, price }],
+          availablePackages: choice.packages,
+          cheaperRoute: null,
+          greenFeeExtraRounds: extraRounds,
+          greenFeeExtraTotal: extraRounds * largeGreenFee,
+          coveredRounds: totalRounds * Math.min(1, credits / standardCredits),
+          largeBaseCost: largeRate * (price / standardCredits),
+          smallBaseCost: Number(smallCourse.shortRate) * (price / standardCredits),
+          detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het grootste deel van je rondes.`,
+          instruction: `De ${decimal.format(rounded)} rondes die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`,
+        };
+        candidates.push(addRegistration(plan, handicapPrice));
+      });
+    });
+  }
+
   const shortGolfRate = Number(smallCourse.shortGolfRate);
   const profile = playProfile(largeRounds, smallRounds);
   const shortGolfSuitsProfile = profile.zone === "shortgolf" || profile.zone === "mixed";
@@ -386,7 +435,7 @@ function candidatePlans(context) {
       const shared = (Number(plan.registrationPrice || 0) + Number(plan.sharedCost || 0)) / totalRounds;
       return {
         ...plan,
-        selectionCost: Number(plan.annualCost) + Number(plan.reducedGreenFeeTotal || 0),
+        selectionCost: Number(plan.annualCost) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.greenFeeExtraTotal || 0),
         largeRoundCost: largeRounds ? Number(plan.largeBaseCost || 0) + shared : null,
         smallRoundCost: smallRounds ? Number(plan.smallBaseCost || 0) + shared : null,
       };
@@ -661,7 +710,10 @@ function renderSingleAdvice(result) {
   const greenFeeRounds = Number(best.reducedGreenFeeRounds || 0);
   // Het greenfeetarief wordt nooit als bedrag getoond, dus ook niet als kosten
   // per ronde op de grote baan.
-  const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
+  // Ook bij bijspelen op greenfee tonen we geen prijs per ronde voor de grote
+  // baan: die zou alleen de credits bevatten en dus te laag uitkomen.
+  const greenFeeExtraRounds = Number(best.greenFeeExtraRounds || 0);
+  const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds && !greenFeeExtraRounds;
   const totalCostLabel = "Verwachte kosten per jaar";
   const totalCostNote = "per golfjaar";
   const recommendationEyebrow = isShortGolf

@@ -3,8 +3,8 @@
   <section class="calculator-shell" id="calculator" aria-labelledby="calculator-title">
     <div class="calculator-topbar">
       <div>
-        <p class="eyebrow">Jouw keuzehulp</p>
-        <h2 id="calculator-title">Ontdek jouw beste speelrecht</h2>
+        <p class="eyebrow">HGC-keuzehulp</p>
+        <h2 id="calculator-title">Het best passende speelrecht</h2>
       </div>
       <div class="calculator-topbar-meta">
         <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
@@ -21,17 +21,17 @@
         <div class="step-heading">
           <span class="step-number">01</span>
           <div>
-            <h3>Hoe ziet jouw golfjaar eruit?</h3>
-            <p>Vul per baantype in hoeveel rondes van 9 holes je ongeveer speelt.</p>
+            <h3>Hoe ziet je golfjaar eruit?</h3>
+            <p>Vul per baantype in hoeveel rondes van 9 holes je speelt in 12 maanden.</p>
           </div>
         </div>
 
         <div class="round-plan-grid">
           <article class="round-plan-card">
-            <div class="round-plan-title"><span class="choice-icon">9</span><div><h4>Grote baan</h4><p>Volwaardige golfbaan</p></div></div>
+            <div class="round-plan-title"><span class="choice-icon">9</span><div><h4>Grote baan</h4><p>Par 3/4/5-baan</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
-                <label for="large-rounds-number">Rondes per jaar</label>
+                <label for="large-rounds-number">Hoeveel rondes van 9 holes per 12 maanden?</label>
                 <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div>
               </div>
               <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" />
@@ -45,10 +45,10 @@
           </article>
 
           <article class="round-plan-card">
-            <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Baan met korte holes</p></div></div>
+            <div class="round-plan-title"><span class="choice-icon choice-icon--flag">⚑</span><div><h4>Kleine baan</h4><p>Shortgolfbaan / Par 3-baan</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
-                <label for="small-rounds-number">Rondes per jaar</label>
+                <label for="small-rounds-number">Hoeveel rondes per 12 maanden?</label>
                 <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div>
               </div>
               <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" />
