@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.1
+Stable tag: 1.10.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.2 =
+* De keuzehulp schildert in WordPress geen eigen achtergrond meer. Het lichtgroene kader met 32 pixels ruimte om de kaart was bedoeld als paginakleur voor de losse testpagina, maar verscheen in WordPress als een groen blok bovenop de achtergrond van het thema. In een pagina staat nu alleen de witte kaart; de testpagina houdt het kader.
 
 = 1.10.1 =
 * Opgelost: op de live site waren productnamen onleesbaar. Het WordPress-thema gaf koppen een witte kleur, en de keuzehulp liet die kleur over aan het thema. Kleur, regelafstand en afbreekstreepjes staan nu vast in de keuzehulp zelf, zodat de weergave in elk thema gelijk is.

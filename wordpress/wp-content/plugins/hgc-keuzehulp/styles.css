@@ -15,7 +15,8 @@
 }
 
 .hgc-calculator, .hgc-calculator * { box-sizing: border-box; }
-.hgc-calculator { width: 100%; margin: 0; padding: 32px; overflow: hidden; background: #f2f4ee; color: var(--ink); font-family: "Montserrat", Arial, sans-serif; }
+.hgc-calculator { width: 100%; margin: 0; overflow: visible; color: var(--ink); font-family: "Montserrat", Arial, sans-serif; }
+.hgc-calculator[data-calculator-mode="launcher"], .hgc-calculator[data-calculator-mode="comparison"] { padding: 32px; overflow: hidden; background: #f2f4ee; }
 .hgc-calculator button, .hgc-calculator input, .hgc-calculator select { font: inherit; }
 .hgc-calculator button, .hgc-calculator a { -webkit-tap-highlight-color: transparent; }
 .hgc-calculator [hidden] { display: none !important; }
