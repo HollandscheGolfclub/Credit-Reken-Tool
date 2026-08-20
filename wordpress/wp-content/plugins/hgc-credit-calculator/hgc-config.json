@@ -2,6 +2,7 @@
   "year": 2026,
   "settings": {
     "preferSinglePackage": true,
+    "includeHandicapByDefault": false,
     "shortGolfSharePercent": 85,
     "mixedProfileFromPercent": 40,
     "mixedProfileToPercent": 60

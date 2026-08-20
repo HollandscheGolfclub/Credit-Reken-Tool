@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.8.1 =
+* Handicapregistratie zit standaard niet meer in de getoonde bedragen. Een speelrecht van 60 credits staat er voor EUR 1.030,00 en een Shortgolf-speelrecht van 60 credits voor EUR 585,00.
+* De bezoeker kan handicapregistratie in het advies zelf aanvinken; de bedragen lopen dan op naar EUR 1.089,50 en EUR 644,50.
+* Een beheerder kan de standaardstand omzetten onder Instellingen.
 
 = 1.8.0 =
 * De gereduceerde greenfees wegen mee bij het bepalen van het advies, maar blijven buiten het getoonde bedrag. Dat bedrag is de prijs van het speelrecht zelf.

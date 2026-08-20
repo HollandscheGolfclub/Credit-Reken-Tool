@@ -110,6 +110,8 @@ final class HGC_Calculator_Admin
                         <?php $this->number_field('Handicapregistratie volwassenen', 'config[handicapRegistration][adultPrice]', $config['handicapRegistration']['adultPrice'] ?? 0, 0.01, '€'); ?>
                         <?php $this->number_field('Handicapregistratie jeugd', 'config[handicapRegistration][youthPrice]', $config['handicapRegistration']['youthPrice'] ?? 0, 0.01, '€'); ?>
                     </div>
+                    <label class="hgc-admin-check"><input type="checkbox" name="config[settings][includeHandicapByDefault]" value="1" <?php checked(!empty($config['settings']['includeHandicapByDefault'])); ?> /> Handicapregistratie staat standaard in de getoonde bedragen</label>
+                    <p class="hgc-admin-hint">Staat dit uit, dan tonen de bedragen alleen de prijs van het speelrecht en kan de bezoeker handicapregistratie in het advies zelf aanvinken. De keuze verandert nooit welk speelrecht wordt geadviseerd, omdat de registratieprijs voor ieder speelrecht gelijk is.</p>
                 </section>
 
                 <section class="hgc-admin-panel">
@@ -193,6 +195,7 @@ final class HGC_Calculator_Admin
         $config['year'] = absint($raw['year'] ?? $config['year'] ?? date('Y'));
 
         $config['settings']['preferSinglePackage'] = true;
+        $config['settings']['includeHandicapByDefault'] = !empty($raw['settings']['includeHandicapByDefault']);
         $config['settings']['shortGolfSharePercent'] = $this->percentage($raw['settings']['shortGolfSharePercent'] ?? null, 85);
         $mixed_from = $this->percentage($raw['settings']['mixedProfileFromPercent'] ?? null, 40);
         $mixed_to = $this->percentage($raw['settings']['mixedProfileToPercent'] ?? null, 60);

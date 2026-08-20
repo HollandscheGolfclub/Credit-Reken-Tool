@@ -559,9 +559,14 @@ function costCard(label, value, note, registrationShare) {
 // De schakelaar in het advies wisselt uitsluitend de getoonde bedragen. De
 // prijs voor handicapregistratie is voor ieder speelrecht gelijk en verandert
 // de aanbeveling dus niet; alleen wat de bezoeker ziet verandert.
+function handicapDefault() {
+  return hgcConfig.settings.includeHandicapByDefault === true;
+}
+
 function switchableAmount(withRegistration, withoutRegistration) {
-  const shown = euro.format(withRegistration);
-  return `<span class="switchable" data-with="${shown}" data-without="${euro.format(withoutRegistration)}">${shown}</span>`;
+  const withText = euro.format(withRegistration);
+  const withoutText = euro.format(withoutRegistration);
+  return `<span class="switchable" data-with="${withText}" data-without="${withoutText}">${handicapDefault() ? withText : withoutText}</span>`;
 }
 
 function planAmount(plan) {
@@ -583,9 +588,9 @@ function registrationSwitch(handicapPrice) {
   const withoutText = `Alle bedragen zijn zonder de ${euro.format(handicapPrice)} voor handicapregistratie bij de Hollandsche Golfclub.`;
   return `
     <label class="toggle-row toggle-row--compact registration-switch">
-      <input id="handicap-switch" type="checkbox" checked />
+      <input id="handicap-switch" type="checkbox" ${handicapDefault() ? "checked" : ""} />
       <span class="toggle" aria-hidden="true"></span>
-      <span><strong>Handicapregistratie meerekenen</strong><small class="switchable" data-with="${withText}" data-without="${withoutText}">${withText}</small></span>
+      <span><strong>Handicapregistratie meerekenen</strong><small class="switchable" data-with="${withText}" data-without="${withoutText}">${handicapDefault() ? withText : withoutText}</small></span>
     </label>
   `;
 }
@@ -764,9 +769,10 @@ function renderSingleAdvice(result) {
 function renderResult(result) {
   if (result.choice) {
     renderChoice(result);
-    return;
+  } else {
+    renderSingleAdvice(result);
   }
-  renderSingleAdvice(result);
+  applyRegistrationSwitch(handicapDefault());
 }
 
 form.addEventListener("submit", (event) => {
@@ -819,7 +825,7 @@ updateRangeFill(largeRoundsRange);
 updateRangeFill(smallRoundsRange);
 progressBar.style.width = "50%";
 if (new URLSearchParams(window.location.search).has("hgc-audit")) {
-  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent, planBenefits, applyRegistrationSwitch });
+  window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent, planBenefits, applyRegistrationSwitch, handicapDefault });
 }
 track("calculator_opened");
 })();

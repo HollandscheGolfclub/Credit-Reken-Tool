@@ -10,6 +10,9 @@ window.hgcConfig = {
   year: 2026,
   settings: {
     preferSinglePackage: true,
+    // Staat handicapregistratie standaard in de getoonde bedragen? De bezoeker
+    // kan hem in het advies zelf aanvinken.
+    includeHandicapByDefault: false,
     // Zit dit aandeel van de rondes of meer op de kleine baan, dan adviseert de
     // keuzehulp een Shortgolf-speelrecht; die credits zijn daar voordeliger.
     shortGolfSharePercent: 85,
