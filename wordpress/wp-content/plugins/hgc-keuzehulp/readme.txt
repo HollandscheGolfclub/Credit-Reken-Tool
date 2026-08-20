@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.0
+Stable tag: 1.10.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.1 =
+* Opgelost: op de live site waren productnamen onleesbaar. Het WordPress-thema gaf koppen een witte kleur, en de keuzehulp liet die kleur over aan het thema. Kleur, regelafstand en afbreekstreepjes staan nu vast in de keuzehulp zelf, zodat de weergave in elk thema gelijk is.
+* Daarmee verdwijnen ook de te ruime witruimte in de kostenkaarten en afbreekstreepjes midden in een woord.
 
 = 1.10.0 =
 * De plugin heet nu Hollandsche Golfclub Keuzehulp en staat in de map hgc-keuzehulp. De opgeslagen instellingen en alle shortcodes blijven ongewijzigd, dus bestaande pagina’s werken door. Een achtergebleven map hgc-credit-calculator op de server kan daarna weg.

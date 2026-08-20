@@ -20,6 +20,14 @@
 .hgc-calculator button, .hgc-calculator a { -webkit-tap-highlight-color: transparent; }
 .hgc-calculator [hidden] { display: none !important; }
 
+/* Het WordPress-thema mag de keuzehulp niet overschrijven. Kleur, regelafstand
+   en afbreekstreepjes zetten we daarom zelf: een thema dat h4 wit maakt of
+   hyphens aanzet, veranderde anders de weergave op de live site. */
+.hgc-calculator { line-height: 1.55; }
+.hgc-calculator, .hgc-calculator * { -webkit-hyphens: manual; hyphens: manual; }
+.hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator h5, .hgc-calculator h6 { margin-top: 0; color: var(--ink); font-family: "Montserrat", Arial, sans-serif; text-transform: none; text-shadow: none; }
+.hgc-calculator p, .hgc-calculator li, .hgc-calculator small, .hgc-calculator strong, .hgc-calculator label, .hgc-calculator span { color: inherit; }
+
 /* Gecombineerde start: één rustige entree voor beide rekenroutes. */
 .hgc-calculator--launcher { background: radial-gradient(circle at 12% 8%, rgba(149,193,32,.13), transparent 30%), linear-gradient(145deg, #f5f7f1 0%, #edf2e6 100%); }
 .hgc-calculator .launcher-shell { border-color: #d8e3c8; box-shadow: 0 22px 60px rgba(43,61,31,.13); }
