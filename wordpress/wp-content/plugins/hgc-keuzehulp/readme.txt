@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.10.5
+Stable tag: 1.10.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.10.6 =
+* Een onafgerond templatebestand dat nog in ontwikkeling is, zat per ongeluk in het pakket van 1.10.5. Het werd door geen enkele shortcode gebruikt en kon dus niets stukmaken, maar hoort niet in een release.
 
 = 1.10.5 =
 * Het gemarkeerde blok onderaan de advieskaart verschijnt alleen nog wanneer een speelrecht de opgegeven rondes niet dekt. Dekt het wel, dan zei dat blok hetzelfde als de regel erboven.
