@@ -33,6 +33,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 == Changelog ==
 
 = 1.10.0 =
+* De plugin heet nu Hollandsche Golfclub Keuzehulp en staat in de map hgc-keuzehulp. De opgeslagen instellingen en alle shortcodes blijven ongewijzigd, dus bestaande pagina’s werken door. Een achtergebleven map hgc-credit-calculator op de server kan daarna weg.
 * Het advies bestaat altijd uit één speelrecht. Dekt geen enkel speelrecht de opgegeven rondes, dan adviseert de keuzehulp het grootste speelrecht met de melding hoeveel het dekt, in plaats van een samengesteld advies als "120 credits + 2 x 20 credits" met een prijs voor drie aankopen.
 * Bij jeugd- en dalurenspeelrechten bestaat alleen een pakket van 20 credits. Wie daar meer credits nodig heeft, ziet dus dat ene speelrecht met de melding dat het een deel van de rondes dekt.
 * De instelling "Eén speelrecht heeft voorrang" is vervallen; dat is nu altijd zo.
