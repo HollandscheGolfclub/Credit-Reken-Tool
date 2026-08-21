@@ -136,7 +136,10 @@
                     report("annual-cost-mismatch", { ...context, group: plan.group });
                   }
                   const reconstructed = largeRounds * Number(plan.largeRoundCost || 0) + smallRounds * Number(plan.smallRoundCost || 0);
-                  if (Math.abs(reconstructed - Number(plan.annualCost)) > 0.01) {
+                  // Bij een herhaalroute tellen de vervolgaankopen mee in de kosten
+                  // per ronde; daar is niets geheim aan, anders dan bij greenfees.
+                  const jaarlast = Number(plan.annualCost) + Number(plan.repeatExtraTotal || 0);
+                  if (Math.abs(reconstructed - jaarlast) > 0.01) {
                     report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
                   }
                   const perRonde = ["handicap", "loyaltee"].includes(plan.type);
@@ -196,12 +199,27 @@
                       }
                       // Een Shortgolf-speelrecht kan daarnaast grote rondes op greenfee
                       // hebben; die zitten in reducedGreenFeeTotal.
-                      const bijTotaal = Number(plan.greenFeeExtraTotal) + Number(plan.reducedGreenFeeTotal || 0);
+                      const bijTotaal = Number(plan.greenFeeExtraTotal) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.repeatExtraTotal || 0);
                       if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - bijTotaal) > 0.001) {
                         report("greenfee-bijspelen-weegt-niet-mee", { ...context, group: plan.group });
                       }
                       if (covers) {
                         report("greenfee-bijspelen-terwijl-alles-gedekt-is", { ...context, group: plan.group });
+                      }
+                    } else if (Number(plan.repeatPurchases || 0) > 1) {
+                      // Deze route koopt hetzelfde pakket meerdere keren.
+                      const nodig = Math.ceil((Number(plan.requiredCredits) - 1e-8) / Number(plan.credits));
+                      if (Number(plan.repeatPurchases) !== nodig) {
+                        report("herhaalroute-aantal-wijkt-af", { ...context, group: plan.group, aankopen: plan.repeatPurchases, nodig });
+                      }
+                      if (Math.abs(Number(plan.repeatExtraTotal) - (nodig - 1) * Number(plan.price)) > 0.001) {
+                        report("herhaalroute-telt-niet-op", { ...context, group: plan.group, totaal: plan.repeatExtraTotal });
+                      }
+                      if (Math.abs(Number(plan.selectionCost) - Number(plan.annualCost) - Number(plan.repeatExtraTotal)) > 0.001) {
+                        report("herhaalroute-weegt-niet-mee", { ...context, group: plan.group });
+                      }
+                      if (covers) {
+                        report("herhaalroute-terwijl-alles-gedekt-is", { ...context, group: plan.group });
                       }
                     } else if (!covers) {
                       // Zonder die route hoort dit het grootste speelrecht te zijn.

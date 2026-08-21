@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.17.0
+Stable tag: 1.18.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.18.0 =
+* Hetzelfde speelrecht nog eens kopen zodra de credits op zijn, kan nu het advies zijn. Bij 40 rondes op een baan van een credit per ronde adviseert de keuzehulp 20 credits voor EUR 485,00 met de melding dat je er een tweede bij koopt; samen EUR 970,00, tegen EUR 1.030,00 voor 60 credits.
+* Het getoonde bedrag blijft de prijs van een aankoop. De kaart Verwachte kosten per jaar toont het jaartotaal, dus bij zo'n route EUR 970,00, en de prijs per ronde volgt datzelfde jaartotaal.
 
 = 1.17.0 =
 * Liggen twee routes van hetzelfde speelrecht dicht bij elkaar, dan staan die adviezen nu onder elkaar in plaats van naast elkaar. Over de volle breedte past de toelichting op twee regels in plaats van zes.
