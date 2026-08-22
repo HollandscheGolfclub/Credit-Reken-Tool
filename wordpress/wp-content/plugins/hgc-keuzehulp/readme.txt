@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.18.2
+Stable tag: 1.18.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.18.3 =
+* Opgelost: op een site waar een beheerder ooit op Opslaan had gedrukt, waren handicapregistratie en LoyalTee onzichtbaar. De opgeslagen configuratie kreeg de nieuwe onderdelen niet mee, waardoor de keuzehulp terugviel op een speelrecht. Bij 3 rondes stond er dus EUR 485,00 in plaats van EUR 59,50.
+* Ontbrekende onderdelen worden nu uit de standaard aangevuld: LoyalTee, de vrije rondes bij handicapregistratie en de greenfeetarieven per baan.
+* Onder Instellingen zijn per baan alle vier de greenfeetarieven in te vullen: grote en kleine baan, normaal en gereduceerd. Opslaan wist ze niet meer.
 
 = 1.18.2 =
 * Bijspelen op greenfee wordt afgerond op hele rondes. Er stond bijvoorbeeld "De 17,8 rondes die je nog op de grote baan speelt", en zo’n ronde bestaat niet.

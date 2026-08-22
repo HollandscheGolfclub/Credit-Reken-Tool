@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.18.2
+ * Version: 1.18.3
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.18.2');
+define('HGC_CALCULATOR_VERSION', '1.18.3');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -48,7 +48,7 @@ function hgc_calculator_config(): array
     }
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $id = $course['id'] ?? '';
-        foreach (array('shortGolfRate', 'greenFee') as $field) {
+        foreach (array('shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull') as $field) {
             if (!array_key_exists($field, $course)) {
                 $saved['courses'][$index][$field] = $default_courses[$id][$field] ?? null;
             }
@@ -62,6 +62,16 @@ function hgc_calculator_config(): array
     if (empty($saved['links']['playingRights']) && !empty($defaults['links']['playingRights'])) {
         $saved['links']['playingRights'] = $defaults['links']['playingRights'];
     }
+    foreach ($defaults as $key => $value) {
+        if (!array_key_exists($key, $saved)) {
+            $saved[$key] = $value;
+        }
+    }
+    foreach (($defaults['handicapRegistration'] ?? array()) as $key => $value) {
+        if (!array_key_exists($key, $saved['handicapRegistration'] ?? array())) {
+            $saved['handicapRegistration'][$key] = $value;
+        }
+    }
     $saved = array_intersect_key($saved, $defaults);
     $saved['settings'] = array_intersect_key($saved['settings'] ?? array(), $defaults['settings'] ?? array());
     $saved['links'] = array_intersect_key($saved['links'] ?? array(), $defaults['links'] ?? array());
@@ -69,7 +79,7 @@ function hgc_calculator_config(): array
         $saved['handicapRegistration'] ?? array(),
         $defaults['handicapRegistration'] ?? array()
     );
-    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'provisional', 'note'));
+    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'provisional', 'note'));
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $saved['courses'][$index] = array_intersect_key($course, $course_keys);
     }

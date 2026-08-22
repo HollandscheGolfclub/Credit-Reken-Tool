@@ -268,6 +268,9 @@ final class HGC_Calculator_Admin
                 'shortRate' => $this->number($row['shortRate'] ?? null, null),
                 'shortGolfRate' => $this->number($row['shortGolfRate'] ?? null, null),
                 'greenFee' => $this->number($row['greenFee'] ?? null, null),
+                'greenFeeFull' => $this->number($row['greenFeeFull'] ?? null, null),
+                'shortGreenFee' => $this->number($row['shortGreenFee'] ?? null, null),
+                'shortGreenFeeFull' => $this->number($row['shortGreenFeeFull'] ?? null, null),
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
             );
@@ -335,10 +338,13 @@ final class HGC_Calculator_Admin
                 <?php $this->nullable_number('Algemeen speelrecht: kleine baan', "config[courses][$index][shortRate]", $course['shortRate'] ?? null); ?>
                 <?php $this->nullable_number('Shortgolf-speelrecht: kleine baan', "config[courses][$index][shortGolfRate]", $course['shortGolfRate'] ?? null); ?>
             </div>
-            <h4>Gereduceerde greenfee grote baan</h4>
-            <p class="hgc-admin-hint">Het gereduceerde greenfeetarief voor één ronde op de grote baan, zoals dat geldt voor spelers met een speelrecht. Een ronde volgt het aantal holes dat hierboven bij deze baan staat, dus meestal 9 holes. De keuzehulp gebruikt dit bedrag om te bepalen of een Shortgolf-speelrecht met rondes op de grote baan voordeliger is. Het tarief zelf wordt nooit aan de bezoeker getoond, alleen verwerkt in het totaalbedrag. Laat het leeg zolang het tarief niet vaststaat; de keuzehulp rekent dan niet met greenfees.</p>
+            <h4>Greenfeetarieven</h4>
+            <p class="hgc-admin-hint">De tarieven voor één ronde, zoals ze op de flyer Greenfees staan. Een ronde volgt het aantal holes dat hierboven bij deze baan staat, dus meestal 9. Het gereduceerde tarief geldt voor spelers met een speelrecht of LoyalTee; het normale tarief voor wie alleen handicapregistratie heeft. De keuzehulp gebruikt ze om te bepalen welke route voordeliger is, en om rondes buiten een speelrecht af te rekenen. De tarieven zelf worden nooit aan de bezoeker getoond, alleen verwerkt in de vergelijking. Laat een veld leeg zolang het tarief niet vaststaat; de keuzehulp biedt die route dan niet aan.</p>
             <div class="hgc-admin-grid hgc-admin-grid--two">
-                <?php $this->nullable_number('Gereduceerde greenfee per ronde grote baan', "config[courses][$index][greenFee]", $course['greenFee'] ?? null, 0.01, '€'); ?>
+                <?php $this->nullable_number('Grote baan, gereduceerd tarief', "config[courses][$index][greenFee]", $course['greenFee'] ?? null, 0.01, '€'); ?>
+                <?php $this->nullable_number('Grote baan, normaal tarief', "config[courses][$index][greenFeeFull]", $course['greenFeeFull'] ?? null, 0.01, '€'); ?>
+                <?php $this->nullable_number('Kleine baan, gereduceerd tarief', "config[courses][$index][shortGreenFee]", $course['shortGreenFee'] ?? null, 0.01, '€'); ?>
+                <?php $this->nullable_number('Kleine baan, normaal tarief', "config[courses][$index][shortGreenFeeFull]", $course['shortGreenFeeFull'] ?? null, 0.01, '€'); ?>
             </div>
             <div class="hgc-admin-grid hgc-admin-grid--two">
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>
