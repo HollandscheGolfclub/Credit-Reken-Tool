@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.18.3
+Stable tag: 1.18.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.18.4 =
+* Opgelost: de kaart met de prijs per ronde op de kleine baan stond er ook wanneer rondes per stuk tegen greenfee worden afgerekend. Bij 15 rondes op de kleine baan van Almkreek stond er EUR 3,97 per ronde, terwijl dat EUR 16,10 is. Die kaart verschijnt nu alleen wanneer het bedrag volledig is.
+* De kaart bovenaan heet Wat je vooraf betaalt zodra er rondes buiten dat bedrag vallen, in plaats van Verwachte kosten per jaar. Dat laatste beweerde een jaartotaal dat het niet was.
 
 = 1.18.3 =
 * Opgelost: op een site waar een beheerder ooit op Opslaan had gedrukt, waren handicapregistratie en LoyalTee onzichtbaar. De opgeslagen configuratie kreeg de nieuwe onderdelen niet mee, waardoor de keuzehulp terugviel op een speelrecht. Bij 3 rondes stond er dus EUR 485,00 in plaats van EUR 59,50.

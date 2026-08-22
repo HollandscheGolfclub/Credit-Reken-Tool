@@ -955,11 +955,19 @@ function renderSingleAdvice(result) {
   // Ook bij bijspelen op greenfee tonen we geen prijs per ronde voor de grote
   // baan: die zou alleen de credits bevatten en dus te laag uitkomen.
   const greenFeeExtraRounds = Number(best.greenFeeExtraRounds || 0);
+  const perRondeRoute = ["handicap", "loyaltee"].includes(best.type);
+  const tekortOpKleineBaan = best.type === "shortgolf" && greenFeeExtraRounds > 0;
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds && !greenFeeExtraRounds;
+  const showSmallRoundCost = result.smallRounds > 0 && !perRondeRoute && !tekortOpKleineBaan;
   const herhaalt = Number(best.repeatPurchases || 0) > 1;
-  const totalCostLabel = herhaalt ? "Prijs van dit speelrecht" : "Verwachte kosten per jaar";
-  const totalCostNote = herhaalt ? "per aankoop" : "per golfjaar";
-  const productNote = herhaalt ? "voor dit speelrecht" : "per golfjaar";
+  const rondesBuitenPrijs = greenFeeExtraRounds > 0 || greenFeeRounds > 0 || uncoveredLargeRounds > 0;
+  const totalCostLabel = herhaalt || rondesBuitenPrijs ? "Wat je vooraf betaalt" : "Verwachte kosten per jaar";
+  const totalCostNote = herhaalt
+    ? "per aankoop"
+    : rondesBuitenPrijs
+      ? "de rondes daarna reken je per ronde af"
+      : "per golfjaar";
+  const productNote = herhaalt || rondesBuitenPrijs ? "voor dit speelrecht" : "per golfjaar";
   const recommendationEyebrow = best.type === "handicap"
     ? "Je golft heel af en toe"
     : best.type === "loyaltee"
@@ -982,7 +990,7 @@ function renderSingleAdvice(result) {
     <div class="choice-costs">
       <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${planAmount(best)}</strong><span>${totalCostNote}</span></article>
       ${costCard("Grote baan", showLargeRoundCost ? best.largeRoundCost : null, "effectief per ronde", registrationShare)}
-      ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde", registrationShare)}
+      ${costCard("Kleine baan", showSmallRoundCost ? best.smallRoundCost : null, "effectief per ronde", registrationShare)}
     </div>
     ${uncoveredLargeRounds ? `<p class="coverage-warning">Je ${roundWord(uncoveredLargeRounds)} op de grote baan ${uncoveredLargeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht. Die reken je apart af op de baan.</p>` : ""}
     ${greenFeeRounds ? `<p class="greenfee-note">Je ${roundWord(greenFeeRounds)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders. Dat bedrag zit niet in de prijs hierboven.</p>` : ""}
