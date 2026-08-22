@@ -357,7 +357,7 @@ function candidatePlans(context) {
         largeBaseCost: standardCredits > 0 ? largeCourse.largeRate * (aankopen * price / standardCredits) : 0,
         smallBaseCost: standardCredits > 0 ? Number(smallCourse.shortRate) * (aankopen * price / standardCredits) : 0,
         detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het eerste deel van je rondes.`,
-        instruction: `Koop een nieuw speelrecht van ${decimal.format(credits)} credits zodra deze op zijn. Voor je hele golfjaar heb je ${decimal.format(aankopen)} speelrechten van ${decimal.format(credits)} credits nodig, samen ${euro.format(aankopen * price)}.`,
+        instruction: `Koop een nieuw speelrecht van ${decimal.format(credits)} credits zodra deze op zijn. Zo betaal je alleen voor de credits die je gebruikt.`,
       };
       candidates.push(addRegistration(plan, handicapPrice));
     });
@@ -788,14 +788,6 @@ function planAmount(plan) {
   return switchableAmount(total, total - Number(plan.registrationPrice || 0));
 }
 
-// Wat de bezoeker dit golfjaar in totaal kwijt is. Bij een herhaalroute zijn
-// dat alle aankopen samen.
-function yearAmount(plan) {
-  const herhaal = Number(plan.repeatExtraTotal || 0);
-  const total = Number(plan.annualCost) + herhaal;
-  return switchableAmount(total, total - Number(plan.registrationPrice || 0));
-}
-
 function applyRegistrationSwitch(include) {
   resultContent.querySelectorAll(".switchable").forEach((node) => {
     node.textContent = include ? node.dataset.with : node.dataset.without;
@@ -964,9 +956,9 @@ function renderSingleAdvice(result) {
   // baan: die zou alleen de credits bevatten en dus te laag uitkomen.
   const greenFeeExtraRounds = Number(best.greenFeeExtraRounds || 0);
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds && !greenFeeExtraRounds;
-  const totalCostLabel = "Verwachte kosten per jaar";
   const herhaalt = Number(best.repeatPurchases || 0) > 1;
-  const totalCostNote = "per golfjaar";
+  const totalCostLabel = herhaalt ? "Prijs van dit speelrecht" : "Verwachte kosten per jaar";
+  const totalCostNote = herhaalt ? "per aankoop" : "per golfjaar";
   const productNote = herhaalt ? "voor dit speelrecht" : "per golfjaar";
   const recommendationEyebrow = best.type === "handicap"
     ? "Je golft heel af en toe"
@@ -988,7 +980,7 @@ function renderSingleAdvice(result) {
     ${best.type === "handicap" ? "" : registrationSwitch(result.handicapPrice)}
 
     <div class="choice-costs">
-      <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${yearAmount(best)}</strong><span>${totalCostNote}</span></article>
+      <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${planAmount(best)}</strong><span>${totalCostNote}</span></article>
       ${costCard("Grote baan", showLargeRoundCost ? best.largeRoundCost : null, "effectief per ronde", registrationShare)}
       ${costCard("Kleine baan", best.smallRoundCost, "effectief per ronde", registrationShare)}
     </div>
