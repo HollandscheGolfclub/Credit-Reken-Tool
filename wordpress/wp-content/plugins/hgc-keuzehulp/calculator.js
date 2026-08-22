@@ -380,9 +380,9 @@ function candidatePlans(context) {
         // Het tekort rekenen we af op de grote baan, want alleen daar staat een
         // tarief vast. Past het tekort niet in de grote rondes, dan kunnen we
         // deze route niet eerlijk beprijzen en bieden we hem niet aan.
-        const extraRounds = shortfall / largeRate;
+        const extraRounds = Math.ceil(shortfall / largeRate - 1e-8);
         if (extraRounds > largeRounds + 1e-8) return;
-        const rounded = Math.round(extraRounds * 10) / 10;
+        const rounded = extraRounds;
         const plan = {
           type: "credits",
           group: `${choice.group}-greenfee-${credits}`,
@@ -452,7 +452,7 @@ function candidatePlans(context) {
           const price = Number(item.price);
           const shortfall = shortCredits - credits;
           if (!Number.isFinite(credits) || !Number.isFinite(price) || shortfall <= 1e-8) return;
-          const extraRounds = shortfall / shortGolfRate;
+          const extraRounds = Math.ceil(shortfall / shortGolfRate - 1e-8);
           if (extraRounds > smallRounds + 1e-8) return;
           const plan = {
             type: "shortgolf",
@@ -476,7 +476,7 @@ function candidatePlans(context) {
             largeBaseCost: 0,
             smallBaseCost: price / smallRounds,
             detail: `${decimal.format(credits)} Shortgolf-credits dekken ${Math.floor(credits / shortGolfRate)} van je ${smallRounds} rondes op de kleine baan.`,
-            instruction: `Je ${roundWord(Math.round(extraRounds * 10) / 10)} op de kleine baan na die credits reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
+            instruction: `Je ${roundWord(extraRounds)} op de kleine baan na die credits reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
           };
           candidates.push(addRegistration(plan, handicapPrice));
         });

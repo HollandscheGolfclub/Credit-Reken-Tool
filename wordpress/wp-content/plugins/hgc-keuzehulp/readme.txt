@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.18.1
+Stable tag: 1.18.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.18.2 =
+* Bijspelen op greenfee wordt afgerond op hele rondes. Er stond bijvoorbeeld "De 17,8 rondes die je nog op de grote baan speelt", en zo’n ronde bestaat niet.
+* Daarmee is het bedrag ook exact, want een greenfee betaal je per hele ronde. De keuzehulp rekende die laatste ronde eerder gedeeltelijk mee en kwam dus iets te laag uit.
 
 = 1.18.1 =
 * Het advies noemt het speelrecht en de vervolgaankoop, maar telt de aankopen niet meer op tot een bedrag voor het hele jaar. De kaart bovenaan heet bij zo’n route Prijs van dit speelrecht en noemt het bedrag per aankoop.
