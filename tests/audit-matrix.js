@@ -79,7 +79,7 @@
     if (result.choice && (result.choice.credits.type !== "credits" || result.choice.shortGolf.type !== "shortgolf")) {
       report("wrong-choice-types", { ...context, credits: result.choice.credits.type, shortGolf: result.choice.shortGolf.type });
     }
-    if (context.youth && best.group !== "youth") {
+    if (context.youth && !best.group.startsWith("youth")) {
       report("non-youth-product-for-youth", { ...context, group: best.group });
     }
   }

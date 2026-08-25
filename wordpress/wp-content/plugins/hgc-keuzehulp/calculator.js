@@ -313,17 +313,35 @@ function candidatePlans(context) {
         { packages: hgcConfig.standardPackages, name: "Hollandsche Golfclub Speelrecht", group: "standard" },
         ...(canPlayOffPeak ? [{ packages: hgcConfig.offPeakPackages, name: "Hollandsche Golfclub Daluren-speelrecht", group: "offpeak" }] : []),
       ];
+  // greenfeebedrag weegt via selectionCost mee en blijft buiten de prijs.
+  const largeGreenFee = Number(largeCourse && largeCourse.greenFee);
+  const largeRate = Number(largeCourse && largeCourse.largeRate);
+  const canPlayOnGreenFee = largeRounds > 0 && standardCredits > 0
+    && Number.isFinite(largeGreenFee) && largeGreenFee > 0
+    && Number.isFinite(largeRate) && largeRate > 0;
+
   packageChoices.forEach((choice) => {
     const plan = packagePlan(choice.packages, standardCredits, choice.name, choice.group);
     if (plan) {
-      plan.availablePackages = choice.packages;
-      plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
-      plan.largeBaseCost = standardCredits > 0 ? largeCourse.largeRate * (plan.price / standardCredits) : 0;
-      plan.smallBaseCost = standardCredits > 0 ? smallCourse.shortRate * (plan.price / standardCredits) : 0;
-      plan.detail = plan.coversRounds
-        ? `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
-        : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
-      candidates.push(addRegistration(plan, handicapPrice));
+      // Dekt het grootste pakket niet, dan komt er verderop een eerlijk
+      // geprijsde kandidaat met exact dezelfde credits plus greenfee voor het
+      // tekort (mits dat tekort in de opgegeven grote-baanrondes past). Dit
+      // pakket zonder geprijsd tekort mag daar niet tegen concurreren op
+      // selectionCost, anders wint het puur omdat de rest van de rondes hier
+      // ten onrechte gratis lijkt.
+      const shortfall = standardCredits - plan.credits;
+      const shortfallFairlyPriced = !plan.coversRounds && canPlayOnGreenFee
+        && Math.ceil(shortfall / largeRate - 1e-8) <= largeRounds + 1e-8;
+      if (!shortfallFairlyPriced) {
+        plan.availablePackages = choice.packages;
+        plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
+        plan.largeBaseCost = standardCredits > 0 ? largeCourse.largeRate * (plan.price / standardCredits) : 0;
+        plan.smallBaseCost = standardCredits > 0 ? smallCourse.shortRate * (plan.price / standardCredits) : 0;
+        plan.detail = plan.coversRounds
+          ? `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
+          : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
+        candidates.push(addRegistration(plan, handicapPrice));
+      }
     }
   });
 
@@ -366,12 +384,6 @@ function candidatePlans(context) {
     });
   });
 
-  // greenfeebedrag weegt via selectionCost mee en blijft buiten de prijs.
-  const largeGreenFee = Number(largeCourse && largeCourse.greenFee);
-  const largeRate = Number(largeCourse && largeCourse.largeRate);
-  const canPlayOnGreenFee = largeRounds > 0 && standardCredits > 0
-    && Number.isFinite(largeGreenFee) && largeGreenFee > 0
-    && Number.isFinite(largeRate) && largeRate > 0;
   if (canPlayOnGreenFee) {
     packageChoices.forEach((choice) => {
       (choice.packages || []).forEach((item) => {
@@ -442,13 +454,21 @@ function candidatePlans(context) {
         : largeRounds > 0
           ? `${shortCoverage} Je ${largeRounds} ronde${largeRounds === 1 ? "" : "s"} op de grote baan ${largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
           : shortCoverage;
-      candidates.push(addRegistration(shortPlan, handicapPrice));
-
       // Naast het speelrecht dat alle kleine rondes dekt, is een kleiner
       // Shortgolf-speelrecht met de resterende rondes op greenfee vaak
       // voordeliger. Die route kan alleen mee wanneer voor de kleine baan een
       // gereduceerd tarief bekend is.
       const smallFee = Number(smallCourse && smallCourse.shortGreenFee);
+      // Dekt het grootste Shortgolf-pakket niet, dan komt er hieronder een
+      // eerlijk geprijsde kandidaat met dezelfde credits plus greenfee voor
+      // het tekort (mits dat tekort in de kleine-baanrondes past). Dit
+      // pakket zonder geprijsd tekort mag daar dan niet tegen concurreren.
+      const topShortfall = shortCredits - shortPlan.credits;
+      const topShortfallFairlyPriced = !shortPlan.coversRounds && Number.isFinite(smallFee) && smallFee > 0
+        && Math.ceil(topShortfall / shortGolfRate - 1e-8) <= smallRounds + 1e-8;
+      if (!topShortfallFairlyPriced) {
+        candidates.push(addRegistration(shortPlan, handicapPrice));
+      }
       if (Number.isFinite(smallFee) && smallFee > 0) {
         hgcConfig.shortGolfPackages.forEach((item) => {
           const credits = Number(item.credits);
@@ -522,7 +542,13 @@ function candidatePlans(context) {
   const freeSmall = Math.min(smallRounds, Math.max(0, vouchers - freeLarge));
   const paidLarge = largeRounds - freeLarge;
   const paidSmall = smallRounds - freeSmall;
-  const fee = (course, key) => Number(course && course[key]);
+  // Number(null) is 0, en 0 is finite: zonder deze uitzondering zou een
+  // ontbrekend greenfeetarief (null in de config) doorgaan als "gratis" in
+  // plaats van als "onbekend", en de tarief-routes toch aanbieden.
+  const fee = (course, key) => {
+    const value = course && course[key];
+    return value === null || value === undefined ? NaN : Number(value);
+  };
   // Per baantype waar rondes liggen moet een tarief bekend zijn, anders kunnen we
   // deze routes niet eerlijk beprijzen en bieden we ze niet aan.
   const largeFits = largeRounds === 0 || (Number.isFinite(fee(largeCourse, "greenFee")) && Number.isFinite(fee(largeCourse, "greenFeeFull")));
@@ -645,6 +671,9 @@ function routeChoiceFor(best, plans) {
 
 function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak }) {
   const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak });
+  // Het formulier voorkomt dat dit met 0 rondes wordt aangeroepen; deze
+  // controle is er voor wie de API zelf aanroept, zonder dat formulier.
+  if (!plans.length) return null;
   const best = plans[0];
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
 

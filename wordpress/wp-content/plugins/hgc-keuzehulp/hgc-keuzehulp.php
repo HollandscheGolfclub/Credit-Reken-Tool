@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.22.0
+ * Version: 1.23.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.22.0');
+define('HGC_CALCULATOR_VERSION', '1.23.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -54,13 +54,19 @@ function hgc_calculator_config(): array
             }
         }
     }
+    // Een baan die na het opslaan is toegevoegd aan de GitHub-standaard stond
+    // nog nergens in een bestaand opgeslagen config; die moet ook verschijnen,
+    // niet alleen de velden van banen die al bekend waren.
+    $saved_course_ids = array_column($saved['courses'] ?? array(), 'id');
+    foreach (($defaults['courses'] ?? array()) as $course) {
+        if (!in_array($course['id'] ?? '', $saved_course_ids, true)) {
+            $saved['courses'][] = $course;
+        }
+    }
     foreach (($defaults['settings'] ?? array()) as $key => $value) {
         if (!array_key_exists($key, $saved['settings'] ?? array())) {
             $saved['settings'][$key] = $value;
         }
-    }
-    if (empty($saved['links']['playingRights']) && !empty($defaults['links']['playingRights'])) {
-        $saved['links']['playingRights'] = $defaults['links']['playingRights'];
     }
     foreach ($defaults as $key => $value) {
         if (!array_key_exists($key, $saved)) {
@@ -72,6 +78,16 @@ function hgc_calculator_config(): array
             $saved['handicapRegistration'][$key] = $value;
         }
     }
+    foreach (($defaults['loyalTee'] ?? array()) as $key => $value) {
+        if (!array_key_exists($key, $saved['loyalTee'] ?? array())) {
+            $saved['loyalTee'][$key] = $value;
+        }
+    }
+    foreach (($defaults['links'] ?? array()) as $key => $value) {
+        if (empty($saved['links'][$key]) && !empty($value)) {
+            $saved['links'][$key] = $value;
+        }
+    }
     $saved = array_intersect_key($saved, $defaults);
     $saved['settings'] = array_intersect_key($saved['settings'] ?? array(), $defaults['settings'] ?? array());
     $saved['links'] = array_intersect_key($saved['links'] ?? array(), $defaults['links'] ?? array());
@@ -79,6 +95,7 @@ function hgc_calculator_config(): array
         $saved['handicapRegistration'] ?? array(),
         $defaults['handicapRegistration'] ?? array()
     );
+    $saved['loyalTee'] = array_intersect_key($saved['loyalTee'] ?? array(), $defaults['loyalTee'] ?? array());
     $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'provisional', 'note'));
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $saved['courses'][$index] = array_intersect_key($course, $course_keys);

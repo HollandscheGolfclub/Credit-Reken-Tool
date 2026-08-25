@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.22.0
+Stable tag: 1.23.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,13 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.23.0 =
+* Bugfix: had je meer credits nodig dan het grootste beschikbare pakket (bijv. boven de 200 bij een regulier speelrecht, boven het enige daluren-pakket, of boven het grootste Shortgolf-pakket), dan werd dat grootste pakket geadviseerd zonder de kosten van de resterende rondes mee te wegen, terwijl er al een eerlijk geprijsd alternatief bestond (dat pakket plus greenfee voor het tekort). Het te goedkope advies won daardoor onterecht. Raakte vooral daluren-spelers boven 20 credits per jaar.
+* Bugfix: bij een baan zonder bekend greenfeetarief voor de kleine baan (Maastricht, Naarderbos) werd dat ontbrekende tarief intern als EUR 0 gelezen in plaats van als onbekend, waardoor handicapregistratie/LoyalTee daar tóch werden aangeboden met de kleine-baanrondes gratis gerekend. Die routes worden nu terecht uitgesloten zolang het tarief ontbreekt.
+* De WordPress-configuratiesamenvoeging vult nu ook nieuwe LoyalTee-velden, nieuwe linkjes en een baan die na het laatst opslaan is toegevoegd automatisch aan; eerder verdween een nieuwe baan op een bestaande installatie totdat een beheerder handmatig opnieuw opsloeg.
+* Kleine robuustheidsfix: het rekenmodel gaf een crash bij 0 rondes in plaats van nette lege uitkomst (het formulier voorkwam dit al, maar de onderliggende functie niet).
+* Gevonden door vier onafhankelijke controles op de aanbevelingslogica; volledige audit (318.780 + 32.670 + 5.280 + 1.215 + 1.316.040 gevallen) draait schoon.
 
 = 1.22.0 =
 * Nieuwe vormgeving voor stap 1 (mockup 7b): een korte introzin onder de titel, de creditwaarde per baan nu als losse chips direct onder de baankiezer in plaats van een zin (bij de kleine baan apart voor HGC- en Shortgolf-speelrecht), en een toelichtende zin naast de knop onderaan. De bestaande sliders, invulvelden en baankiezer waren al dicht bij de mockup en zijn verder ongewijzigd.
