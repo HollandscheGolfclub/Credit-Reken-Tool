@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.19.0
+Stable tag: 1.19.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.19.1 =
+* Bij LoyalTee stond er ook met de schakelaar Handicapregistratie meerekenen uit nog dat de rondes na de vrije rondes van je handicapregistratie per ronde worden afgerekend. De 2 vrije rondes komen echter uit die handicapregistratie; reken je die niet mee, dan geldt de vrijstelling ook niet. Zonder de schakelaar staan nu gewoon alle rondes, zonder vrijstelling te noemen.
 
 = 1.19.0 =
 * Winnen handicapregistratie of LoyalTee op prijs, dan blijft dat het advies. Ernaast staat nu altijd een kaart met het goedkoopste speelrecht dat alle opgegeven rondes wel dekt, met wat je daarvoor extra betaalt en wat je ervoor terugkrijgt: ruimte om vaker te spelen dan opgegeven en flightgenoten introduceren tegen het gereduceerde greenfeetarief.

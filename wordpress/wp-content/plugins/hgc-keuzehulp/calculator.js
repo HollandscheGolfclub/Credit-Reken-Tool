@@ -537,6 +537,10 @@ function candidatePlans(context) {
     const perRonde = (largeKey, smallKey) => paidLarge * (fee(largeCourse, largeKey) || 0) + paidSmall * (fee(smallCourse, smallKey) || 0);
     const paidRounds = paidLarge + paidSmall;
     const freeRounds = freeLarge + freeSmall;
+    // De vrije rondes komen uit de handicapregistratie. Rekent de bezoeker die
+    // niet mee, dan heeft die ook de vrije rondes niet en betaalt hij LoyalTee's
+    // gereduceerde greenfeetarief over al zijn rondes.
+    const perRondeNoReg = (largeKey, smallKey) => largeRounds * (fee(largeCourse, largeKey) || 0) + smallRounds * (fee(smallCourse, smallKey) || 0);
     const vrijeRondesTekst = vouchers > 0
       ? `Bij handicapregistratie horen ${roundWord(vouchers)} van 9 holes per kalenderjaar, die je gratis speelt.`
       : "Met handicapregistratie speel je op elke HGC-baan tegen het greenfeetarief.";
@@ -565,6 +569,8 @@ function candidatePlans(context) {
         instruction: paidRounds > 0
           ? `Je ${roundWord(paidRounds)} na de vrije rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
           : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
+        totalNoReg: perRondeNoReg("greenFee", "shortGreenFee"),
+        instructionNoReg: `Je ${roundWord(totalRounds)} reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`,
       },
     ];
 
@@ -595,6 +601,9 @@ function candidatePlans(context) {
         smallBaseCost: route.price / totalRounds,
         detail: route.detail,
         instruction: route.instruction,
+        greenFeeExtraRoundsNoReg: route.type === "loyaltee" ? totalRounds : paidRounds,
+        greenFeeExtraTotalNoReg: route.type === "loyaltee" ? route.totalNoReg : route.total,
+        instructionNoReg: route.type === "loyaltee" ? route.instructionNoReg : route.instruction,
       };
       if (route.registration) {
         candidates.push(addRegistration(plan, handicapPrice));
@@ -793,6 +802,13 @@ function switchableAmount(withRegistration, withoutRegistration) {
   const withText = euro.format(withRegistration);
   const withoutText = euro.format(withoutRegistration);
   return `<span class="switchable" data-with="${withText}" data-without="${withoutText}">${handicapDefault() ? withText : withoutText}</span>`;
+}
+
+// Voor tekst die verandert met de schakelaar, niet alleen een bedrag: de vrije
+// rondes bij LoyalTee komen uit de handicapregistratie, dus zonder die
+// registratie meegerekend geldt er ook geen vrijstelling.
+function switchableHtml(withHtml, withoutHtml) {
+  return `<span class="switchable" data-with="${withHtml}" data-without="${withoutHtml}">${handicapDefault() ? withHtml : withoutHtml}</span>`;
 }
 
 // Het bedrag van één aankoop, zoals het in de webshop staat.
@@ -1014,7 +1030,7 @@ function renderSingleAdvice(result) {
         <h4>${brandText(best.name)}</h4>
         <p class="recommendation-amount">${planAmount(best)}<small>${productNote}</small></p>
         <p>${best.detail}</p>
-        ${best.coversRounds ? "" : `<p class="package-instruction">${best.instruction}</p>`}
+        ${best.coversRounds ? "" : `<p class="package-instruction">${best.instructionNoReg && best.instructionNoReg !== best.instruction ? switchableHtml(best.instruction, best.instructionNoReg) : best.instruction}</p>`}
       </div>
       <div class="recommendation-actions">
         <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">${webshopLabel} <span>→</span></a>

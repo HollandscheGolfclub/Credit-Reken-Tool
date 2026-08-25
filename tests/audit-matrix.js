@@ -190,6 +190,21 @@
                     if (plan.coversRounds) {
                       report("per-ronde-route-beweert-dekking", { ...context, group: plan.group });
                     }
+                    // De vrije rondes bij LoyalTee komen uit de handicapregistratie. Telt
+                    // de bezoeker die niet mee (de schakelaar uit), dan geldt ook geen
+                    // vrijstelling en betaalt hij het gereduceerde tarief over alle rondes.
+                    if (plan.type === "loyaltee") {
+                      const verwachtTotaalNoReg = largeRounds * (Number(largeCourse.greenFee) || 0) + smallRounds * (Number(smallCourse.shortGreenFee) || 0);
+                      if (Math.abs(Number(plan.greenFeeExtraRoundsNoReg) - (largeRounds + smallRounds)) > 1e-8) {
+                        report("loyaltee-zonder-registratie-rondes-wijken-af", { ...context, group: plan.group });
+                      }
+                      if (Math.abs(Number(plan.greenFeeExtraTotalNoReg) - verwachtTotaalNoReg) > 0.001) {
+                        report("loyaltee-zonder-registratie-telt-niet-op", { ...context, group: plan.group, totaal: plan.greenFeeExtraTotalNoReg, verwachtTotaalNoReg });
+                      }
+                      if (!plan.instructionNoReg) {
+                        report("loyaltee-zonder-registratie-geen-tekst", { ...context, group: plan.group });
+                      }
+                    }
                   } else {
                     if (Number(plan.count) !== 1 || (Array.isArray(plan.packageItems) && plan.packageItems.length !== 1)) {
                       report("advies-uit-meerdere-aankopen", { ...context, group: plan.group, count: plan.count });
@@ -514,6 +529,27 @@
                 report("tekort-niet-benoemd", context);
               } else if (!/nieuw speelrecht aanschaffen/.test(shown)) {
                 report("nieuw-speelrecht-niet-benoemd", context);
+              }
+            }
+            // De vrije rondes bij LoyalTee komen uit de handicapregistratie. Telt de
+            // schakelaar die niet mee, dan hoort de tekst ook geen vrijstelling meer
+            // te noemen en over alle rondes te gaan, niet alleen de betaalde.
+            if (result.best.type === "loyaltee") {
+              const instructionEl = resultContent.querySelector(".package-instruction");
+              const totalRoundsHere = largeRounds + smallRounds;
+              applyRegistrationSwitch(true);
+              const metTekst = instructionEl ? instructionEl.textContent : "";
+              applyRegistrationSwitch(false);
+              const zonderTekst = instructionEl ? instructionEl.textContent : "";
+              applyRegistrationSwitch(handicapDefault());
+              if (Number(result.best.greenFeeExtraRounds) > 0 && !new RegExp(String(result.best.greenFeeExtraRounds)).test(metTekst)) {
+                report("loyaltee-tekst-met-registratie-onjuist", { ...context, metTekst });
+              }
+              if (!new RegExp(String(totalRoundsHere)).test(zonderTekst)) {
+                report("loyaltee-tekst-zonder-registratie-onjuist", { ...context, zonderTekst });
+              }
+              if (/vrije rondes/.test(zonderTekst)) {
+                report("loyaltee-tekst-zonder-registratie-noemt-vrijstelling", { ...context, zonderTekst });
               }
             }
           }
