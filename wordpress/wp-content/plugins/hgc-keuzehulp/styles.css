@@ -77,7 +77,8 @@
 .hgc-calculator .calculator-topbar { padding: 34px 44px 24px; display: flex; justify-content: space-between; align-items: end; }
 .hgc-calculator .calculator-topbar { color: var(--ink); background: linear-gradient(135deg, #ffffff 0%, #f3f7e9 100%); }
 .hgc-calculator .calculator-topbar .eyebrow { color: #61831d; }
-.hgc-calculator .calculator-topbar h2 { margin-bottom: 0; font-size: 27px; font-weight: 700; }
+.hgc-calculator .calculator-topbar h2 { margin-bottom: 8px; font-size: 27px; font-weight: 700; }
+.hgc-calculator .calculator-topbar-intro { max-width: 480px; margin: 0 !important; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
 .hgc-calculator .calculator-topbar-meta { flex: 0 0 auto; display: grid; justify-items: end; gap: 9px; }
 .hgc-calculator .calculator-brand-logo { width: 148px; height: auto; display: block; }
 .hgc-calculator .step-label { margin: 0; color: #6f786b; font-size: 14px; }
@@ -110,7 +111,7 @@
 .hgc-calculator .choice-card strong, .hgc-calculator .choice-card small { display: block; }
 .hgc-calculator .choice-card small { margin-top: 3px; color: var(--ink-soft); font-weight: 400; }
 .hgc-calculator .choice-icon { flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: var(--green-light); color: #5a7d19; font: 800 17px/1 "Poppins", sans-serif; }
-.hgc-calculator .choice-icon--flag { font-family: inherit; }
+.hgc-calculator .choice-icon--flag { background: #f8ecd9; color: #b3701f; font-family: inherit; }
 .hgc-calculator .field-row { display: grid; grid-template-columns: 1.35fr .65fr; gap: 18px; }
 .hgc-calculator .round-plan-grid { margin-bottom: 30px; display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid #dce5d3; border-radius: 10px; background: #fff; box-shadow: 0 10px 28px rgba(48,62,40,.06); }
 .hgc-calculator .round-plan-card { min-width: 0; padding: 28px 30px; display: grid; grid-template-columns: 178px minmax(285px, 1fr) minmax(280px, 1fr); align-items: start; gap: 28px; border: 0; background: transparent; }
@@ -169,8 +170,15 @@
 .hgc-calculator .toggle-row strong, .hgc-calculator .toggle-row small { display: block; }
 .hgc-calculator .toggle-row small { margin-top: 3px; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .toggle-row--compact { margin-top: 28px; }
-.hgc-calculator .form-actions { padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.hgc-calculator .form-actions { padding-top: 22px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid #eceee6; flex-wrap: wrap; }
 .hgc-calculator .form-actions--end { justify-content: flex-end; }
+.hgc-calculator .form-actions-hint { max-width: 430px; margin: 0; color: #8a9382; font-size: 12px; line-height: 1.6; }
+
+/* Compacte kredietinfo direct onder de baankiezer: één regel voor de grote
+   baan, twee losse regels voor de kleine baan (HGC- en Shortgolf-tarief). */
+.hgc-calculator .field-help:has(.credit-chip) { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+.hgc-calculator .credit-chip { display: block; padding: 8px 11px; border-radius: 6px; background: #f4f7ec; color: #4a5544; font-size: 11.5px; line-height: 1.4; }
+.hgc-calculator .credit-chip--shortgolf { background: #f8ecd9; color: #7d5416; }
 .hgc-calculator .button { min-height: 52px; padding: 0 22px; border: 0; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 14px; text-decoration: none; cursor: pointer; font-weight: 700; transition: transform .18s, box-shadow .18s, background .18s; }
 .hgc-calculator .button:hover { transform: translateY(-2px); }
 .hgc-calculator .button--primary { background: var(--green); color: white; box-shadow: none; }

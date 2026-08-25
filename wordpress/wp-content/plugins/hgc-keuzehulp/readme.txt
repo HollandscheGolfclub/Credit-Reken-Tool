@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.21.0
+Stable tag: 1.22.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.22.0 =
+* Nieuwe vormgeving voor stap 1 (mockup 7b): een korte introzin onder de titel, de creditwaarde per baan nu als losse chips direct onder de baankiezer in plaats van een zin (bij de kleine baan apart voor HGC- en Shortgolf-speelrecht), en een toelichtende zin naast de knop onderaan. De bestaande sliders, invulvelden en baankiezer waren al dicht bij de mockup en zijn verder ongewijzigd.
 
 = 1.21.0 =
 * Nieuwe vormgeving doorgevoerd in de resterende adviesschermen: de keuze tussen twee speelrechten bij gemengd spelen (6c) krijgt nu gelijke, even hoge kolommen met een samenvatting eronder, en het scherm bij twee dicht bij elkaar liggende speelrechten volgt dezelfde kopregel en kaartstijl als de rest.

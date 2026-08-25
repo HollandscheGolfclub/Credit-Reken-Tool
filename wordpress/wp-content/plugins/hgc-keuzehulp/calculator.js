@@ -153,13 +153,16 @@ function updateCourseHelp() {
   const large = selectedCourse(largeCourseSelect);
   const small = selectedCourse(smallCourseSelect);
   if (large) {
-    largeCourseHelp.textContent = `Een ronde van ${large.largeHoles || 9} holes kost hier ${decimal.format(large.largeRate)} credit.`;
-    if (large.note) largeCourseHelp.textContent += ` ${large.note}`;
+    const note = large.note ? ` · ${large.note}` : "";
+    largeCourseHelp.innerHTML = `<span class="credit-chip">${decimal.format(large.largeHoles || 9)} holes = ${decimal.format(large.largeRate)} credit${note}</span>`;
   }
   if (small) {
     const shortGolfRate = Number.isFinite(small.shortGolfRate) ? small.shortGolfRate : small.shortRate;
-    smallCourseHelp.textContent = `Per ronde: ${decimal.format(small.shortRate)} credit met een HGC-speelrecht en ${decimal.format(shortGolfRate)} credit met een Shortgolf-speelrecht.`;
-    if (small.note) smallCourseHelp.textContent += ` ${small.note}`;
+    const note = small.note ? ` · ${small.note}` : "";
+    smallCourseHelp.innerHTML = `
+      <span class="credit-chip">HGC-speelrecht: ${decimal.format(small.shortRate)} credit per ronde</span>
+      <span class="credit-chip credit-chip--shortgolf">Shortgolf-speelrecht: ${decimal.format(shortGolfRate)} credit per ronde${note}</span>
+    `;
   }
 }
 

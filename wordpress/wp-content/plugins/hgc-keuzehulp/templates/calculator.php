@@ -5,6 +5,7 @@
       <div>
         <p class="eyebrow">HGC-keuzehulp</p>
         <h2 id="calculator-title">Het best passende speelrecht</h2>
+        <p class="calculator-topbar-intro">Twee stappen, ongeveer een minuut. Je krijgt een advies met wat je vooraf betaalt en wat je per ronde overhoudt.</p>
       </div>
       <div class="calculator-topbar-meta">
         <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
@@ -79,7 +80,8 @@
 
         <div class="form-error" id="rounds-error" role="alert" hidden>Vul bij de grote of kleine baan minimaal 1 ronde in.</div>
 
-        <div class="form-actions form-actions--end">
+        <div class="form-actions">
+          <p class="form-actions-hint">Je hoeft niets exact te weten — een schatting is genoeg. In stap 2 kun je alles nog bijstellen.</p>
           <button class="button button--primary" type="submit">Ontdek mijn beste speelrecht <span>→</span></button>
         </div>
       </section>
