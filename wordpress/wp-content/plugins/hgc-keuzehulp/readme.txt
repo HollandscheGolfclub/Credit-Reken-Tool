@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.20.0
+Stable tag: 1.21.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.21.0 =
+* Nieuwe vormgeving doorgevoerd in de resterende adviesschermen: de keuze tussen twee speelrechten bij gemengd spelen (6c) krijgt nu gelijke, even hoge kolommen met een samenvatting eronder, en het scherm bij twee dicht bij elkaar liggende speelrechten volgt dezelfde kopregel en kaartstijl als de rest.
+* Ongebruikte code opgeruimd die alleen nog de oude, vervangen kopregel bediende.
 
 = 1.20.0 =
 * Nieuwe vormgeving van het adviesscherm (eerste onderdeel): een smalle kopregel met de opgave en de registratieschakelaar in plaats van de grote groene hero, een label dat in een oogopslag zegt waar het advies om draait, genummerde stapkaarten bij handicapregistratie/LoyalTee, en een zachte alternatiefkaart met zwevend label in plaats van de losse voordelenblokken. Lettertype is Poppins geworden.

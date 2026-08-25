@@ -779,13 +779,6 @@ function planLink(plan) {
   return hgcConfig.links.webshop;
 }
 
-function roundSummary(result) {
-  const parts = [];
-  if (result.largeRounds) parts.push(`${result.largeRounds} grote-baanrondes bij ${result.largeCourse.name}`);
-  if (result.smallRounds) parts.push(`${result.smallRounds} kleine-baanrondes bij ${result.smallCourse.name}`);
-  return parts.join(" en ");
-}
-
 function costCard(label, value, note, registrationShare) {
   if (value === null) return "";
   return `<article><p>${label}</p><strong>${switchableAmount(value, value - registrationShare)}</strong><span>${note}</span></article>`;
@@ -824,18 +817,6 @@ function applyRegistrationSwitch(include) {
   resultContent.querySelectorAll("[data-registration-row]").forEach((node) => {
     node.hidden = !include;
   });
-}
-
-function registrationSwitch(handicapPrice) {
-  const withText = `Alle bedragen zijn inclusief ${euro.format(handicapPrice)} voor handicapregistratie bij de Hollandsche Golfclub.`;
-  const withoutText = `Alle bedragen zijn zonder de ${euro.format(handicapPrice)} voor handicapregistratie bij de Hollandsche Golfclub.`;
-  return `
-    <label class="toggle-row toggle-row--compact registration-switch">
-      <input id="handicap-switch" type="checkbox" ${handicapDefault() ? "checked" : ""} />
-      <span class="toggle" aria-hidden="true"></span>
-      <span><strong>Handicapregistratie meerekenen</strong><small class="switchable" data-with="${withText}" data-without="${withoutText}">${handicapDefault() ? withText : withoutText}</small></span>
-    </label>
-  `;
 }
 
 function roundWord(count) {
@@ -928,16 +909,17 @@ function renderChoice(result) {
   const shortGolf = result.choice.shortGolf;
   const largeRoundsText = `${roundWord(result.largeRounds)} op de grote baan`;
   const smallRoundsText = `${roundWord(result.smallRounds)} op de kleine baan`;
+  const shortGolfRekentGrotebaanPerRonde = Number(shortGolf.reducedGreenFeeRounds || 0) > 0;
+  const kortGezegd = shortGolfRekentGrotebaanPerRonde
+    ? "Alles afgekocht op beide banen kost meer vooraf; met Shortgolf betaal je minder vooraf en reken je de grote baan per ronde af. Weet je nog niet waar je meer gaat spelen? Dan is het volledige speelrecht de veiligste keuze."
+    : "Alles afgekocht op beide banen kost meer vooraf, maar dekt ook alles in één keer. Weet je nog niet waar je meer gaat spelen? Dan is het volledige speelrecht de veiligste keuze.";
 
   resultContent.innerHTML = `
-    <div class="result-hero">
-      <span class="result-check" aria-hidden="true">✓</span>
-      <p class="eyebrow">Jouw advies</p>
-      <h3>Je speelt de grote en de kleine baan ongeveer even vaak</h3>
-      <p>Gebaseerd op ${roundSummary(result)}. Twee speelrechten passen hierbij. Wat het beste uitkomt, hangt af van waar je het liefst speelt.</p>
-    </div>
+    ${resultHeader(result)}
 
-    ${registrationSwitch(result.handicapPrice)}
+    <div class="advice-badge advice-badge--choice">Twee passende speelrechten — jij kiest</div>
+    <h2>Je speelt beide banen ongeveer even vaak</h2>
+    <p class="advice-intro">Daarom is er hier geen goedkoopste keuze in het algemeen: het hangt af van <strong>waar je het liefst speelt</strong>. Kies je voor volledige dekking op beide banen, of voor het laagste bedrag vooraf met de kleine baan als basis?</p>
 
     <div class="advice-choice">
       ${choiceCard(credits, {
@@ -958,12 +940,17 @@ function renderChoice(result) {
         coverage: `${shortGolf.coversRounds
           ? `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt je ${smallRoundsText}.`
           : `Shortgolf-credits zijn voordeliger op de kleine baan. Dit speelrecht dekt een deel van je ${smallRoundsText}.`
-        } ${Number(shortGolf.reducedGreenFeeRounds || 0)
+        } ${shortGolfRekentGrotebaanPerRonde
           ? `Je ${largeRoundsText} reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
           : `Je ${largeRoundsText} ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
         }`,
         buttonClass: "button--shortgolf",
       })}
+    </div>
+
+    <div class="advice-summary">
+      <p><strong>Kort gezegd:</strong> ${kortGezegd}</p>
+      <a href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Vergelijk de speelrechten →</a>
     </div>
 
     ${disclaimer()}
@@ -979,14 +966,11 @@ function renderRouteChoice(result) {
   const ruimte = Math.round((Number(ruim.credits) - Number(ruim.requiredCredits)) * 10) / 10;
 
   resultContent.innerHTML = `
-    <div class="result-hero">
-      <span class="result-check" aria-hidden="true">✓</span>
-      <p class="eyebrow">Jouw advies</p>
-      <h3>Twee speelrechten liggen hier dicht bij elkaar</h3>
-      <p>Gebaseerd op ${roundSummary(result)}. Wat het beste uitkomt, hangt ervan af of je precies zoveel speelt als je nu opgaf.</p>
-    </div>
+    ${resultHeader(result)}
 
-    ${registrationSwitch(result.handicapPrice)}
+    <div class="advice-badge advice-badge--choice">Twee speelrechten liggen hier dicht bij elkaar</div>
+    <h2>Wat het beste uitkomt, hangt van jou af</h2>
+    <p class="advice-intro">Wat het beste uitkomt, hangt ervan af of je precies zoveel speelt als je nu opgaf, of vaker.</p>
 
     <div class="advice-choice advice-choice--stacked">
       ${choiceCard(zuinig, {

@@ -234,15 +234,17 @@
 .hgc-calculator .registration-note { margin-bottom: 0 !important; font-size: 12px; }
 
 /* Gemengd speelbeeld: de bezoeker kiest zelf tussen beide speelrechten. */
-.hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.hgc-calculator .advice-intro { max-width: 640px; margin: 0 0 26px; color: var(--ink-soft); font-size: 14.5px; line-height: 1.65; }
+.hgc-calculator .advice-intro strong { color: var(--ink); font-weight: 600; }
+.hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
 .hgc-calculator .advice-choice--stacked { grid-template-columns: 1fr; }
-.hgc-calculator .advice-card { padding: 28px; border: 2px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; background: white; box-shadow: 0 10px 28px rgba(48, 62, 40, .06); }
+.hgc-calculator .advice-card { padding: 26px 28px; border: 1.5px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; background: white; }
 .hgc-calculator .advice-card > * { flex: 0 0 auto; height: auto; max-height: none; min-height: 0; overflow: visible; }
 .hgc-calculator .advice-card > .button { margin-top: auto; }
-.hgc-calculator .advice-card--credits { border-color: #bdd375; background: linear-gradient(135deg, #fff 0%, #f8fbef 100%); }
-.hgc-calculator .advice-card--shortgolf { border-color: #f4c088; background: linear-gradient(135deg, #fff 0%, #fff6ec 100%); }
-.hgc-calculator .advice-card-question { margin-bottom: 14px; padding-bottom: 13px; border-bottom: 1px solid #e7ece0; color: var(--ink); font-size: 15px; font-weight: 800; }
-.hgc-calculator .advice-card--shortgolf .advice-card-question { border-bottom-color: #f6e0c6; }
+.hgc-calculator .advice-card--credits { border-color: #a8bd96; background: #f7fbef; }
+.hgc-calculator .advice-card--shortgolf { border-color: #e3c9a4; background: #fdf9f3; }
+.hgc-calculator .advice-card-question { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #dbe6c5; color: #3f6b18; font-size: 13px; font-weight: 600; }
+.hgc-calculator .advice-card--shortgolf .advice-card-question { border-bottom-color: #eddcc4; color: #a6702a; }
 .hgc-calculator .advice-card .eyebrow { margin-bottom: 6px; }
 .hgc-calculator .advice-card--shortgolf .eyebrow { color: var(--orange); }
 .hgc-calculator .advice-card h4 { margin-bottom: 12px; font-size: 20px; line-height: 1.3; }
@@ -258,7 +260,14 @@
 .hgc-calculator .advice-card-benefits li span { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; color: white; background: #7fa719; font-size: 11px; font-weight: 800; }
 .hgc-calculator .advice-card--shortgolf .advice-card-benefits li span { background: var(--orange); }
 .hgc-calculator [data-registration-row][hidden] { display: none !important; }
-.hgc-calculator .advice-card .button { margin-top: auto; }
+.hgc-calculator .advice-card .button { width: 100%; margin-top: auto; }
+
+/* Korte samenvatting onder de twee kaarten: geen advies, alleen de afweging
+   in één zin plus een link naar meer detail. */
+.hgc-calculator .advice-summary { margin-top: 22px; padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; background: #f6f7f1; }
+.hgc-calculator .advice-summary p { margin: 0; max-width: 620px; color: #3d4838; font-size: 13px; line-height: 1.6; }
+.hgc-calculator .advice-summary a { color: var(--green-deep); font-size: 13.5px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.hgc-calculator .advice-summary a:hover { text-decoration: underline; }
 .hgc-calculator .recommendation--shortgolf { border-color: #f4c088; background: linear-gradient(135deg, #fff 0%, #fff6ec 100%); }
 .hgc-calculator .recommendation--shortgolf .eyebrow { color: var(--orange); }
 .hgc-calculator .recommendation--shortgolf .package-instruction { border-left-color: var(--orange); background: #fdf2e6; }
