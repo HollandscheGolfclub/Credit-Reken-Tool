@@ -74,7 +74,7 @@
 .hgc-calculator h1, .hgc-calculator h2, .hgc-calculator h3, .hgc-calculator h4, .hgc-calculator .result-hero h3 { font-family: "Poppins", Arial, sans-serif; }
 
 .hgc-calculator .calculator-shell { scroll-margin-top: 18px; max-width: none; margin: 0 auto; background: var(--paper); border: 1px solid #dfe5d8; border-radius: var(--radius); box-shadow: 0 14px 42px rgba(48, 62, 40, .1); position: relative; z-index: 2; overflow: hidden; }
-.hgc-calculator .calculator-topbar { padding: 34px 44px 24px; display: flex; justify-content: space-between; align-items: end; }
+.hgc-calculator .calculator-topbar { padding: 34px 44px 24px; display: flex; justify-content: space-between; align-items: flex-start; }
 .hgc-calculator .calculator-topbar { color: var(--ink); background: linear-gradient(135deg, #ffffff 0%, #f3f7e9 100%); }
 .hgc-calculator .calculator-topbar .eyebrow { color: #61831d; }
 .hgc-calculator .calculator-topbar h2 { margin-bottom: 8px; font-size: 27px; font-weight: 700; }
@@ -426,18 +426,27 @@
 .hgc-calculator .recommendation--shortgolf .advice-checklist li span { color: var(--orange); }
 
 /* Alternatief: een zachte kaart met een zwevend label, geen felle contrastkleur. */
-.hgc-calculator .advice-alt { margin-top: 30px; position: relative; padding: 28px 30px 26px; border: 1.5px solid #cdd4c4; border-radius: 14px; background: #f6f7f1; }
+.hgc-calculator .advice-alt { margin-top: 30px; position: relative; padding: 28px 26px 26px; border: 1.5px solid #cdd4c4; border-radius: 14px; background: #f6f7f1; }
 .hgc-calculator .advice-alt-label { position: absolute; top: -11px; left: 26px; padding: 5px 12px; border-radius: 20px; color: #fff; background: #5f7a4a; font-size: 10.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
-.hgc-calculator .advice-alt-body { display: grid; grid-template-columns: 1fr 264px; gap: 34px; align-items: start; }
+/* Standaard één kolom: dat is de veilige aanname zolang de breedte van de
+   omringende (WordPress-thema)pagina onbekend is. Pas bij ruim voldoende
+   plek gaat de toelichting naast de inhoud staan. */
+.hgc-calculator .advice-alt-body { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
 .hgc-calculator .advice-alt h3 { margin: 0 0 6px; font-size: 23px; line-height: 1.25; }
 .hgc-calculator .advice-alt-amount { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
 .hgc-calculator .advice-alt-amount strong { font: 700 26px/1 "Poppins", sans-serif; color: var(--ink); }
 .hgc-calculator .advice-alt-amount span { color: #57604f; font-size: 13px; }
-.hgc-calculator .advice-alt-note { margin-bottom: 16px; padding: 12px 14px; border-radius: 8px; background: #ecefe4; color: #3d4838; font-size: 12.5px; line-height: 1.6; }
-.hgc-calculator .advice-alt-box { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px solid #e2e6da; border-radius: 10px; background: #fff; }
+.hgc-calculator .advice-alt-note { margin-bottom: 0; padding: 12px 14px; border-radius: 8px; background: #ecefe4; color: #3d4838; font-size: 12.5px; line-height: 1.6; }
+/* Geen doos-in-een-doos: deze kolom is gewoon een vervolg van dezelfde kaart,
+   met alleen een lijntje erboven zodra hij onder de inhoud komt te staan. */
+.hgc-calculator .advice-alt-box { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid #dfe3d6; }
 .hgc-calculator .advice-alt-box > p { margin: 0; color: #57604f; font-size: 12.5px; line-height: 1.55; }
 .hgc-calculator .advice-alt-box .button { display: flex; justify-content: space-between; padding: 14px 18px; border: 1.5px solid #5f7a4a; border-radius: 8px; background: #fff; color: #2f4d12; font-size: 14.5px; font-weight: 600; min-height: 0; }
-.hgc-calculator .advice-alt-box .button:hover { background: #f6f7f1; transform: none; }
+.hgc-calculator .advice-alt-box .button:hover { background: #eef0e8; transform: none; }
+@media (min-width: 760px) {
+  .hgc-calculator .advice-alt-body { grid-template-columns: 1fr 264px; gap: 34px; }
+  .hgc-calculator .advice-alt-box { padding-top: 0; border-top: 0; padding: 20px; border: 1px solid #e2e6da; border-radius: 10px; background: #fff; }
+}
 
 @media (max-width: 850px) {
   .hgc-calculator .design-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -521,7 +530,6 @@
   .hgc-calculator .result-step { padding-top: 0; }
   .hgc-calculator .result-hero { margin: 0 -22px; padding: 38px 22px 35px; }
   .hgc-calculator .result-topbar { margin: 0 -22px 24px; padding: 14px 22px; flex-direction: column; align-items: flex-start; }
-  .hgc-calculator .advice-alt-body { grid-template-columns: 1fr; }
   .hgc-calculator .choice-costs--steps { grid-template-columns: 1fr; }
   .hgc-calculator .choice-costs--steps article + article { border-left: 0; border-top: 1px solid var(--line); }
   .hgc-calculator .comparison { grid-template-columns: 1fr; gap: 10px; }

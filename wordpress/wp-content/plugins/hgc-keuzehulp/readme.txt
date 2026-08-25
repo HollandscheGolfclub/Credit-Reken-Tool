@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.23.0
+Stable tag: 1.23.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.23.1 =
+* Het logo in de kopregel zakte weg van de rechterbovenhoek zodra de introzin de linkerkolom hoger maakte dan de logo-kolom, omdat de kopregel onderaan uitlijnde. Lijnt nu bovenaan uit.
+* De alternatiefkaart ("Meer vrijheid nodig?" / "Meer speelruimte") stond op smallere paginabreedtes gestapeld met een doos-in-een-doos: een apart omkaderd vak binnen de toch al omkaderde kaart. De vaste 264px-kolom gold voorheen altijd, ongeacht de breedte; nu is een kolom naast elkaar pas de standaard vanaf voldoende brede pagina, en ziet de gestapelde versie er zonder dubbele rand ook verzorgd uit.
 
 = 1.23.0 =
 * Bugfix: had je meer credits nodig dan het grootste beschikbare pakket (bijv. boven de 200 bij een regulier speelrecht, boven het enige daluren-pakket, of boven het grootste Shortgolf-pakket), dan werd dat grootste pakket geadviseerd zonder de kosten van de resterende rondes mee te wegen, terwijl er al een eerlijk geprijsd alternatief bestond (dat pakket plus greenfee voor het tekort). Het te goedkope advies won daardoor onterecht. Raakte vooral daluren-spelers boven 20 credits per jaar.
