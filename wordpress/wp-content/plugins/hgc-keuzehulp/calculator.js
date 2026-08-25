@@ -635,6 +635,18 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
   const plans = candidatePlans({ largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak });
   const best = plans[0];
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
+
+  // Winnen handicapregistratie of LoyalTee op prijs, dan blijft dat het advies:
+  // de goedkoopste route financieel aanhouden voorkomt dat het rekenmodel zelf
+  // moet gaan aannemen wat iemand aan extra speelruimte waard vindt. Ernaast
+  // staat altijd het goedkoopste dekkende speelrecht als optie, met wat je
+  // daarvoor extra betaalt en wat je ervoor terugkrijgt: ruimte om vaker te
+  // spelen dan opgegeven en de mogelijkheid om flightgenoten te introduceren
+  // tegen het gereduceerde greenfeetarief.
+  const coveringAlternative = ["handicap", "loyaltee"].includes(best.type)
+    ? plans.find((plan) => plan.coversRounds) || null
+    : null;
+
   const adjacentPackage = Number(best.credits) === 120
     ? nextSmallerCreditOption(best, handicapPrice)
     : Number(best.credits) === 20 || Number(best.credits) === 60
@@ -671,6 +683,7 @@ function recommendationFor({ largeRounds, smallRounds, largeCourse, smallCourse,
     routeChoice,
     best,
     alternative,
+    coveringAlternative,
   };
 }
 
@@ -1008,6 +1021,18 @@ function renderSingleAdvice(result) {
         <a class="button button--secondary" href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Meer over speelrechten</a>
       </div>
     </article>
+
+    ${result.coveringAlternative ? `
+      <article class="next-option">
+        <div>
+          <p class="eyebrow">Ook mogelijk</p>
+          <h4>${brandText(result.coveringAlternative.name)}</h4>
+          <p class="next-option-amount">${planAmount(result.coveringAlternative)}<small>per golfjaar</small></p>
+          <p>En voor ${euro.format(Number(result.coveringAlternative.selectionCost) - Number(best.selectionCost))} meer heb je een speelrecht dat al je opgegeven rondes dekt: ruimte om vaker te spelen dan je nu opgaf en de mogelijkheid om flightgenoten te introduceren tegen het gereduceerde greenfeetarief.</p>
+        </div>
+        <div class="next-option-actions"><a class="next-option-link" href="${planLink(result.coveringAlternative)}">Meer informatie →</a></div>
+      </article>
+    ` : ""}
 
     ${alternative ? `
       <article class="next-option">

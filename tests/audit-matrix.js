@@ -1,4 +1,12 @@
 (() => {
+  // Winnen handicapregistratie of LoyalTee op prijs, dan blijft dat het advies;
+  // ernaast staat altijd het goedkoopste dekkende speelrecht als optie. Deze
+  // oracle herhaalt die regel onafhankelijk op de kandidatenlijst.
+  function expectedCoveringAlternative(cheapest, plans) {
+    if (!["handicap", "loyaltee"].includes(cheapest.type)) return null;
+    return plans.find((plan) => plan.coversRounds) || null;
+  }
+
   function expectedAlternative(best) {
     const packages = Array.isArray(best.availablePackages) ? best.availablePackages : [];
     const credits = Number(best.credits);
@@ -117,6 +125,13 @@
                 }
                 if (result.best.group !== plans[0].group || result.best.credits !== plans[0].credits) {
                   report("recommendation-best-mismatch", context);
+                }
+                const expectedCovering = expectedCoveringAlternative(plans[0], plans);
+                const actualCovering = result.coveringAlternative;
+                if (Boolean(expectedCovering) !== Boolean(actualCovering)) {
+                  report("covering-alternative-flag-mismatch", context);
+                } else if (expectedCovering && actualCovering && (expectedCovering.group !== actualCovering.group || expectedCovering.credits !== actualCovering.credits)) {
+                  report("covering-alternative-mismatch", context);
                 }
                 validateRecommendation(result, context, report);
                 const key = `${result.best.type}:${result.best.group}:${result.best.credits}`;
