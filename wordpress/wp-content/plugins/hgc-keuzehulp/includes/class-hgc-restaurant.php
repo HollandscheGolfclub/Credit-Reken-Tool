@@ -28,7 +28,7 @@ final class HGC_Restaurant
         return wp_parse_args(get_option(self::OPTION, array()), array(
             'api_url' => '',
             'park' => '',
-            'accent' => '#95c11f',
+            'accent' => '#7cb63a',
             'privacy_url' => '',
         ));
     }
@@ -36,7 +36,13 @@ final class HGC_Restaurant
     public function register_assets(): void
     {
         $base = HGC_CALCULATOR_URL . 'assets/restaurant/';
-        wp_register_style('hgc-restaurant', $base . 'reservation.css', array(), HGC_CALCULATOR_VERSION);
+        wp_register_style(
+            'hgc-restaurant-font',
+            'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
+            array(),
+            null
+        );
+        wp_register_style('hgc-restaurant', $base . 'reservation.css', array('hgc-restaurant-font'), HGC_CALCULATOR_VERSION);
         wp_register_script('hgc-restaurant', $base . 'reservation.js', array(), HGC_CALCULATOR_VERSION, true);
     }
 

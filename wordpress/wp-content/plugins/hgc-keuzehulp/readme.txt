@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.25.0
+Stable tag: 1.26.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.26.0 =
+* De restaurantreservering in de HGC-huisstijl gezet: Poppins-lettertype (werd nog geladen als dat nog niet gebeurd was), de groentinten van de keuzehulp in plaats van de generieke standaardkleur, en afgeronde pil-chips voor de tijdstippen in plaats van vierkante knopjes. Functioneel ongewijzigd.
 
 = 1.25.0 =
 * Restaurantreservering (voorheen de losse plugin HGC Restaurant Reserveren) samengevoegd in deze plugin: één plugin, één versienummer, één auto-updater vanuit deze GitHub-repo, en de instellingen staan op dezelfde pagina (Instellingen → Hollandsche Golfclub Calculator). Shortcode [hgc_restaurant_reserveren park="almkreek"] of het blok “HGC Restaurant Reserveren”. De reserveringsdata zelf blijft buiten WordPress, bij HGC Connect; deze plugin doet alleen het formulier en een dunne AJAX-proxy naar de Connect-koppeling.
