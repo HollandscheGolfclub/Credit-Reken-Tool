@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.19.1
+Stable tag: 1.20.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.20.0 =
+* Nieuwe vormgeving van het adviesscherm (eerste onderdeel): een smalle kopregel met de opgave en de registratieschakelaar in plaats van de grote groene hero, een label dat in een oogopslag zegt waar het advies om draait, genummerde stapkaarten bij handicapregistratie/LoyalTee, en een zachte alternatiefkaart met zwevend label in plaats van de losse voordelenblokken. Lettertype is Poppins geworden.
+* De keuze tussen twee speelrechten bij gemengd spelen en de resterende schermen volgen in een latere versie.
 
 = 1.19.1 =
 * Bij LoyalTee stond er ook met de schakelaar Handicapregistratie meerekenen uit nog dat de rondes na de vrije rondes van je handicapregistratie per ronde worden afgerekend. De 2 vrije rondes komen echter uit die handicapregistratie; reken je die niet mee, dan geldt de vrijstelling ook niet. Zonder de schakelaar staan nu gewoon alle rondes, zonder vrijstelling te noemen.

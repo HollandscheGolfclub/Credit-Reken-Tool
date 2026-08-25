@@ -535,7 +535,7 @@
             // schakelaar die niet mee, dan hoort de tekst ook geen vrijstelling meer
             // te noemen en over alle rondes te gaan, niet alleen de betaalde.
             if (result.best.type === "loyaltee") {
-              const instructionEl = resultContent.querySelector(".package-instruction");
+              const instructionEl = resultContent.querySelector(".package-instruction, .stat-instruction");
               const totalRoundsHere = largeRounds + smallRounds;
               applyRegistrationSwitch(true);
               const metTekst = instructionEl ? instructionEl.textContent : "";

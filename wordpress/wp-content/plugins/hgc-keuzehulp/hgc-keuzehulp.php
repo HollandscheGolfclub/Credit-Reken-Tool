@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.19.1
+ * Version: 1.20.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.19.1');
+define('HGC_CALCULATOR_VERSION', '1.20.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -107,7 +107,7 @@ function hgc_calculator_shortcode(array $atts = array()): string
 
     wp_enqueue_style(
         'hgc-calculator-font',
-        'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap',
+        'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
         array(),
         null
     );
