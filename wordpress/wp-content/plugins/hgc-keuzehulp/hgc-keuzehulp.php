@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
- * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.
- * Version: 1.24.0
+ * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
+ * Version: 1.25.0
  * Author: Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.24.0');
+define('HGC_CALCULATOR_VERSION', '1.25.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -107,6 +107,11 @@ if (is_admin()) {
     require_once HGC_CALCULATOR_DIR . 'includes/class-hgc-calculator-admin.php';
     new HGC_Calculator_Admin();
 }
+
+// Registreert shortcode, blok en AJAX-proxy voor beide bezoekers en
+// beheerders, dus altijd laden, niet alleen binnen is_admin().
+require_once HGC_CALCULATOR_DIR . 'includes/class-hgc-restaurant.php';
+$GLOBALS['hgc_restaurant'] = new HGC_Restaurant();
 
 /**
  * Laadt de assets pas zodra de shortcode daadwerkelijk op een pagina staat.

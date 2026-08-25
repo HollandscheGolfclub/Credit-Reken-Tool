@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.24.0
+Stable tag: 1.25.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.25.0 =
+* Restaurantreservering (voorheen de losse plugin HGC Restaurant Reserveren) samengevoegd in deze plugin: één plugin, één versienummer, één auto-updater vanuit deze GitHub-repo, en de instellingen staan op dezelfde pagina (Instellingen → Hollandsche Golfclub Calculator). Shortcode [hgc_restaurant_reserveren park="almkreek"] of het blok “HGC Restaurant Reserveren”. De reserveringsdata zelf blijft buiten WordPress, bij HGC Connect; deze plugin doet alleen het formulier en een dunne AJAX-proxy naar de Connect-koppeling.
+* Was eerder de losse plugin HGC Restaurant Reserveren v1.0.0; die kan na deze update gedeactiveerd en verwijderd worden.
 
 = 1.24.0 =
 * De prijs-per-ronde-kaarten voor grote en kleine baan verdwenen tot nu toe zodra een deel van de rondes op greenfee werd bijgespeeld, omdat de oude berekening de pakketprijs over alle gespeelde rondes verdeelde (inclusief de rondes die niet door credits gedekt zijn) en daardoor een te laag bedrag liet zien. Nu wordt de prijs per ronde berekend op basis van de credits: pakketprijs gedeeld door de credits die je koopt, keer het credittarief van die baan. Dat bedrag klopt ook als een deel van de rondes op greenfee gaat, dus de kaarten staan er weer, met een preciezer bedrag dan voorheen (bijvoorbeeld kleine baan: was eerder al zichtbaar maar te laag doordat dezelfde verdunning meespeelde).

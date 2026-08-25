@@ -73,15 +73,24 @@ final class HGC_Calculator_Admin
 
             <section class="hgc-admin-panel">
                 <h2>Plaatsen op de website</h2>
-                <p>Plaats de gekozen HGC-speelrechtkeuzehulp met de standaardshortcode.</p>
+                <p>Plaats de gekozen onderdelen met de bijbehorende shortcode, of via het Gutenberg-blok.</p>
                 <div class="hgc-admin-grid hgc-admin-grid--two">
                     <article class="hgc-shortcode-card">
                         <h3>Speelrechtkeuzehulp</h3>
                         <p>Adviseert een speelrecht op basis van grote en kleine baanrondes.</p>
                         <code>[hgc_calculator]</code>
                     </article>
+                    <article class="hgc-shortcode-card">
+                        <h3>Restaurant reserveren</h3>
+                        <p>Reserveringsformulier voor het restaurant van het opgegeven park, of het blok “HGC Restaurant Reserveren”.</p>
+                        <code>[hgc_restaurant_reserveren park="almkreek"]</code>
+                    </article>
                 </div>
             </section>
+
+            <?php if (isset($GLOBALS['hgc_restaurant'])) : ?>
+                <?php $GLOBALS['hgc_restaurant']->render_admin_section(); ?>
+            <?php endif; ?>
 
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="hgc_calculator_save" />
