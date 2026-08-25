@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.23.1
+Stable tag: 1.24.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.24.0 =
+* De prijs-per-ronde-kaarten voor grote en kleine baan verdwenen tot nu toe zodra een deel van de rondes op greenfee werd bijgespeeld, omdat de oude berekening de pakketprijs over alle gespeelde rondes verdeelde (inclusief de rondes die niet door credits gedekt zijn) en daardoor een te laag bedrag liet zien. Nu wordt de prijs per ronde berekend op basis van de credits: pakketprijs gedeeld door de credits die je koopt, keer het credittarief van die baan. Dat bedrag klopt ook als een deel van de rondes op greenfee gaat, dus de kaarten staan er weer, met een preciezer bedrag dan voorheen (bijvoorbeeld kleine baan: was eerder al zichtbaar maar te laag doordat dezelfde verdunning meespeelde).
 
 = 1.23.1 =
 * Het logo in de kopregel zakte weg van de rechterbovenhoek zodra de introzin de linkerkolom hoger maakte dan de logo-kolom, omdat de kopregel onderaan uitlijnde. Lijnt nu bovenaan uit.

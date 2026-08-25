@@ -150,12 +150,41 @@
                   if (Math.abs(Number(plan.annualCost) - Number(plan.price) - Number(plan.registrationPrice || 0)) > 0.001) {
                     report("annual-cost-mismatch", { ...context, group: plan.group });
                   }
-                  const reconstructed = largeRounds * Number(plan.largeRoundCost || 0) + smallRounds * Number(plan.smallRoundCost || 0);
-                  // Bij een herhaalroute tellen de vervolgaankopen mee in de kosten
-                  // per ronde; daar is niets geheim aan, anders dan bij greenfees.
-                  const jaarlast = Number(plan.annualCost) + Number(plan.repeatExtraTotal || 0);
-                  if (Math.abs(reconstructed - jaarlast) > 0.01) {
-                    report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
+                  // Dekt het pakket alle rondes (of rekent het per ronde af, of
+                  // koopt het zichzelf herhaald), dan hoort de prijs per ronde
+                  // maal het aantal rondes exact op te tellen tot de jaarlast.
+                  // Dekt het pakket niet alles, dan is de prijs per ronde bewust
+                  // gebaseerd op de credits die je kocht, niet op alle rondes die
+                  // je speelt (de rest gaat op greenfee); die twee tellen dan niet
+                  // meer exact op, en dat hoort ook niet meer.
+                  if (plan.coversRounds || plan.repeatPurchases || ["handicap", "loyaltee"].includes(plan.type)) {
+                    const reconstructed = largeRounds * Number(plan.largeRoundCost || 0) + smallRounds * Number(plan.smallRoundCost || 0);
+                    const jaarlast = Number(plan.annualCost) + Number(plan.repeatExtraTotal || 0);
+                    if (Math.abs(reconstructed - jaarlast) > 0.01) {
+                      report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
+                    }
+                  } else if (["credits", "shortgolf"].includes(plan.type) && !plan.group.startsWith("local-")) {
+                    const priceBasis = Number(plan.credits);
+                    if (priceBasis > 0) {
+                      if (plan.type === "credits") {
+                        const verwachtGroot = largeCourse.largeRate * (Number(plan.price) / priceBasis);
+                        const verwachtKlein = smallCourse.shortRate * (Number(plan.price) / priceBasis);
+                        if (Math.abs(Number(plan.largeBaseCost) - verwachtGroot) > 0.001) {
+                          report("basecost-op-credits-klopt-niet", { ...context, group: plan.group, baan: "groot", actual: plan.largeBaseCost, verwacht: verwachtGroot });
+                        }
+                        if (Math.abs(Number(plan.smallBaseCost) - verwachtKlein) > 0.001) {
+                          report("basecost-op-credits-klopt-niet", { ...context, group: plan.group, baan: "klein", actual: plan.smallBaseCost, verwacht: verwachtKlein });
+                        }
+                      } else {
+                        if (Number(plan.largeBaseCost) !== 0) {
+                          report("shortgolf-largebasecost-niet-nul", { ...context, group: plan.group });
+                        }
+                        const verwachtKlein = Number(smallCourse.shortGolfRate) * (Number(plan.price) / priceBasis);
+                        if (Math.abs(Number(plan.smallBaseCost) - verwachtKlein) > 0.001) {
+                          report("basecost-op-credits-klopt-niet", { ...context, group: plan.group, baan: "klein", actual: plan.smallBaseCost, verwacht: verwachtKlein });
+                        }
+                      }
+                    }
                   }
                   const perRonde = ["handicap", "loyaltee"].includes(plan.type);
                   if (perRonde) {
