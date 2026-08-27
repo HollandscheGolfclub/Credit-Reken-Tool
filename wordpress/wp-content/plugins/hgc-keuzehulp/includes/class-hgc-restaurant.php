@@ -98,7 +98,10 @@ final class HGC_Restaurant
         ob_start();
         ?>
         <div class="hgc-reservation" data-park="<?php echo esc_attr($park); ?>" data-ref="<?php echo esc_attr($ref); ?>" data-token="<?php echo esc_attr($token); ?>" style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
-            <div class="hgc-reservation__loading" role="status">Beschikbaarheid laden…</div>
+            <div class="hgc-reservation__loading" role="status">
+                <span class="hgc-spinner" aria-hidden="true"></span>
+                <span>Beschikbaarheid laden…</span>
+            </div>
             <div class="hgc-reservation__app" hidden></div>
             <noscript><p>JavaScript is nodig om direct beschikbaarheid te controleren. Neem telefonisch contact op met het restaurant om te reserveren.</p></noscript>
         </div>

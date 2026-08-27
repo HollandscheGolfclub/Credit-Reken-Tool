@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.27.0
+Stable tag: 1.28.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.28.0 =
+* Bugfix restaurantreservering: de laadtekst verdween meteen bij het openen van de pagina, terwijl de daadwerkelijke inhoud pas verscheen zodra de Connect-koppeling had geantwoord. Bij een trage koppeling (bijvoorbeeld een koude start) oogde de widget daardoor een paar tellen leeg en kapot. De laadstatus blijft nu zichtbaar totdat er echt iets te tonen is.
+* Restaurantreservering visueel verder afgewerkt: draaiende laadindicator in plaats van kale tekst, een kopband met kleurverloop boven het formulier (zelfde patroon als de keuzehulp), en een zachte inkomanimatie voor kaarten, tijdsloten en het bevestigingsscherm.
 
 = 1.27.0 =
 * Nieuw hulpmiddel toegevoegd: Extra hulpmiddelen → Pluginmap opschonen. Voor als Plugins → Verwijderen een pluginmap als verwijderd meldt, maar hij na verversen terugkomt (WordPress’ eigen bestandssysteem-laag heeft dan geen echte schrijfrechten en negeert dat stilletjes). Dit verwijdert rechtstreeks met PHP, uitsluitend mappen direct onder wp-content/plugins; niets daarbuiten is te zien of te benaderen. Komt mee via deze plugin, dus geen aparte installatie nodig.
