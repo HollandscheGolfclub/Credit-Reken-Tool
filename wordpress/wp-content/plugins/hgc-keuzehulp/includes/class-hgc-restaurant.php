@@ -81,6 +81,11 @@ final class HGC_Restaurant
             'park' => '',
             'accent' => '#7cb63a',
             'privacy_url' => '',
+            'club_logo' => '',
+            'park_logo' => '',
+            'phone' => '',
+            'address' => '',
+            'hours_note' => '',
         ));
     }
 
@@ -136,9 +141,15 @@ final class HGC_Restaurant
         wp_add_inline_script(
             'hgc-restaurant',
             'window.HGCRestaurant = ' . wp_json_encode(array(
-                'ajaxUrl' => admin_url('admin-ajax.php'),
+    'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('hgc_restaurant'),
                 'privacyUrl' => esc_url_raw($settings['privacy_url']),
+                'clubLogo' => esc_url_raw($settings['club_logo']),
+                'parkLogo' => esc_url_raw($settings['park_logo']),
+                'grasUrl' => HGC_CALCULATOR_URL . 'assets/restaurant/img/hgc-gras.png',
+                'phone' => sanitize_text_field($settings['phone']),
+                'address' => sanitize_text_field($settings['address']),
+                'hoursNote' => sanitize_text_field($settings['hours_note']),
             )) . ';',
             'before'
         );
@@ -235,6 +246,11 @@ final class HGC_Restaurant
             'park' => sanitize_title($raw['park'] ?? ''),
             'accent' => sanitize_hex_color($raw['accent'] ?? '') ?: '#95c11f',
             'privacy_url' => esc_url_raw($raw['privacy_url'] ?? ''),
+            'club_logo' => esc_url_raw($raw['club_logo'] ?? ''),
+            'park_logo' => esc_url_raw($raw['park_logo'] ?? ''),
+            'phone' => sanitize_text_field($raw['phone'] ?? ''),
+            'address' => sanitize_text_field($raw['address'] ?? ''),
+            'hours_note' => sanitize_text_field($raw['hours_note'] ?? ''),
         ), false);
 
         wp_safe_redirect(add_query_arg('restaurant_updated', '1', admin_url('options-general.php?page=hgc-calculator')));
@@ -266,6 +282,16 @@ final class HGC_Restaurant
                 </div>
                 <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code>.</p>
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
+                <h3 style="margin:24px 0 8px">Boekingsscherm — logo's en contactgegevens</h3>
+                <p class="hgc-admin-hint">Allemaal optioneel. Zonder logo's toont de kop alleen de titel; zonder telefoon/adres/openingstijden worden die regels gewoon weggelaten.</p>
+                <div class="hgc-admin-grid hgc-admin-grid--two">
+                    <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
+                    <label class="hgc-admin-field"><span>Parklogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[park_logo]" value="<?php echo esc_attr($s['park_logo']); ?>" placeholder="https://.../almkreek-logo.png" /></label>
+                    <label class="hgc-admin-field"><span>Telefoonnummer</span><input type="text" name="restaurant[phone]" value="<?php echo esc_attr($s['phone']); ?>" placeholder="0183 40 30 30" /></label>
+                    <label class="hgc-admin-field"><span>Adres</span><input type="text" name="restaurant[address]" value="<?php echo esc_attr($s['address']); ?>" placeholder="Almweg 2, Almkerk" /></label>
+                    <label class="hgc-admin-field"><span>Openingstijden (vrije tekst)</span><input class="large-text" type="text" name="restaurant[hours_note]" value="<?php echo esc_attr($s['hours_note']); ?>" placeholder="Keuken open van 12:00 tot 21:00" /></label>
+                </div>
+                <p class="hgc-admin-hint">Gebruik een afbeelding die al op de juiste grootte staat (bijv. via de mediabibliotheek geüpload en daar de URL van gekopieerd) — de plugin schaalt zelf niet.</p>
                 <div class="hgc-admin-actions">
                     <?php submit_button('Restaurantinstellingen opslaan', 'primary', 'submit', false); ?>
                 </div>

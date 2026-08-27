@@ -11,6 +11,7 @@
   max-width: 760px;
   margin: 1.5rem auto;
 }
+.hgc-reservation.is-wizard { max-width: 960px; }
 .hgc-reservation * { box-sizing: border-box; }
 .hgc-card { background: #fff; border: 1px solid var(--hgc-line); border-radius: 18px; box-shadow: 0 16px 40px rgba(34, 48, 28, .08); overflow: hidden; padding: var(--hgc-pad); animation: hgc-rise .35s ease both; }
 
@@ -73,14 +74,130 @@
 @keyframes hgc-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes hgc-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* ---------------------------------------------------------------------
+   Boekingswizard (desktop, 3 stappen) — id's 2a in de meegeleverde mockup.
+   ------------------------------------------------------------------- */
+.hgc-wizard { background: #fff; border: 1px solid var(--hgc-line); border-radius: 18px; box-shadow: 0 16px 40px rgba(34, 48, 28, .08); overflow: hidden; color: var(--hgc-ink); animation: hgc-rise .35s ease both; }
+.hgc-wizard-logos { padding: 16px 32px; background: #fff; border-bottom: 1px solid #eef1e6; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hgc-wizard-logos:has(.hgc-logo--park):not(:has(.hgc-logo--club)) { justify-content: flex-start; }
+.hgc-wizard-logos:has(.hgc-logo--club):not(:has(.hgc-logo--park)) { justify-content: flex-end; }
+.hgc-logo { display: block; width: auto; object-fit: contain; }
+.hgc-logo--park { height: 44px; }
+.hgc-logo--club { height: 54px; }
+
+.hgc-wizard-hero { padding: 26px 32px; background: linear-gradient(135deg, var(--hgc-tint) 0%, #fff 100%); border-bottom: 1px solid var(--hgc-line); display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.hgc-wizard-hero h2 { font-size: clamp(1.35rem, 3vw, 1.7rem); font-weight: 700; line-height: 1.2; margin: 0; }
+.hgc-wizard-hero p { margin: 6px 0 0; color: var(--hgc-ink-soft); font-size: 14px; }
+.hgc-wizard-step-badge { margin: 0; font-size: 12px; font-weight: 600; color: var(--hgc-ink-soft); white-space: nowrap; }
+.hgc-wizard-step-badge span { color: var(--hgc-accent-deep); }
+
+.hgc-wizard-progress { height: 4px; background: #eef1e6; }
+.hgc-wizard-progress > span { display: block; height: 4px; background: var(--hgc-accent); transition: width .25s ease; }
+
+.hgc-wizard-body { display: grid; grid-template-columns: 1fr 268px; }
+.hgc-wizard-main { padding: 28px 32px; min-width: 0; }
+
+.hgc-step-head { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; }
+.hgc-step-head:first-child { margin-top: 0; }
+.hgc-step-num { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; font: 700 12px "Poppins", sans-serif; }
+.hgc-step-num--complete { background: var(--hgc-tint); color: var(--hgc-accent-deep); }
+.hgc-step-num--active { background: var(--hgc-accent); color: #fff; }
+.hgc-step-num--upcoming { background: #f1f2ea; color: #8d9585; }
+.hgc-step-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.hgc-step-head--upcoming h3 { color: #8d9585; }
+.hgc-step-placeholder { border: 1px dashed var(--hgc-line); border-radius: 12px; padding: 16px 18px; color: #8d9585; font-size: 13px; }
+
+.hgc-day-strip { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 2px; }
+.hgc-day-pill { flex: 1 0 auto; min-width: 56px; border: 1.5px solid var(--hgc-line); border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; background: #fff; font: inherit; color: var(--hgc-ink); transition: border-color .15s, background .15s, color .15s; }
+.hgc-day-pill:hover { border-color: var(--hgc-accent); }
+.hgc-day-pill.is-selected { border-color: var(--hgc-accent); background: var(--hgc-accent); color: #fff; }
+.hgc-day-dow { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--hgc-ink-soft); }
+.hgc-day-pill.is-selected .hgc-day-dow { color: rgba(255,255,255,.85); }
+.hgc-day-num { font-size: 17px; font-weight: 700; margin-top: 2px; }
+.hgc-day-note { font-size: 10.5px; color: #8d9585; margin-top: 3px; }
+.hgc-day-pill.is-selected .hgc-day-note { color: rgba(255,255,255,.85); }
+
+.hgc-party-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+.hgc-party-label { font-size: 13px; font-weight: 600; }
+.hgc-stepper { display: inline-flex; align-items: center; border: 1px solid var(--hgc-line); border-radius: 24px; overflow: hidden; }
+.hgc-stepper button { display: grid; place-items: center; width: 38px; height: 40px; border: 0; background: none; color: var(--hgc-ink-soft); font-size: 18px; cursor: pointer; }
+.hgc-stepper button:last-child { color: var(--hgc-accent-deep); }
+.hgc-stepper button:disabled { opacity: .35; cursor: not-allowed; }
+.hgc-stepper-value { min-width: 34px; text-align: center; font-weight: 700; }
+.hgc-party-hint { font-size: 12px; color: #8d9585; }
+
+.hgc-time-group-label { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: #8d9585; text-transform: uppercase; letter-spacing: .08em; }
+.hgc-time-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.hgc-time-empty { margin: 0 0 16px; font-size: 13.5px; color: var(--hgc-ink-soft); }
+
+.hgc-wizard-sidebar { border-left: 1px solid var(--hgc-line); background: #fbfcf8; padding: 28px 24px; display: flex; flex-direction: column; gap: 16px; }
+.hgc-summary-label { margin: 0; font-size: 11px; font-weight: 600; color: #8d9585; text-transform: uppercase; letter-spacing: .08em; }
+.hgc-summary-rows { display: flex; flex-direction: column; gap: 12px; font-size: 13.5px; }
+.hgc-summary-key { color: #8d9585; font-size: 12px; }
+.hgc-summary-val { font-weight: 600; }
+.hgc-summary-divider { height: 1px; background: #e7ebdd; }
+.hgc-summary-note { margin: 0; font-size: 12px; color: var(--hgc-ink-soft); line-height: 1.5; }
+.hgc-wizard-cta { margin-top: auto; width: 100%; }
+.hgc-wizard-cta:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.hgc-wizard-footer { position: relative; min-height: 90px; overflow: hidden; border-top: 1px solid #eef1e6; background: #fff; }
+.hgc-wizard-footer img { position: absolute; left: -16px; bottom: -8px; width: 190px; height: auto; pointer-events: none; z-index: 0; }
+.hgc-wizard-footer-text { position: relative; z-index: 1; padding: 20px 32px 20px 190px; font-size: 12px; color: var(--hgc-ink-soft); line-height: 1.7; }
+.hgc-wizard-footer-text span { display: block; color: #8d9585; }
+
+/* ---------------------------------------------------------------------
+   Mobiele teaserkaart + popup/bottom-sheet flow — id 2b in de mockup.
+   ------------------------------------------------------------------- */
+.hgc-teaser { background: #fff; border: 1px solid var(--hgc-line); border-radius: 18px; box-shadow: 0 16px 40px rgba(34, 48, 28, .08); overflow: hidden; color: var(--hgc-ink); animation: hgc-rise .35s ease both; }
+.hgc-teaser-body { padding: 22px 26px 28px; }
+.hgc-teaser-body h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
+.hgc-teaser-body > p { margin: 0 0 14px; font-size: 13px; color: var(--hgc-ink-soft); line-height: 1.6; }
+.hgc-teaser-rows { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: var(--hgc-ink-soft); margin-bottom: 18px; }
+.hgc-teaser-row { display: flex; gap: 10px; }
+.hgc-teaser-row-label { color: #8d9585; width: 84px; flex: none; }
+.hgc-teaser-row-val { font-weight: 600; color: var(--hgc-ink); }
+.hgc-teaser-cta { width: 100%; }
+.hgc-teaser-note { margin: 12px 0 0; font-size: 11.5px; color: #8d9585; text-align: center; }
+
+.hgc-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(34, 48, 28, .45); display: flex; align-items: flex-end; justify-content: center; padding: 0; animation: hgc-fade .2s ease both; }
+.hgc-sheet { width: 100%; max-width: 480px; max-height: 92vh; background: #fff; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 30px rgba(34, 48, 28, .22); overflow-y: auto; color: var(--hgc-ink); animation: hgc-sheet-up .25s cubic-bezier(.2,.8,.3,1) both; }
+.hgc-sheet-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; background: #fff; border-bottom: 1px solid #eef1e6; }
+.hgc-sheet-head span:first-child { font: 600 14.5px "Poppins", sans-serif; }
+.hgc-sheet-close { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: #f6f7f1; color: var(--hgc-ink-soft); font-size: 15px; cursor: pointer; }
+.hgc-sheet-hero { padding: 14px 20px 18px; background: linear-gradient(135deg, var(--hgc-tint) 0%, #fff 100%); border-bottom: 1px solid var(--hgc-line); }
+.hgc-sheet-hero h2 { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+.hgc-sheet-hero p { margin: 5px 0 0; font-size: 12.5px; color: var(--hgc-ink-soft); }
+.hgc-sheet-progress { height: 3px; background: #eef1e6; }
+.hgc-sheet-progress > span { display: block; height: 3px; background: var(--hgc-accent); transition: width .25s ease; }
+.hgc-sheet-body { padding: 18px 20px 4px; }
+.hgc-sheet-body .hgc-step-head { margin: 20px 0 12px; }
+.hgc-sheet-body .hgc-step-head:first-child { margin-top: 0; }
+.hgc-sheet-footer { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 14px 20px 18px; background: #fbfcf8; border-top: 1px solid #eef1e6; }
+.hgc-sheet-footer-summary { flex: 1; font-size: 12px; color: var(--hgc-ink-soft); }
+.hgc-sheet-footer .hgc-button { flex: none; }
+
+@keyframes hgc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hgc-sheet-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
 @media (max-width: 580px) {
   .hgc-grid { grid-template-columns: 1fr; }
   .hgc-card { border-radius: 14px; }
   .hgc-button { width: 100%; }
   .hgc-manage-actions { display: grid; }
 }
+
+/* Veiligheidsnet: de wizard is bedoeld voor >=760px (daaronder kiest JS de
+   teaser+sheet-flow), maar als hij toch smaller getoond wordt mag hij niet
+   breken — zijbalk valt dan gewoon onder de hoofdkolom. */
+@media (max-width: 900px) {
+  .hgc-wizard-body { grid-template-columns: 1fr; }
+  .hgc-wizard-sidebar { border-left: 0; border-top: 1px solid var(--hgc-line); }
+  .hgc-wizard-footer-text { padding-left: 32px; }
+  .hgc-wizard-footer img { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hgc-reservation * { scroll-behavior: auto !important; transition: none !important; }
-  .hgc-card, .hgc-slots, .hgc-details, .hgc-manage-form, .hgc-confirm, .hgc-checkmark, .hgc-slot, .hgc-button:hover { animation: none !important; transform: none !important; }
+  .hgc-card, .hgc-wizard, .hgc-slots, .hgc-details, .hgc-manage-form, .hgc-confirm, .hgc-checkmark, .hgc-slot, .hgc-button:hover, .hgc-overlay, .hgc-sheet { animation: none !important; transform: none !important; }
   .hgc-spinner { animation-duration: 1.6s; }
 }

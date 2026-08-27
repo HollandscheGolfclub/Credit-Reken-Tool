@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.30.0
+Stable tag: 1.31.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,14 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.31.0 =
+* Boekingsschermen restaurantreservering volledig herbouwd, op basis van meegeleverde ontwerpen (2a: desktopwizard, 2b: mobiele popup):
+  - Desktop: ingebouwde 3-stappen wizard (wanneer/hoeveel → tijd → gegevens) met dagenrij, +/- teller voor aantal personen, tijden gegroepeerd onder Lunch/Diner, een meelopende samenvatting in de zijbalk en een voortgangsbalk.
+  - Mobiel (kleiner dan 760px): eerst een compacte teaserkaart met een "Reserveer uw tafel"-knop; die opent dezelfde boekingsstappen in een sheet die van onderop opschuift, met een vaste knop onderaan.
+  - Nieuwe instellingen (optioneel): clublogo, parklogo, telefoonnummer, adres en een vrije tekst voor openingstijden — allemaal weg te laten, dan worden de bijbehorende regels gewoon niet getoond.
+  - Bugfix onderweg: de mobiele sheet werd buiten de widget in de pagina gehangen, waardoor hij de kleuren en de box-sizing van de widget niet overerfde en zichtbaar kapot oogde (verkeerde kleuren, scheve afstanden). De sheet hangt nu binnen de widget zelf; `position: fixed` dekt nog steeds gewoon de hele viewport.
+  - Bewuste keuzes: geen "X vrij"-aantal per dag in de dagenrij (zou 6 extra Connect-aanroepen per paginabezoek kosten, tegen de recente koude-start-aanpak in) en geen verzonnen annuleringstermijn in de tekst (die regel stond alleen in het ontwerp, niet in de echte Connect-koppeling).
 
 = 1.30.0 =
 * Bugfix restaurantreservering: de laadkaart bleef zichtbaar staan boven het echte formulier, ook nadat JavaScript hem al had verstopt. Oorzaak: een eigen CSS-regel voor die kaart (`display: flex`) won het altijd van het browserstandaard-gedrag voor het "verborgen"-attribuut, ongeacht wat JavaScript deed. Daardoor stond er permanent een dubbel, kapoog-ogend blok. Opgelost met een expliciete CSS-regel die voorrang krijgt zodra het element verborgen is.
