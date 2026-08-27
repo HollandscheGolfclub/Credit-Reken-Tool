@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.26.0
+Stable tag: 1.27.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.27.0 =
+* Nieuw hulpmiddel toegevoegd: Extra hulpmiddelen → Pluginmap opschonen. Voor als Plugins → Verwijderen een pluginmap als verwijderd meldt, maar hij na verversen terugkomt (WordPress’ eigen bestandssysteem-laag heeft dan geen echte schrijfrechten en negeert dat stilletjes). Dit verwijdert rechtstreeks met PHP, uitsluitend mappen direct onder wp-content/plugins; niets daarbuiten is te zien of te benaderen. Komt mee via deze plugin, dus geen aparte installatie nodig.
 
 = 1.26.0 =
 * De restaurantreservering in de HGC-huisstijl gezet: Poppins-lettertype (werd nog geladen als dat nog niet gebeurd was), de groentinten van de keuzehulp in plaats van de generieke standaardkleur, en afgeronde pil-chips voor de tijdstippen in plaats van vierkante knopjes. Functioneel ongewijzigd.
