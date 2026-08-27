@@ -9,6 +9,29 @@
   }
   function field(label, name, type, required, extra) { return '<label class="hgc-field"><span>' + label + (required ? ' *' : '') + '</span><input name="' + name + '" type="' + type + '" ' + (required ? 'required ' : '') + (extra || '') + '></label>'; }
   function announce(root, message, error) { var status = root.querySelector('.hgc-status'); status.textContent = message; status.className = 'hgc-status ' + (error ? 'is-error' : 'is-success'); status.focus(); }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function isoDate(date) { return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate()); }
+  // Redelijke standaardwaarden zodat het formulier meteen bruikbaar is, in
+  // plaats van te wachten tot de Connect-koppeling antwoord geeft (die bij een
+  // koude start enkele seconden kan duren). De echte naam en grenzen komen op
+  // de achtergrond binnen en worden dan alsnog toegepast, zie applyInfo().
+  function defaultInfo() {
+    var max = new Date(); max.setDate(max.getDate() + 90);
+    return { naam: 'Tafel reserveren', minDate: isoDate(new Date()), maxDate: isoDate(max), minGroepsgrootte: 1, maxGroepsgrootte: 12 };
+  }
+  function applyInfo(app, info) {
+    var heading = app.querySelector('.hgc-header h2');
+    if (heading && info.naam) heading.textContent = info.naam;
+    var form = app.querySelector('form.hgc-form');
+    if (!form) return;
+    if (info.minDate) form.elements.date.min = info.minDate;
+    if (info.maxDate) form.elements.date.max = info.maxDate;
+    if (info.minGroepsgrootte) form.elements.partySize.min = info.minGroepsgrootte;
+    if (info.maxGroepsgrootte) form.elements.partySize.max = info.maxGroepsgrootte;
+    var party = Number(form.elements.partySize.value);
+    if (info.maxGroepsgrootte && party > info.maxGroepsgrootte) form.elements.partySize.value = info.maxGroepsgrootte;
+    if (info.minGroepsgrootte && party < info.minGroepsgrootte) form.elements.partySize.value = info.minGroepsgrootte;
+  }
   // De laadtekst blijft zichtbaar totdat er echt iets te tonen is; anders
   // staat de pagina leeg zodra de koppeling traag antwoordt (bijv. een koude
   // start van de Connect-functie kan een aantal seconden duren).
@@ -60,11 +83,12 @@
       var park = root.dataset.park, ref = root.dataset.ref, token = root.dataset.token;
       if (ref && token) {
         initManage(root, park, ref, token);
-      } else {
-        api({ action: 'publicInfo', slug: park })
-          .then(function (info) { initBooking(root, park, info); })
-          .catch(function (error) { app.innerHTML = '<div class="hgc-card"><div class="hgc-status is-error" role="alert">' + esc(error.message) + '</div></div>'; reveal(root); });
+        return;
       }
+      initBooking(root, park, defaultInfo());
+      api({ action: 'publicInfo', slug: park })
+        .then(function (info) { applyInfo(app, info); })
+        .catch(function (error) { announce(app, error.message, true); });
     });
   });
 })();

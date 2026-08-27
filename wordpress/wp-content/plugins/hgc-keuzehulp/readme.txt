@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.29.0
+Stable tag: 1.30.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.30.0 =
+* Bugfix restaurantreservering: de laadkaart bleef zichtbaar staan boven het echte formulier, ook nadat JavaScript hem al had verstopt. Oorzaak: een eigen CSS-regel voor die kaart (`display: flex`) won het altijd van het browserstandaard-gedrag voor het "verborgen"-attribuut, ongeacht wat JavaScript deed. Daardoor stond er permanent een dubbel, kapoog-ogend blok. Opgelost met een expliciete CSS-regel die voorrang krijgt zodra het element verborgen is.
+* Restaurantreservering toont het boekingsformulier nu meteen bij het laden van de pagina, met redelijke standaardwaarden (datum vanaf vandaag, 1 t/m 12 personen), in plaats van te wachten tot de Connect-koppeling heeft geantwoord. Zodra de koppeling wel antwoord geeft, worden de echte restaurantnaam en de werkelijke grenzen voor datum en groepsgrootte alsnog toegepast, zonder de pagina te blokkeren. Bezoekers hoeven dus niet meer op een koude start te wachten voordat ze kunnen beginnen met invullen.
 
 = 1.29.0 =
 * Restaurantreservering: automatische warmhoud-ping toegevoegd. De onderliggende Connect-functie is serverless en valt na een tijdje stil ("koude start"); daardoor kon de eerste bezoeker na een stille periode enkele tellen op de widget moeten wachten. De plugin stuurt nu zelf elke 5 minuten een klein, gratis leesalleen-verzoek naar de Connect-koppeling om de functie warm te houden, zonder dat daarvoor iets ingesteld hoeft te worden. Werkt alleen als de site regelmatig bezoekers heeft (WP-Cron draait mee met paginabezoeken); voor een garantie ongeacht bezoekersaantal kan de Connect-beheerder ook een "minimum aantal instanties"-instelling overwegen aan de kant van Base44 zelf.
