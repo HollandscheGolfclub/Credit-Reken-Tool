@@ -13,6 +13,9 @@ final class HGC_Restaurant
 {
     private const OPTION = 'hgc_restaurant_settings';
 
+    private const WARMUP_HOOK = 'hgc_restaurant_warmup';
+    private const WARMUP_INTERVAL = 'hgc_five_minutes';
+
     public function __construct()
     {
         add_action('init', array($this, 'register_block'));
@@ -21,6 +24,54 @@ final class HGC_Restaurant
         add_action('wp_ajax_hgc_restaurant_api', array($this, 'ajax'));
         add_action('wp_ajax_nopriv_hgc_restaurant_api', array($this, 'ajax'));
         add_action('admin_post_hgc_restaurant_save', array($this, 'save'));
+        add_filter('cron_schedules', array($this, 'register_cron_interval'));
+        add_action(self::WARMUP_HOOK, array($this, 'warmup_ping'));
+        add_action('init', array($this, 'ensure_warmup_scheduled'));
+    }
+
+    /**
+     * De Connect-functie (Base44) is serverless en valt na een tijdje stil
+     * ("koude start"), waardoor de eerste bezoeker daarna tot enkele
+     * seconden op de widget moet wachten. Door elke 5 minuten zelf een
+     * goedkoop, leesalleen verzoek te sturen, blijft de functie warm zodat
+     * een echte bezoeker dat wachten niet meer merkt.
+     */
+    public function register_cron_interval(array $schedules): array
+    {
+        $schedules[self::WARMUP_INTERVAL] = array(
+            'interval' => 5 * MINUTE_IN_SECONDS,
+            'display' => 'Elke 5 minuten (HGC restaurant warmhoud-ping)',
+        );
+        return $schedules;
+    }
+
+    public function ensure_warmup_scheduled(): void
+    {
+        if (!wp_next_scheduled(self::WARMUP_HOOK)) {
+            wp_schedule_event(time(), self::WARMUP_INTERVAL, self::WARMUP_HOOK);
+        }
+    }
+
+    public function warmup_ping(): void
+    {
+        $settings = self::settings();
+        if (!$settings['api_url'] || !$settings['park']) {
+            return;
+        }
+        wp_remote_post(esc_url_raw($settings['api_url']), array(
+            'timeout' => 8,
+            'blocking' => false,
+            'headers' => array('Content-Type' => 'application/json'),
+            'body' => wp_json_encode(array('action' => 'publicInfo', 'slug' => $settings['park'])),
+        ));
+    }
+
+    public static function deactivate_cleanup(): void
+    {
+        $timestamp = wp_next_scheduled(self::WARMUP_HOOK);
+        if ($timestamp) {
+            wp_unschedule_event($timestamp, self::WARMUP_HOOK);
+        }
     }
 
     public static function settings(): array
@@ -214,6 +265,7 @@ final class HGC_Restaurant
                     <label class="hgc-admin-field"><span>Privacyverklaring</span><input class="large-text" type="url" name="restaurant[privacy_url]" value="<?php echo esc_attr($s['privacy_url']); ?>" /></label>
                 </div>
                 <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code>.</p>
+                <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
                 <div class="hgc-admin-actions">
                     <?php submit_button('Restaurantinstellingen opslaan', 'primary', 'submit', false); ?>
                 </div>

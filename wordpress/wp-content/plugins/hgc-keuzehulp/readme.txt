@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.28.0
+Stable tag: 1.29.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.29.0 =
+* Restaurantreservering: automatische warmhoud-ping toegevoegd. De onderliggende Connect-functie is serverless en valt na een tijdje stil ("koude start"); daardoor kon de eerste bezoeker na een stille periode enkele tellen op de widget moeten wachten. De plugin stuurt nu zelf elke 5 minuten een klein, gratis leesalleen-verzoek naar de Connect-koppeling om de functie warm te houden, zonder dat daarvoor iets ingesteld hoeft te worden. Werkt alleen als de site regelmatig bezoekers heeft (WP-Cron draait mee met paginabezoeken); voor een garantie ongeacht bezoekersaantal kan de Connect-beheerder ook een "minimum aantal instanties"-instelling overwegen aan de kant van Base44 zelf.
 
 = 1.28.0 =
 * Bugfix restaurantreservering: de laadtekst verdween meteen bij het openen van de pagina, terwijl de daadwerkelijke inhoud pas verscheen zodra de Connect-koppeling had geantwoord. Bij een trage koppeling (bijvoorbeeld een koude start) oogde de widget daardoor een paar tellen leeg en kapot. De laadstatus blijft nu zichtbaar totdat er echt iets te tonen is.
