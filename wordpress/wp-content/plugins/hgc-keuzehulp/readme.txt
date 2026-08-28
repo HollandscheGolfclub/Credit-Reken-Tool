@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.32.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.0.0 =
+* Iconen bij "Grote baan" en "Kleine baan" in stap 1 zijn vervangen: beide tonen nu dezelfde golfswing-pictogram (was een "9" resp. een vlaggetje) in het groen van de club, in plaats van twee verschillende stijlen.
+* Het "Voorbehoud bij uitslag" (het "Let op bij [baan]: ..." bericht op het resultaatscherm) is per baan instelbaar gemaakt in het adminscherm (Instellingen → Hollandsche Golfclub Calculator), in plaats van vast in de code.
+* De alternatiefkaart "Meer speelruimte" (het grotere speelrecht als upsell) is anders ingevuld: in plaats van "Je krijgt X credits extra voor € Y meer" staat er nu of dit grotere speelrecht al je opgegeven rondes volledig dekt of een groter deel daarvan, zonder een bedrag te herhalen dat al bovenaan de kaart staat.
+* Auteur bijgewerkt naar Jesse Weevers | Hollandsche Golfclub.
 
 = 1.32.0 =
 * Openingstekst keuzehulp aangescherpt: "Twee stappen, ongeveer een minuut, zodat je weet wat je kosten zijn."

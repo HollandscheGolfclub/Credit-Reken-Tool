@@ -3,8 +3,8 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 1.32.0
- * Author: Hollandsche Golfclub
+ * Version: 2.0.0
+ * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
  * Requires at least: 6.0
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '1.32.0');
+define('HGC_CALCULATOR_VERSION', '2.0.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));

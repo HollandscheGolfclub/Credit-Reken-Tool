@@ -282,6 +282,7 @@ final class HGC_Calculator_Admin
                 'shortGreenFeeFull' => $this->number($row['shortGreenFeeFull'] ?? null, null),
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
+                'caveat' => sanitize_textarea_field($row['caveat'] ?? ''),
             );
         }
         return $courses;
@@ -359,6 +360,7 @@ final class HGC_Calculator_Admin
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>
                 <?php $this->text_input('Toelichting', "config[courses][$index][note]", $course['note'] ?? ''); ?>
             </div>
+            <?php $this->textarea_field('Voorbehoud bij uitslag (optioneel)', "config[courses][$index][caveat]", $course['caveat'] ?? '', 'Verschijnt op het resultaatscherm als "Let op bij ' . ($course['name'] ?? 'deze baan') . ': ..." zodra deze baan is gekozen. Laat leeg om niets te tonen.'); ?>
         </article>
         <?php
     }
@@ -374,6 +376,17 @@ final class HGC_Calculator_Admin
     private function text_input(string $label, string $name, $value, bool $required = false): void
     {
         ?><label class="hgc-admin-field"><span><?php echo esc_html($label); ?></span><input class="large-text" type="text" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>" <?php echo $required ? 'required' : ''; ?> /></label><?php
+    }
+
+    private function textarea_field(string $label, string $name, $value, string $hint = ''): void
+    {
+        ?>
+        <label class="hgc-admin-field">
+            <span><?php echo esc_html($label); ?></span>
+            <textarea class="large-text" rows="2" name="<?php echo esc_attr($name); ?>"><?php echo esc_textarea($value); ?></textarea>
+        </label>
+        <?php if ($hint) : ?><p class="hgc-admin-hint"><?php echo esc_html($hint); ?></p><?php endif; ?>
+        <?php
     }
 
     private function nullable_number(string $label, string $name, $value, $step = 0.01, string $suffix = ''): void

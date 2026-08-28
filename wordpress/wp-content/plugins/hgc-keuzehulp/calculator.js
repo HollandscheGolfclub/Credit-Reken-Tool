@@ -782,9 +782,12 @@ function nextLargerCreditOption(plan, handicapPrice) {
     .sort((a, b) => a.credits - b.credits)[0];
   if (!next) return null;
 
-  const extraCredits = next.credits - Number(plan.credits);
-  const extraCost = next.price - Number(plan.packageBasePrice ?? plan.price);
   const totalPrice = next.price + Number(plan.nonPackageCost || 0);
+  // Relevanter dan het aantal extra credits of de meerprijs (die staat al bij
+  // het bedrag hierboven): dekt dit grotere speelrecht in één keer al je
+  // opgegeven rondes, in plaats van het gedeeltelijke dat het geadviseerde
+  // speelrecht dekt?
+  const coversRounds = next.credits + 1e-8 >= Number(plan.requiredCredits);
   return {
     type: plan.type,
     group: `${plan.group}-upgrade-${next.credits}`,
@@ -795,7 +798,9 @@ function nextLargerCreditOption(plan, handicapPrice) {
     registrationPrice: handicapPrice,
     annualCost: totalPrice + handicapPrice,
     isUpgradeOption: true,
-    detail: `Je krijgt ${decimal.format(extraCredits)} credits extra voor ${euro.format(extraCost)} meer dan het geadviseerde speelrecht. Zo heb je meer ruimte als je vaker wilt spelen.`,
+    detail: coversRounds
+      ? "Dit speelrecht dekt al je opgegeven rondes volledig, in plaats van een deel."
+      : "Dit speelrecht dekt een groter deel van je opgegeven rondes.",
   };
 }
 
