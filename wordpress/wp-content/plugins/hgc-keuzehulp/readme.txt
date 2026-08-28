@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.31.0
+Stable tag: 1.32.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,19 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 1.32.0 =
+* Openingstekst keuzehulp aangescherpt: "Twee stappen, ongeveer een minuut, zodat je weet wat je kosten zijn."
+* Creditwaarden gecorrigeerd op basis van feedback: grote baan Rotterdam naar 0,9 credit, kleine baan Naarderbos met Shortgolf-speelrecht naar 0,75 credit, ShortGolf Utrecht naar 0,50 (HGC-speelrecht) / 0,75 (Shortgolf-speelrecht) credit per ronde.
+* Maastricht International kwam ten onrechte voor als optie bij de kleine baan (er is daar geen shortgolf-speelrecht); nu alleen nog te kiezen als grote baan.
+* Reymerswael en Maastricht International hebben een baanindeling met lussen die afwijkt van de standaard 9-holesindeling. De keuzehulp toont daar nu een voorbehoud bij in het resultaat; bij Reymerswael specifiek genoemd: naast de 12-holeslus (1,2 credit per ronde, de aanname in de berekening) bestaat er ook een 6-holeslus van 0,6 credit per ronde.
+* Resultaatscherm herzien: "Wat je nu betaalt" / "Wat je per ronde betaalt" heten nu "Wat je vooraf betaalt" / "Wat je verder betaalt" (ook als kopje boven de resterende kosten bij gedeeltelijke dekking), "Volledige greenfee" heet "Losse greenfee", en het label bij gedeeltelijke dekking begint nu met "Let op:".
+* De knoppenrij onder het advies is vervangen door "Meer over Handicapregistratie", "Meer over speelrechten", "Alle greenfeeprijzen" en "Naar de webshop", in die volgorde.
+* Alle vinkjeslijsten met voordelen zijn verwijderd uit de adviesschermen: de keuzehulp verwijst voor de inhoud van een speelrecht bewust naar de website in plaats van dit zelf samen te vatten.
+* De alternatiefkaart ("Meer vrijheid nodig?") heet nu "Meer speelruimte" en toont geen apart kadertje met knop meer, alleen de toelichting.
+* Bugfix: het verschilbedrag in "Meer speelruimte" ("Voor € X meer...") rekende altijd met handicapregistratie inbegrepen, ook wanneer de schakelaar op "zonder handicapregistratie" stond. Daardoor klopte dat bedrag niet met de rest van het scherm. Volgt nu dezelfde schakelaar als de andere bedragen.
+* Jeugd kreeg tot nu toe bij een laag aantal rondes altijd een regulier Jeugd-speelrecht geadviseerd, omdat handicapregistratie en LoyalTee alleen voor volwassenen beschikbaar waren. Jeugd heeft nu ook een handicapregistratie-route, met het vaste jeugdgreenfeetarief van EUR 10 per ronde (op elk park gelijk); LoyalTee blijft uitsluitend voor volwassenen.
+* Onbenutte code opgeruimd die alleen nog de verwijderde vinkjeslijsten bediende.
 
 = 1.31.0 =
 * Boekingsschermen restaurantreservering volledig herbouwd, op basis van meegeleverde ontwerpen (2a: desktopwizard, 2b: mobiele popup):

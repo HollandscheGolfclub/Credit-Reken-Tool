@@ -567,29 +567,41 @@ function candidatePlans(context) {
     const value = course && course[key];
     return value === null || value === undefined ? NaN : Number(value);
   };
+  // Voor jeugd geldt op elk park hetzelfde vaste greenfeetarief; daarvoor is
+  // geen baanafhankelijk tarief nodig zoals bij volwassenen.
+  const youthGreenFee = Number(hgcConfig.handicapRegistration.youthGreenFee);
   // Per baantype waar rondes liggen moet een tarief bekend zijn, anders kunnen we
   // deze routes niet eerlijk beprijzen en bieden we ze niet aan.
-  const largeFits = largeRounds === 0 || (Number.isFinite(fee(largeCourse, "greenFee")) && Number.isFinite(fee(largeCourse, "greenFeeFull")));
-  const smallFits = smallRounds === 0 || (Number.isFinite(fee(smallCourse, "shortGreenFee")) && Number.isFinite(fee(smallCourse, "shortGreenFeeFull")));
+  const largeFits = youth
+    ? Number.isFinite(youthGreenFee)
+    : largeRounds === 0 || (Number.isFinite(fee(largeCourse, "greenFee")) && Number.isFinite(fee(largeCourse, "greenFeeFull")));
+  const smallFits = youth
+    ? Number.isFinite(youthGreenFee)
+    : smallRounds === 0 || (Number.isFinite(fee(smallCourse, "shortGreenFee")) && Number.isFinite(fee(smallCourse, "shortGreenFeeFull")));
   // Boven de ingestelde grens hoort een speelrecht het advies te zijn, ook al is
   // per ronde afrekenen daar soms nog een paar tientjes goedkoper. Zo houdt de
   // keuzehulp de ladder van de flyer aan.
   const feeRouteMax = Number(hgcConfig.settings.feeRouteMaxRounds ?? 20);
   const binnenGrens = !Number.isFinite(feeRouteMax) || totalRounds <= feeRouteMax;
-  const feeRoutesFit = !youth && loyalTee && totalRounds > 0 && binnenGrens && largeFits && smallFits;
+  // Jeugd heeft geen LoyalTee, dus die afhankelijkheid geldt alleen voor volwassenen.
+  const feeRoutesFit = (youth || loyalTee) && totalRounds > 0 && binnenGrens && largeFits && smallFits;
 
   if (feeRoutesFit) {
     // Wie alleen handicapregistratie heeft betaalt het volle tarief; met LoyalTee
-    // geldt het gereduceerde tarief.
-    const perRonde = (largeKey, smallKey) => paidLarge * (fee(largeCourse, largeKey) || 0) + paidSmall * (fee(smallCourse, smallKey) || 0);
+    // geldt het gereduceerde tarief. Jeugd betaalt op elk park hetzelfde vaste tarief.
+    const perRonde = (largeKey, smallKey) => youth
+      ? (paidLarge + paidSmall) * youthGreenFee
+      : paidLarge * (fee(largeCourse, largeKey) || 0) + paidSmall * (fee(smallCourse, smallKey) || 0);
     const paidRounds = paidLarge + paidSmall;
     const freeRounds = freeLarge + freeSmall;
     // De vrije rondes komen uit de handicapregistratie. Rekent de bezoeker die
     // niet mee, dan heeft die ook de vrije rondes niet en betaalt hij LoyalTee's
     // gereduceerde greenfeetarief over al zijn rondes.
-    const perRondeNoReg = (largeKey, smallKey) => largeRounds * (fee(largeCourse, largeKey) || 0) + smallRounds * (fee(smallCourse, smallKey) || 0);
+    const perRondeNoReg = (largeKey, smallKey) => youth
+      ? totalRounds * youthGreenFee
+      : largeRounds * (fee(largeCourse, largeKey) || 0) + smallRounds * (fee(smallCourse, smallKey) || 0);
     const vrijeRondesTekst = vouchers > 0
-      ? `Bij handicapregistratie horen ${roundWord(vouchers)} van 9 holes per kalenderjaar, die je gratis speelt.`
+      ? `Een handicapregistratielidmaatschap is inclusief ${decimal.format(vouchers)} gratis ${vouchers === 1 ? "ronde" : "rondes"} golf van 9 holes.`
       : "Met handicapregistratie speel je op elke HGC-baan tegen het greenfeetarief.";
 
     const routes = [
@@ -605,7 +617,8 @@ function candidatePlans(context) {
           ? `Je ${roundWord(paidRounds)} na die vrije rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
           : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes, dus je betaalt verder niets per ronde.`,
       },
-      {
+      // Jeugd heeft geen LoyalTee: die route bestaat alleen voor volwassenen.
+      ...(youth ? [] : [{
         type: "loyaltee",
         group: "loyaltee",
         name: loyalTee.name,
@@ -618,7 +631,7 @@ function candidatePlans(context) {
           : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
         totalNoReg: perRondeNoReg("greenFee", "shortGreenFee"),
         instructionNoReg: `Je ${roundWord(totalRounds)} reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`,
-      },
+      }]),
     ];
 
     const excluded = Array.isArray(loyalTee.excludedCourseIds) ? loyalTee.excludedCourseIds : [];
@@ -666,6 +679,10 @@ function candidatePlans(context) {
       return {
         ...plan,
         selectionCost: Number(plan.annualCost) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.greenFeeExtraTotal || 0) + Number(plan.repeatExtraTotal || 0),
+        // Zelfde opbouw, maar zonder de handicapregistratie: nodig om het
+        // verschil met een alternatief speelrecht te tonen dat meebeweegt met
+        // de schakelaar, in plaats van altijd van "met registratie" uit te gaan.
+        selectionCostNoReg: Number(plan.annualCost) - Number(plan.registrationPrice || 0) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.greenFeeExtraTotalNoReg ?? plan.greenFeeExtraTotal ?? 0) + Number(plan.repeatExtraTotal || 0),
         largeRoundCost: largeRounds ? Number(plan.largeBaseCost || 0) + shared : null,
         smallRoundCost: smallRounds ? Number(plan.smallBaseCost || 0) + shared : null,
       };
@@ -864,26 +881,27 @@ function applyRegistrationSwitch(include) {
   resultContent.querySelectorAll(".switchable").forEach((node) => {
     node.textContent = include ? node.dataset.with : node.dataset.without;
   });
-  resultContent.querySelectorAll("[data-registration-row]").forEach((node) => {
-    node.hidden = !include;
-  });
 }
 
 function roundWord(count) {
   return `${count} ronde${count === 1 ? "" : "s"}`;
 }
 
-function benefitList(plan) {
-  return planBenefits(plan)
-    .map((benefit) => {
-      const followsSwitch = /handicapregistratie/i.test(benefit) ? " data-registration-row" : "";
-      return `<li${followsSwitch}><span>✓</span>${benefit}</li>`;
-    })
-    .join("");
+function disclaimer() {
+  return `<p class="result-disclaimer">Deze keuzehulp geeft een indicatie van het passende speelrecht: altijd onder voorbehoud van fouten. Lees voor je keuze altijd zelf alle actuele informatie op de website over het aanbod: <a href="${hgcConfig.links.handicapRegistration}">Handicapregistratie</a>, <a href="${hgcConfig.links.loyalTee}">LoyalTee</a> en <a href="${hgcConfig.links.playingRights}">Speelrechten</a>. En lees ook de <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>`;
 }
 
-function disclaimer() {
-  return `<p class="result-disclaimer">Deze keuzehulp geeft een indicatie op basis van jouw opgegeven rondes, creditwaarden en speelrechtprijzen voor ${hgcConfig.year}. Bekijk altijd de actuele <a href="${hgcConfig.links.terms}">voorwaarden</a>.</p>`;
+// Speelt de bezoeker op een baan met een afwijkende holeindeling, dan tonen we
+// daar een voorbehoud bij: de creditberekening gaat uit van een standaardronde.
+function courseCaveats(result) {
+  const courses = [
+    result.largeRounds > 0 ? result.largeCourse : null,
+    result.smallRounds > 0 ? result.smallCourse : null,
+  ].filter((course) => course && course.caveat);
+  const unique = courses.filter((course, index, all) => all.findIndex((other) => other.id === course.id) === index);
+  return unique
+    .map((course) => `<p class="result-disclaimer result-disclaimer--course">Let op bij ${course.name}: ${course.caveat}</p>`)
+    .join("");
 }
 
 function roundSummaryShort(result) {
@@ -917,20 +935,14 @@ function resultHeader(result, { showSwitch = true } = {}) {
 
 // De zachte kaart met zwevend label waarin een alternatief speelrecht staat:
 // wat het extra kost of scheelt, en wat je daarvoor terugkrijgt.
-function adviceAlt({ label, plan, amountNote, note, boxNote, ctaText }) {
+function adviceAlt({ label, plan, amountNote, note }) {
   return `
     <div class="advice-alt">
       <div class="advice-alt-label">${label}</div>
       <div class="advice-alt-body">
-        <div>
-          <h3>${brandText(plan.name)}</h3>
-          <div class="advice-alt-amount"><strong>${planAmount(plan)}</strong><span>${amountNote}</span></div>
-          ${note ? `<div class="advice-alt-note">${note}</div>` : ""}
-        </div>
-        <div class="advice-alt-box">
-          <p>${boxNote}</p>
-          <a class="button" href="${planLink(plan)}">${ctaText} <span>→</span></a>
-        </div>
+        <h3>${brandText(plan.name)}</h3>
+        <div class="advice-alt-amount"><strong>${planAmount(plan)}</strong><span>${amountNote}</span></div>
+        ${note ? `<div class="advice-alt-note">${note}</div>` : ""}
       </div>
     </div>
   `;
@@ -945,8 +957,6 @@ function choiceCard(plan, options) {
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
       ${plan.coversRounds ? "" : `<p class="advice-card-instruction">${plan.instruction}</p>`}
-      <p class="advice-card-benefits-title">Hierbij hoort</p>
-      <ul class="advice-card-benefits">${benefitList(plan)}</ul>
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
     </article>
   `;
@@ -1003,6 +1013,7 @@ function renderChoice(result) {
       <a href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Vergelijk de speelrechten →</a>
     </div>
 
+    ${courseCaveats(result)}
     ${disclaimer()}
   `;
 }
@@ -1041,6 +1052,7 @@ function renderRouteChoice(result) {
       })}
     </div>
 
+    ${courseCaveats(result)}
     ${disclaimer()}
   `;
 }
@@ -1070,7 +1082,7 @@ function renderSingleAdvice(result) {
   const totalCostNote = herhaalt
     ? `per aankoop van ${decimal.format(best.credits)} credits`
     : rondesBuitenPrijs
-      ? "de rondes daarna reken je per ronde af"
+      ? "niet alle rondes worden door dit speelrecht gedekt"
       : "per golfjaar";
   const productNote = herhaalt || rondesBuitenPrijs ? "voor dit speelrecht" : "per golfjaar";
   // Het badge-label bovenaan zegt in één keer waar de uitkomst om draait: een
@@ -1080,9 +1092,7 @@ function renderSingleAdvice(result) {
     ? { tone: "best", text: `★ Goedkoopste keuze voor jouw ${roundWord(totalRounds)}` }
     : herhaalt
       ? { tone: "steps", text: "Stapsgewijs · je koopt bij wanneer je credits op zijn" }
-      : { tone: "steps", text: "Gedeeltelijke dekking · de rest reken je per ronde af" };
-  const webshopLabel = "Bekijk in de webshop";
-
+      : { tone: "steps", text: "Let op: gedeeltelijke dekking · de rest reken je per ronde af" };
   resultContent.innerHTML = `
     ${resultHeader(result, { showSwitch: best.type !== "handicap" })}
 
@@ -1091,8 +1101,8 @@ function renderSingleAdvice(result) {
 
     ${perRondeRoute ? `
       <div class="choice-costs choice-costs--steps">
-        <article class="choice-costs-total"><p><span class="stat-num">1</span>Wat je nu betaalt</p><strong>${planAmount(best)}</strong><span>${best.detail}</span></article>
-        <article><p><span class="stat-num">2</span>Wat je per ronde betaalt</p><span class="stat-value-text">${best.type === "handicap" ? "Volledige greenfee" : "Gereduceerde greenfee"}</span><span class="stat-instruction">${best.instructionNoReg && best.instructionNoReg !== best.instruction ? switchableHtml(best.instruction, best.instructionNoReg) : best.instruction}</span></article>
+        <article class="choice-costs-total"><p><span class="stat-num">1</span>Wat je vooraf betaalt</p><strong>${planAmount(best)}</strong><span>${best.detail}</span></article>
+        <article><p><span class="stat-num">2</span>Wat je verder betaalt</p><span class="stat-value-text">${best.type === "handicap" ? "Losse greenfee" : "Gereduceerde greenfee"}</span><span class="stat-instruction">${best.instructionNoReg && best.instructionNoReg !== best.instruction ? switchableHtml(best.instruction, best.instructionNoReg) : best.instruction}</span></article>
       </div>
     ` : `
       <div class="choice-costs">
@@ -1100,25 +1110,35 @@ function renderSingleAdvice(result) {
         ${costCard("Grote baan", showLargeRoundCost ? best.largeRoundCost : null, "effectief per ronde", registrationShare)}
         ${costCard("Kleine baan", showSmallRoundCost ? best.smallRoundCost : null, "effectief per ronde", registrationShare)}
       </div>
-      ${uncoveredLargeRounds ? `<p class="coverage-warning">Je ${roundWord(uncoveredLargeRounds)} op de grote baan ${uncoveredLargeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht. Die reken je apart af op de baan.</p>` : ""}
-      ${greenFeeRounds ? `<p class="greenfee-note">Je ${roundWord(greenFeeRounds)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders. Dat bedrag zit niet in de prijs hierboven.</p>` : ""}
-      ${best.coversRounds ? "" : `<p class="package-instruction">${best.instructionNoReg && best.instructionNoReg !== best.instruction ? switchableHtml(best.instruction, best.instructionNoReg) : best.instruction}</p>`}
+      ${uncoveredLargeRounds || greenFeeRounds || !best.coversRounds ? `
+        <h3 class="result-subheading">Wat je verder betaalt</h3>
+        ${uncoveredLargeRounds ? `<p class="coverage-warning">Je ${roundWord(uncoveredLargeRounds)} op de grote baan ${uncoveredLargeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht. Die reken je apart af op de baan.</p>` : ""}
+        ${greenFeeRounds ? `<p class="greenfee-note">Je ${roundWord(greenFeeRounds)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders. Dat bedrag zit niet in de prijs hierboven.</p>` : ""}
+        ${best.coversRounds ? "" : `<p class="package-instruction">${best.instructionNoReg && best.instructionNoReg !== best.instruction ? switchableHtml(best.instruction, best.instructionNoReg) : best.instruction}</p>`}
+      ` : ""}
     `}
 
     <div class="recommendation-actions" style="display:flex;gap:12px;margin-top:22px;flex-wrap:wrap">
-      <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">${webshopLabel} <span>→</span></a>
+      <a class="button button--secondary" href="${hgcConfig.links.handicapRegistration}">Meer over Handicapregistratie</a>
       <a class="button button--secondary" href="${hgcConfig.links.playingRights || "/hgc-speelrechten/"}">Meer over speelrechten</a>
+      <a class="button button--secondary" href="${hgcConfig.links.greenFeePrices}">Alle greenfeeprijzen</a>
+      <a class="button ${isShortGolf ? "button--shortgolf" : "button--primary"} button--cta-tracked" href="${planLink(best)}">Naar de webshop <span>→</span></a>
     </div>
 
-    <ul class="advice-checklist">${benefitList(best)}</ul>
-
     ${result.coveringAlternative ? adviceAlt({
-      label: "Meer vrijheid nodig?",
+      label: "Meer speelruimte",
       plan: result.coveringAlternative,
       amountNote: "per golfjaar · alle rondes inbegrepen",
-      note: `En voor ${euro.format(Number(result.coveringAlternative.selectionCost) - Number(best.selectionCost))} meer heb je een speelrecht dat al je opgegeven rondes dekt: ruimte om vaker te spelen dan je nu opgaf en de mogelijkheid om flightgenoten te introduceren tegen het gereduceerde greenfeetarief.`,
-      boxNote: "Golf je in de praktijk vaker dan je nu opgeeft? Dan wordt dit de rustigste keuze, zonder per ronde af te rekenen.",
-      ctaText: "Naar het speelrecht",
+      note: `
+        <p>Voor ${switchableAmount(
+          Number(result.coveringAlternative.selectionCost) - Number(best.selectionCost),
+          Number(result.coveringAlternative.selectionCostNoReg) - Number(best.selectionCostNoReg)
+        )} meer heb je een speelrecht dat al je opgegeven rondes dekt:</p>
+        <ul class="advice-alt-list">
+          <li>Plus extra credits om nog vaker te spelen.</li>
+          <li>Plus de mogelijkheid om onbeperkt flightgenoten te introduceren tegen het gereduceerde greenfeetarief.</li>
+        </ul>
+      `,
     }) : ""}
 
     ${alternative ? adviceAlt({
@@ -1126,14 +1146,9 @@ function renderSingleAdvice(result) {
       plan: alternative,
       amountNote: "per golfjaar",
       note: alternative.detail,
-      boxNote: alternative.isUpgradeOption
-        ? "Twijfel je of dit aantal rondes klopt? Met deze staffel zit je ruimer in je credits."
-        : alternative.isSmallerOption
-          ? "Weet je zeker dat je niet vaker speelt? Dan is dit de voordeligere keuze om mee te beginnen."
-          : "Bekijk deze optie als alternatief voor jouw opgave.",
-      ctaText: "Meer informatie",
     }) : ""}
 
+    ${courseCaveats(result)}
     ${disclaimer()}
   `;
 }

@@ -236,6 +236,7 @@
 .hgc-calculator .recommendation ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
 .hgc-calculator .recommendation li + li { margin-top: 4px; }
 .hgc-calculator .package-instruction { padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
+.hgc-calculator .result-subheading { margin: 22px 0 10px; color: var(--ink); font: 700 15px/1.3 "Poppins", sans-serif; }
 .hgc-calculator .registration-switch { margin: 0 0 22px; }
 .hgc-calculator .greenfee-note { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--green); background: #f3f7e9; color: var(--ink); font-size: 13px; font-weight: 650; }
 .hgc-calculator .coverage-warning { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--orange); background: #fdf2e6; color: var(--ink); font-size: 13px; font-weight: 650; }
@@ -262,12 +263,6 @@
 .hgc-calculator .advice-card-coverage { margin-bottom: 13px; color: var(--ink-soft) !important; font-size: 13px; line-height: 1.55; }
 .hgc-calculator .advice-card-instruction { margin-bottom: 20px; padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
 .hgc-calculator .advice-card--shortgolf .advice-card-instruction { border-left-color: var(--orange); background: #fdf2e6; }
-.hgc-calculator .advice-card-benefits-title { margin-bottom: 10px; color: var(--ink-soft) !important; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
-.hgc-calculator .advice-card-benefits { margin: 0 0 22px; padding: 0; display: grid; gap: 9px; list-style: none; }
-.hgc-calculator .advice-card-benefits li { display: flex; align-items: flex-start; gap: 10px; color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.45; }
-.hgc-calculator .advice-card-benefits li span { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; color: white; background: #7fa719; font-size: 11px; font-weight: 800; }
-.hgc-calculator .advice-card--shortgolf .advice-card-benefits li span { background: var(--orange); }
-.hgc-calculator [data-registration-row][hidden] { display: none !important; }
 .hgc-calculator .advice-card .button { width: 100%; margin-top: auto; }
 
 /* Korte samenvatting onder de twee kaarten: geen advies, alleen de afweging
@@ -382,6 +377,7 @@
 .hgc-calculator[data-design="energy"] .calculator-topbar { background: linear-gradient(135deg, #fff, #f1f9d5); }
 
 .hgc-calculator .result-disclaimer { margin: 0; padding-top: 18px; border-top: 1px solid var(--line); color: #76847e; font-size: 11px; line-height: 1.55; }
+.hgc-calculator .result-disclaimer + .result-disclaimer { border-top: 0; padding-top: 8px; }
 .hgc-calculator .result-disclaimer a { color: #5a7d19; }
 .hgc-calculator .form-actions--result { padding-top: 30px; }
 
@@ -418,35 +414,18 @@
 .hgc-calculator .choice-costs--steps strong { font-size: 34px; }
 .hgc-calculator .choice-costs--steps .stat-value-text { display: block; margin-bottom: 6px; color: var(--ink); font: 600 22px/1.25 "Poppins", sans-serif; }
 
-/* Inline vinkjeslijst direct onder het advies; vervangt de losse grote
-   voordelenkaart, die te veel afstand nam van het advies zelf. */
-.hgc-calculator .advice-checklist { margin: 22px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; list-style: none; font-size: 13.5px; line-height: 1.5; color: #3d4838; }
-.hgc-calculator .advice-checklist li { display: flex; gap: 10px; }
-.hgc-calculator .advice-checklist li span { flex: none; color: #4d7a1f; font-weight: 600; }
-.hgc-calculator .recommendation--shortgolf .advice-checklist li span { color: var(--orange); }
-
 /* Alternatief: een zachte kaart met een zwevend label, geen felle contrastkleur. */
 .hgc-calculator .advice-alt { margin-top: 30px; position: relative; padding: 28px 26px 26px; border: 1.5px solid #cdd4c4; border-radius: 14px; background: #f6f7f1; }
 .hgc-calculator .advice-alt-label { position: absolute; top: -11px; left: 26px; padding: 5px 12px; border-radius: 20px; color: #fff; background: #5f7a4a; font-size: 10.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
-/* Standaard één kolom: dat is de veilige aanname zolang de breedte van de
-   omringende (WordPress-thema)pagina onbekend is. Pas bij ruim voldoende
-   plek gaat de toelichting naast de inhoud staan. */
-.hgc-calculator .advice-alt-body { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
+.hgc-calculator .advice-alt-body { display: flex; flex-direction: column; gap: 6px; }
 .hgc-calculator .advice-alt h3 { margin: 0 0 6px; font-size: 23px; line-height: 1.25; }
 .hgc-calculator .advice-alt-amount { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
 .hgc-calculator .advice-alt-amount strong { font: 700 26px/1 "Poppins", sans-serif; color: var(--ink); }
 .hgc-calculator .advice-alt-amount span { color: #57604f; font-size: 13px; }
 .hgc-calculator .advice-alt-note { margin-bottom: 0; padding: 12px 14px; border-radius: 8px; background: #ecefe4; color: #3d4838; font-size: 12.5px; line-height: 1.6; }
-/* Geen doos-in-een-doos: deze kolom is gewoon een vervolg van dezelfde kaart,
-   met alleen een lijntje erboven zodra hij onder de inhoud komt te staan. */
-.hgc-calculator .advice-alt-box { display: flex; flex-direction: column; gap: 12px; padding-top: 18px; border-top: 1px solid #dfe3d6; }
-.hgc-calculator .advice-alt-box > p { margin: 0; color: #57604f; font-size: 12.5px; line-height: 1.55; }
-.hgc-calculator .advice-alt-box .button { display: flex; justify-content: space-between; padding: 14px 18px; border: 1.5px solid #5f7a4a; border-radius: 8px; background: #fff; color: #2f4d12; font-size: 14.5px; font-weight: 600; min-height: 0; }
-.hgc-calculator .advice-alt-box .button:hover { background: #eef0e8; transform: none; }
-@media (min-width: 760px) {
-  .hgc-calculator .advice-alt-body { grid-template-columns: 1fr 264px; gap: 34px; }
-  .hgc-calculator .advice-alt-box { padding-top: 0; border-top: 0; padding: 20px; border: 1px solid #e2e6da; border-radius: 10px; background: #fff; }
-}
+.hgc-calculator .advice-alt-note p { margin: 0; }
+.hgc-calculator .advice-alt-list { margin: 8px 0 0; padding-left: 18px; }
+.hgc-calculator .advice-alt-list li { margin: 4px 0; }
 
 @media (max-width: 850px) {
   .hgc-calculator .design-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }

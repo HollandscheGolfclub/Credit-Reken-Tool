@@ -5,7 +5,7 @@
       <div>
         <p class="eyebrow">HGC-keuzehulp</p>
         <h2 id="calculator-title">Het best passende speelrecht</h2>
-        <p class="calculator-topbar-intro">Twee stappen, ongeveer een minuut. Je krijgt een advies met wat je vooraf betaalt en wat je per ronde overhoudt.</p>
+        <p class="calculator-topbar-intro">Twee stappen, ongeveer een minuut, zodat je weet wat je kosten zijn.</p>
       </div>
       <div class="calculator-topbar-meta">
         <img class="calculator-brand-logo" src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/hgc-logo.png'); ?>" alt="Hollandsche Golfclub" />
