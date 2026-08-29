@@ -66,6 +66,7 @@ final class HGC_Calculator_Admin
             <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
             <nav class="hgc-admin-nav" aria-label="Snel naar instellingengroep">
                 <a href="#hgc-general">Algemeen</a>
+                <a href="#hgc-plugin-updates">Updates</a>
                 <a href="#hgc-products">Pakketten</a>
                 <a href="#hgc-courses">Golfbanen</a>
                 <a href="#hgc-benefits">Voordelen</a>
@@ -77,6 +78,40 @@ final class HGC_Calculator_Admin
             <?php elseif (isset($_GET['reset'])) : ?>
                 <div class="notice notice-success is-dismissible"><p>De standaardinstellingen zijn hersteld.</p></div>
             <?php endif; ?>
+
+            <section class="hgc-admin-panel hgc-update-panel" id="hgc-plugin-updates">
+                <div class="hgc-admin-heading">
+                    <div>
+                        <h2>Pluginupdates</h2>
+                        <p>Geïnstalleerde versie: <strong><?php echo esc_html(HGC_CALCULATOR_VERSION); ?></strong>. Controleer GitHub direct, zonder op de automatische WordPress-controle te wachten.</p>
+                    </div>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                        <input type="hidden" name="action" value="hgc_calculator_check_updates" />
+                        <?php wp_nonce_field('hgc_calculator_check_updates'); ?>
+                        <button class="button button-secondary" type="submit">Nu op updates controleren</button>
+                    </form>
+                </div>
+                <?php
+                $update_status = sanitize_key($_GET['hgc_update_check'] ?? '');
+                $latest_version = sanitize_text_field(wp_unslash($_GET['hgc_latest'] ?? ''));
+                ?>
+                <?php if ($update_status === 'current') : ?>
+                    <div class="notice notice-success inline"><p>Je gebruikt de nieuwste versie<?php echo $latest_version ? ': ' . esc_html($latest_version) : ''; ?>.</p></div>
+                <?php elseif ($update_status === 'available') : ?>
+                    <?php
+                    $plugin_file = plugin_basename(HGC_CALCULATOR_FILE);
+                    $upgrade_url = wp_nonce_url(
+                        self_admin_url('update.php?action=upgrade-plugin&plugin=' . rawurlencode($plugin_file)),
+                        'upgrade-plugin_' . $plugin_file
+                    );
+                    ?>
+                    <div class="notice notice-warning inline"><p>Versie <?php echo esc_html($latest_version); ?> is beschikbaar. <a class="button button-primary" href="<?php echo esc_url($upgrade_url); ?>">Nu bijwerken</a></p></div>
+                <?php elseif ($update_status === 'error') : ?>
+                    <div class="notice notice-error inline"><p>GitHub kon niet worden gecontroleerd of de release bevat geen geldig pluginbestand. Probeer het later opnieuw.</p></div>
+                <?php else : ?>
+                    <p class="hgc-admin-hint">WordPress blijft daarnaast automatisch controleren. Deze knop forceert alleen een onmiddellijke extra controle.</p>
+                <?php endif; ?>
+            </section>
 
             <section class="hgc-admin-panel">
                 <h2>Plaatsen op de website</h2>

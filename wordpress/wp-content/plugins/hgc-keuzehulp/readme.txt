@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.1.1 =
+* In het instellingenpaneel staat nu een onderdeel Pluginupdates met een knop om GitHub onmiddellijk opnieuw te controleren. Als een nieuwere release beschikbaar is, verschijnt direct een beveiligde knop om de plugin bij te werken.
 
 = 2.1.0 =
 * Het restaurantbeheer staat nu helemaal onderaan de instellingenpagina en ondersteunt een onbeperkt aantal afzonderlijke restaurantlocaties met elk een eigen parkcode, naam, parklogo, telefoonnummer, adres en openingstijden.

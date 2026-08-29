@@ -9,6 +9,10 @@
 .hgc-admin-panel { margin: 20px 0; padding: 24px; border: 1px solid #dcdcde; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .04); }
 .hgc-admin-panel[id] { scroll-margin-top: 95px; }
 .hgc-admin-panel > h2:first-child, .hgc-admin-heading h2 { margin-top: 0; }
+.hgc-update-panel .hgc-admin-heading { align-items: center; }
+.hgc-update-panel .hgc-admin-heading p { margin: 5px 0 0; }
+.hgc-update-panel .notice { margin: 16px 0 0; }
+.hgc-update-panel .notice .button { margin-left: 8px; vertical-align: baseline; }
 .hgc-shortcode-card { padding: 18px; border: 1px solid #d9e4c2; border-radius: 7px; background: #fafcf6; }
 .hgc-shortcode-card h3 { margin: 0 0 7px; color: #527417; }
 .hgc-shortcode-card p { margin: 0 0 14px; color: #646970; }

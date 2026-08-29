@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.1.0
+ * Version: 2.1.1
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.1.0');
+define('HGC_CALCULATOR_VERSION', '2.1.1');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -206,6 +206,7 @@ final class HGC_Calculator_GitHub_Updater
         $this->plugin_file = plugin_basename(HGC_CALCULATOR_FILE);
         add_filter('pre_set_site_transient_update_plugins', array($this, 'check_for_update'));
         add_filter('plugins_api', array($this, 'plugin_information'), 20, 3);
+        add_action('admin_post_hgc_calculator_check_updates', array($this, 'manual_check'));
     }
 
     public function check_for_update($transient)
@@ -265,6 +266,42 @@ final class HGC_Calculator_GitHub_Updater
         );
 
         return $information;
+    }
+
+    /**
+     * Laat een beheerder vanuit onze eigen instellingenpagina de caches
+     * overslaan en GitHub onmiddellijk opnieuw controleren.
+     */
+    public function manual_check(): void
+    {
+        if (!current_user_can('update_plugins')) {
+            wp_die('Je hebt geen toestemming om pluginupdates te controleren.');
+        }
+        check_admin_referer('hgc_calculator_check_updates');
+
+        delete_site_transient(self::CACHE_KEY);
+        $release = $this->get_release(true);
+        $status = 'error';
+        $latest = '';
+
+        if ($release && !empty($release['version']) && !empty($release['package'])) {
+            $latest = sanitize_text_field($release['version']);
+            $status = version_compare(HGC_CALCULATOR_VERSION, $latest, '<') ? 'available' : 'current';
+
+            if (!function_exists('wp_update_plugins')) {
+                require_once ABSPATH . 'wp-admin/includes/update.php';
+            }
+            wp_clean_plugins_cache(true);
+            wp_update_plugins();
+        }
+
+        $url = add_query_arg(array(
+            'page' => 'hgc-calculator',
+            'hgc_update_check' => $status,
+            'hgc_latest' => $latest,
+        ), admin_url('options-general.php'));
+        wp_safe_redirect($url . '#hgc-plugin-updates');
+        exit;
     }
 
     /**
