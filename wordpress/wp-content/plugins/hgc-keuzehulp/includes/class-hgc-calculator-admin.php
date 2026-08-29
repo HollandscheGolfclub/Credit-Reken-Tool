@@ -127,6 +127,11 @@ final class HGC_Calculator_Admin
                         <p>Reserveringsformulier voor het restaurant van het opgegeven park, of het blok “HGC Restaurant Reserveren”.</p>
                         <code>[hgc_restaurant_reserveren park="almkreek"]</code>
                     </article>
+                    <article class="hgc-shortcode-card">
+                        <h3>Alle restaurantlocaties</h3>
+                        <p>Laat bezoekers eerst zoeken en kiezen uit alle ingestelde locaties, of gebruik het blok "HGC Restaurantkiezer".</p>
+                        <code>[hgc_restaurant_kiezer]</code>
+                    </article>
                 </div>
             </section>
 

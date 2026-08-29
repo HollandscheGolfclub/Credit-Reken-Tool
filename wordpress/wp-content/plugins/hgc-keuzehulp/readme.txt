@@ -1,9 +1,9 @@
-=== Hollandsche Golfclub Keuzehulp ===
+=== HGC - Interne WebsiteTechniek ===
 Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 == Installatie ==
 
 1. Upload `hgc-keuzehulp.zip` via Plugins > Nieuwe plugin > Plugin uploaden.
-2. Activeer Hollandsche Golfclub Keuzehulp.
+2. Activeer HGC - Interne WebsiteTechniek.
 3. Plaats `[hgc_calculator]` om de gekozen HGC-speelrechtkeuzehulp direct te tonen.
 
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.2.0 =
+* Nieuwe shortcode `[hgc_restaurant_kiezer]` en Gutenberg-blok "HGC Restaurantkiezer" tonen alle ingestelde restaurantlocaties in een doorzoekbare, mobiele kaartweergave. Na de keuze wordt alleen het reserveringsscherm van die locatie geladen en kan de bezoeker eenvoudig terug naar de locatielijst.
 
 = 2.1.1 =
 * In het instellingenpaneel staat nu een onderdeel Pluginupdates met een knop om GitHub onmiddellijk opnieuw te controleren. Als een nieuwere release beschikbaar is, verschijnt direct een beveiligde knop om de plugin bij te werken.

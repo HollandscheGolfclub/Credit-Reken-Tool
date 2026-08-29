@@ -19,6 +19,7 @@ final class HGC_Restaurant
     {
         add_action('init', array($this, 'register_block'));
         add_shortcode('hgc_restaurant_reserveren', array($this, 'shortcode'));
+        add_shortcode('hgc_restaurant_kiezer', array($this, 'selector_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
         add_action('wp_ajax_hgc_restaurant_api', array($this, 'ajax'));
         add_action('wp_ajax_nopriv_hgc_restaurant_api', array($this, 'ajax'));
@@ -153,6 +154,7 @@ final class HGC_Restaurant
         );
         wp_register_style('hgc-restaurant', $base . 'reservation.css', array('hgc-restaurant-font'), HGC_CALCULATOR_VERSION);
         wp_register_script('hgc-restaurant', $base . 'reservation.js', array(), HGC_CALCULATOR_VERSION, true);
+        wp_register_script('hgc-restaurant-selector', $base . 'selector.js', array(), HGC_CALCULATOR_VERSION, true);
     }
 
     public function register_block(): void
@@ -179,11 +181,102 @@ final class HGC_Restaurant
                 return $this->render(array('park' => $attributes['park'] ?? ''));
             },
         ));
+        register_block_type('hgc/restaurant-kiezer', array(
+            'api_version' => 2,
+            'editor_script' => 'hgc-restaurant-block',
+            'render_callback' => array($this, 'selector_shortcode'),
+        ));
     }
 
     public function shortcode($atts): string
     {
         return $this->render(shortcode_atts(array('park' => ''), $atts, 'hgc_restaurant_reserveren'));
+    }
+
+    /**
+     * Toont eerst alle ingestelde locaties. Pas na een keuze wordt het
+     * reserveringsscherm geladen, zodat een pagina met veel locaties geen
+     * onnodige API-verzoeken uitvoert.
+     */
+    public function selector_shortcode($atts = array()): string
+    {
+        $settings = self::settings();
+        if (!$settings['locations']) {
+            return current_user_can('manage_options')
+                ? '<p>Voeg eerst restaurantlocaties toe bij Instellingen &rarr; Hollandsche Golfclub Calculator.</p>'
+                : '';
+        }
+
+        $selected = isset($_GET['hgc_restaurant'])
+            ? sanitize_title(wp_unslash($_GET['hgc_restaurant']))
+            : '';
+        $selected = isset($settings['locations'][$selected]) ? $selected : '';
+        $selector_id = wp_unique_id('hgc-restaurant-kiezer-');
+        $base_url = remove_query_arg(array('hgc_restaurant', 'ref', 'token'));
+
+        wp_enqueue_style('hgc-restaurant');
+
+        if ($selected !== '') {
+            $location = $settings['locations'][$selected];
+            ob_start();
+            ?>
+            <section class="hgc-location-selected" id="<?php echo esc_attr($selector_id); ?>" style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
+                <div>
+                    <span>Gekozen locatie</span>
+                    <strong><?php echo esc_html($location['name']); ?></strong>
+                </div>
+                <a href="<?php echo esc_url($base_url . '#' . $selector_id); ?>">Andere locatie kiezen</a>
+            </section>
+            <?php
+            echo $this->render(array('park' => $selected)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            return (string) ob_get_clean();
+        }
+
+        wp_enqueue_script('hgc-restaurant-selector');
+        ob_start();
+        ?>
+        <section class="hgc-location-selector" id="<?php echo esc_attr($selector_id); ?>" style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>" data-hgc-location-selector>
+            <header class="hgc-location-selector__header">
+                <p class="hgc-kicker">Restaurant reserveren</p>
+                <h2>Kies een locatie</h2>
+                <p>Selecteer het restaurant waar je een tafel wilt reserveren.</p>
+            </header>
+            <?php if (count($settings['locations']) > 4) : ?>
+                <div class="hgc-location-selector__tools" role="search">
+                    <label>
+                        <span class="screen-reader-text">Restaurantlocaties doorzoeken</span>
+                        <input type="search" placeholder="Zoek op naam, plaats of adres&hellip;" autocomplete="off" data-hgc-location-search />
+                    </label>
+                    <span data-hgc-location-count aria-live="polite"><?php echo esc_html(count($settings['locations']) . ' locaties'); ?></span>
+                </div>
+            <?php endif; ?>
+            <div class="hgc-location-grid" data-hgc-location-list>
+                <?php foreach ($settings['locations'] as $location) : ?>
+                    <?php
+                    $search_text = implode(' ', array($location['name'], $location['slug'], $location['address'], $location['hours_note']));
+                    $location_url = add_query_arg('hgc_restaurant', $location['slug'], $base_url) . '#' . $selector_id;
+                    ?>
+                    <article class="hgc-location-card" data-hgc-location-card data-search="<?php echo esc_attr($search_text); ?>">
+                        <div class="hgc-location-card__logo">
+                            <?php if ($location['park_logo']) : ?>
+                                <img src="<?php echo esc_url($location['park_logo']); ?>" alt="" loading="lazy" />
+                            <?php else : ?>
+                                <span aria-hidden="true"><?php echo esc_html(strtoupper(substr($location['name'], 0, 1))); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="hgc-location-card__body">
+                            <h3><?php echo esc_html($location['name']); ?></h3>
+                            <?php if ($location['address']) : ?><p><?php echo esc_html($location['address']); ?></p><?php endif; ?>
+                            <?php if ($location['hours_note']) : ?><small><?php echo esc_html($location['hours_note']); ?></small><?php endif; ?>
+                        </div>
+                        <a class="hgc-button" href="<?php echo esc_url($location_url); ?>" aria-label="Reserveren bij <?php echo esc_attr($location['name']); ?>">Kies locatie</a>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+            <p class="hgc-location-selector__empty" data-hgc-location-empty hidden>Geen locaties gevonden. Probeer een andere zoekopdracht.</p>
+        </section>
+        <?php
+        return (string) ob_get_clean();
     }
 
     private function render(array $atts): string

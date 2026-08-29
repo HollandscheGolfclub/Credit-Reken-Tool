@@ -16,4 +16,14 @@
       );
     }, save: function () { return null; }
   });
+  blocks.registerBlockType('hgc/restaurant-kiezer', {
+    title: 'HGC Restaurantkiezer', icon: 'location-alt', category: 'widgets',
+    edit: function (props) {
+      var amount = (config.locations || []).length;
+      return el('div', { className: props.className, style: { border: '1px solid #dfe3d6', borderRadius: '12px', padding: '24px', background: '#f7fbef' } },
+        el('strong', {}, 'HGC Restaurantkiezer'),
+        el('p', {}, amount ? amount + ' ingestelde locaties. Bezoekers kiezen eerst een locatie en reserveren daarna.' : 'Voeg eerst restaurantlocaties toe in de plugininstellingen.')
+      );
+    }, save: function () { return null; }
+  });
 })(window.wp.blocks, window.wp.element, window.wp.components, window.wp.blockEditor);

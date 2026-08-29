@@ -29,5 +29,5 @@ jobs:
         shell: bash
         run: |
           gh release create "${GITHUB_REF_NAME}" hgc-keuzehulp.zip \
-            --title "HGC Keuzehulp ${GITHUB_REF_NAME}" \
+            --title "HGC - Interne WebsiteTechniek ${GITHUB_REF_NAME}" \
             --generate-notes
