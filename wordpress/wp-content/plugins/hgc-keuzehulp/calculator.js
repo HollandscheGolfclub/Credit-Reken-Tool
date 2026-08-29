@@ -187,7 +187,10 @@ function updateRangeFill(range) {
   const minimum = Number(range.min);
   const maximum = Number(range.max);
   const percentage = ((Number(range.value) - minimum) / (maximum - minimum)) * 100;
-  range.style.background = `linear-gradient(90deg, var(--green) 0 ${percentage}%, #dfe5df ${percentage}%)`;
+  const thumbRadius = 13.5;
+  const thumbOffset = thumbRadius * (1 - (2 * percentage / 100));
+  const fillEnd = `calc(${percentage}% + ${thumbOffset}px)`;
+  range.style.background = `linear-gradient(90deg, var(--green) 0 ${fillEnd}, #dfe5df ${fillEnd})`;
 }
 
 function connectRange(range, number) {

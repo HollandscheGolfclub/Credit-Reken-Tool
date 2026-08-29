@@ -99,8 +99,8 @@
 .hgc-calculator .number-suffix input { width: 58px; height: 100%; padding: 0 0 0 13px; border: 0; outline: 0; color: #5a7d19; font-weight: 700; }
 .hgc-calculator .number-suffix span { padding-right: 13px; color: var(--ink-soft); font-size: 13px; }
 .hgc-calculator .range { width: 100%; height: 8px; margin: 19px 0 4px; appearance: none; border-radius: 20px; background: linear-gradient(90deg, var(--green) 0 23%, #dfe5df 23%); accent-color: var(--green); }
-.hgc-calculator .range::-webkit-slider-thumb { appearance: none; width: 27px; height: 27px; border: 0; border-radius: 50%; background: var(--green); box-shadow: inset 0 0 0 3px var(--green), inset 0 0 0 7px white, 0 2px 9px rgba(0,0,0,.18); cursor: pointer; }
-.hgc-calculator .range::-moz-range-thumb { width: 27px; height: 27px; box-sizing: border-box; border: 0; border-radius: 50%; background: var(--green); box-shadow: inset 0 0 0 3px var(--green), inset 0 0 0 7px white, 0 2px 9px rgba(0,0,0,.18); cursor: pointer; }
+.hgc-calculator .range::-webkit-slider-thumb { appearance: none; width: 27px; height: 27px; border: 5px solid white; border-radius: 50%; background: var(--green); box-shadow: 0 2px 9px rgba(0,0,0,.18); cursor: pointer; }
+.hgc-calculator .range::-moz-range-thumb { width: 27px; height: 27px; box-sizing: border-box; border: 5px solid white; border-radius: 50%; background: var(--green); box-shadow: 0 2px 9px rgba(0,0,0,.18); cursor: pointer; }
 .hgc-calculator .range-scale { display: flex; justify-content: space-between; color: #839189; font-size: 12px; }
 .hgc-calculator .choice-grid { display: grid; gap: 12px; }
 .hgc-calculator .choice-grid--two { grid-template-columns: repeat(2, 1fr); }
