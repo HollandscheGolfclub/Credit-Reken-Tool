@@ -244,8 +244,8 @@
 .hgc-calculator .advice-intro strong { color: var(--ink); font-weight: 600; }
 .hgc-calculator .advice-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
 .hgc-calculator .advice-choice--stacked { grid-template-columns: 1fr; }
-.hgc-calculator .advice-card { padding: 26px 28px; border: 1.5px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; background: white; }
-.hgc-calculator .advice-card > * { flex: 0 0 auto; height: auto; max-height: none; min-height: 0; overflow: visible; }
+.hgc-calculator .advice-card { padding: 26px 28px; border: 1.5px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; background: white; height: auto !important; max-height: none !important; overflow: visible !important; }
+.hgc-calculator .advice-card > * { flex: 0 0 auto; height: auto !important; max-height: none !important; min-height: 0; overflow: visible !important; }
 .hgc-calculator .advice-card > .button { margin-top: auto; }
 .hgc-calculator .advice-card--credits { border-color: #a8bd96; background: #f7fbef; }
 .hgc-calculator .advice-card--shortgolf { border-color: #e3c9a4; background: #fdf9f3; }
