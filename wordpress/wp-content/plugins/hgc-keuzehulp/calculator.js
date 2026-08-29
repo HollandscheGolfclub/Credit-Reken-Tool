@@ -679,10 +679,6 @@ function candidatePlans(context) {
       return {
         ...plan,
         selectionCost: Number(plan.annualCost) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.greenFeeExtraTotal || 0) + Number(plan.repeatExtraTotal || 0),
-        // Zelfde opbouw, maar zonder de handicapregistratie: nodig om het
-        // verschil met een alternatief speelrecht te tonen dat meebeweegt met
-        // de schakelaar, in plaats van altijd van "met registratie" uit te gaan.
-        selectionCostNoReg: Number(plan.annualCost) - Number(plan.registrationPrice || 0) + Number(plan.reducedGreenFeeTotal || 0) + Number(plan.greenFeeExtraTotalNoReg ?? plan.greenFeeExtraTotal ?? 0) + Number(plan.repeatExtraTotal || 0),
         largeRoundCost: largeRounds ? Number(plan.largeBaseCost || 0) + shared : null,
         smallRoundCost: smallRounds ? Number(plan.smallBaseCost || 0) + shared : null,
       };
@@ -1135,10 +1131,6 @@ function renderSingleAdvice(result) {
       plan: result.coveringAlternative,
       amountNote: "per golfjaar · alle rondes inbegrepen",
       note: `
-        <p>Voor ${switchableAmount(
-          Number(result.coveringAlternative.selectionCost) - Number(best.selectionCost),
-          Number(result.coveringAlternative.selectionCostNoReg) - Number(best.selectionCostNoReg)
-        )} meer heb je een speelrecht dat al je opgegeven rondes dekt:</p>
         <ul class="advice-alt-list">
           <li>Plus extra credits om nog vaker te spelen.</li>
           <li>Plus de mogelijkheid om onbeperkt flightgenoten te introduceren tegen het gereduceerde greenfeetarief.</li>

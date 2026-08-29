@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.0.2 =
+* De "Meer speelruimte"-kaart naast een handicapregistratie-/LoyalTee-advies toont niet langer de prijszin "Voor € X meer heb je een speelrecht dat al je opgegeven rondes dekt", alleen nog de twee bullets eronder (extra credits, onbeperkt flightgenoten introduceren).
 
 = 2.0.1 =
 * De golfswing-iconen bij "Grote baan" en "Kleine baan" (toegevoegd in 2.0.0) zijn weer verwijderd; die kaarten tonen nu alleen de titel en toelichting.
