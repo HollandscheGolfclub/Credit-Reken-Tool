@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.2.2 =
+* De sliders gebruiken nu overal de HGC-accentkleur #96c11f. De gevulde balk sluit zonder witte onderbreking aan op het schuifbolletje, ook in Firefox.
 
 = 2.2.1 =
 * Bij gedeeltelijke dekking worden de gratis rondes uit handicapregistratie nu afgetrokken van de resterende greenfeerondes. Bij 31 rondes Westerpark en een speelrecht van 20 credits wisselt de uitleg daardoor correct van 11 rondes zonder handicapregistratie naar 9 rondes met handicapregistratie.
