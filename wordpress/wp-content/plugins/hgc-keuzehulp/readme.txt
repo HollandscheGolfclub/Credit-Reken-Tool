@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.0.4 =
+* Bij een voorbehoud per golfpark is nu instelbaar of de melding geldt voor de grote baan, de kleine baan of beide. Bestaande eigen meldingen zonder deze instelling blijven voor beide baantypen zichtbaar.
+* Het banenbeheer is overzichtelijker met zoeken op naam, plaats of ID, filters voor baantype en meldingen, een resultaataantal en inklapbare baankaarten.
 
 = 2.0.3 =
 * Bugfix: op het scherm "Twee passende speelrechten — jij kiest" (gemengd speelbeeld) kon de tekst in een kaart over de knop heen lopen wanneer het WordPress-thema van de site een hoogte-/overflowregel op `article`-elementen zet. De kaart en zijn inhoud zijn nu met voorrang beschermd tegen zulke regels van buitenaf, net als eerder al gebeurde voor themakleuren.

@@ -896,9 +896,16 @@ function disclaimer() {
 // daar een voorbehoud bij: de creditberekening gaat uit van een standaardronde.
 function courseCaveats(result) {
   const courses = [
-    result.largeRounds > 0 ? result.largeCourse : null,
-    result.smallRounds > 0 ? result.smallCourse : null,
-  ].filter((course) => course && course.caveat);
+    result.largeRounds > 0 ? { course: result.largeCourse, type: "large" } : null,
+    result.smallRounds > 0 ? { course: result.smallCourse, type: "small" } : null,
+  ]
+    .filter(Boolean)
+    .filter(({ course, type }) => {
+      if (!course || !course.caveat) return false;
+      const target = course.caveatCourse || "both";
+      return target === "both" || target === type;
+    })
+    .map(({ course }) => course);
   const unique = courses.filter((course, index, all) => all.findIndex((other) => other.id === course.id) === index);
   return unique
     .map((course) => `<p class="result-disclaimer result-disclaimer--course">Let op bij ${course.name}: ${course.caveat}</p>`)

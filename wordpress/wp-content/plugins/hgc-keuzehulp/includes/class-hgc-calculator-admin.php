@@ -141,6 +141,34 @@ final class HGC_Calculator_Admin
                         <div><h2>Golfbanen en creditwaarden</h2><p>Een lege creditwaarde betekent dat die spelvorm niet beschikbaar is.</p></div>
                         <button class="button button-secondary" type="button" data-add-course>Nieuwe baan toevoegen</button>
                     </div>
+                    <div class="hgc-course-toolbar" role="search" aria-label="Golfbanen doorzoeken en filteren">
+                        <label class="hgc-course-search">
+                            <span class="screen-reader-text">Zoek een golfbaan</span>
+                            <input type="search" id="hgc-course-search" placeholder="Zoek op naam, plaats of ID…" autocomplete="off" />
+                        </label>
+                        <label>
+                            <span class="screen-reader-text">Filter op baantype</span>
+                            <select id="hgc-course-type-filter">
+                                <option value="all">Alle baantypen</option>
+                                <option value="large">Grote baan</option>
+                                <option value="small">Kleine baan</option>
+                                <option value="both">Grote én kleine baan</option>
+                            </select>
+                        </label>
+                        <label>
+                            <span class="screen-reader-text">Filter op melding</span>
+                            <select id="hgc-course-caveat-filter">
+                                <option value="all">Alle meldingen</option>
+                                <option value="with">Met melding</option>
+                                <option value="without">Zonder melding</option>
+                            </select>
+                        </label>
+                        <div class="hgc-course-toolbar__actions">
+                            <button class="button" type="button" data-expand-courses>Alles openen</button>
+                            <button class="button" type="button" data-collapse-courses>Alles sluiten</button>
+                        </div>
+                    </div>
+                    <p id="hgc-course-count" class="hgc-course-count" aria-live="polite"></p>
                     <div id="hgc-course-list" class="hgc-course-list">
                         <?php foreach (($config['courses'] ?? array()) as $index => $course) : ?>
                             <?php $this->course_card((string) $index, $course); ?>
@@ -268,6 +296,11 @@ final class HGC_Calculator_Admin
             }
             $used_ids[$id] = true;
 
+            $caveat_course = sanitize_key($row['caveatCourse'] ?? 'both');
+            if (!in_array($caveat_course, array('large', 'small', 'both'), true)) {
+                $caveat_course = 'both';
+            }
+
             $courses[] = array(
                 'id' => $id,
                 'name' => $name,
@@ -283,6 +316,7 @@ final class HGC_Calculator_Admin
                 'provisional' => !empty($row['provisional']),
                 'note' => sanitize_text_field($row['note'] ?? ''),
                 'caveat' => sanitize_textarea_field($row['caveat'] ?? ''),
+                'caveatCourse' => $caveat_course,
             );
         }
         return $courses;
@@ -335,7 +369,14 @@ final class HGC_Calculator_Admin
     {
         ?>
         <article class="hgc-course-card">
-            <div class="hgc-admin-heading"><h3><?php echo esc_html($course['name'] ?? 'Nieuwe baan'); ?></h3><button class="button-link-delete" type="button" data-remove-course>Baan verwijderen</button></div>
+            <div class="hgc-course-card__header">
+                <button class="hgc-course-card__toggle" type="button" data-toggle-course aria-expanded="true">
+                    <span class="hgc-course-card__chevron" aria-hidden="true"></span>
+                    <span class="hgc-course-card__title"><strong><?php echo esc_html($course['name'] ?? 'Nieuwe baan'); ?></strong><small class="hgc-course-summary"></small></span>
+                </button>
+                <button class="button-link-delete" type="button" data-remove-course>Baan verwijderen</button>
+            </div>
+            <div class="hgc-course-card__body">
             <div class="hgc-admin-grid hgc-admin-grid--three">
                 <?php $this->text_input('Naam', "config[courses][$index][name]", $course['name'] ?? '', true); ?>
                 <?php $this->text_input('ID / slug', "config[courses][$index][id]", $course['id'] ?? ''); ?>
@@ -360,7 +401,16 @@ final class HGC_Calculator_Admin
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>
                 <?php $this->text_input('Toelichting', "config[courses][$index][note]", $course['note'] ?? ''); ?>
             </div>
-            <?php $this->textarea_field('Voorbehoud bij uitslag (optioneel)', "config[courses][$index][caveat]", $course['caveat'] ?? '', 'Verschijnt op het resultaatscherm als "Let op bij ' . ($course['name'] ?? 'deze baan') . ': ..." zodra deze baan is gekozen. Laat leeg om niets te tonen.'); ?>
+            <?php $this->textarea_field('Voorbehoud bij uitslag (optioneel)', "config[courses][$index][caveat]", $course['caveat'] ?? '', 'Verschijnt op het resultaatscherm als "Let op bij ' . ($course['name'] ?? 'deze baan') . ': ...". Laat leeg om niets te tonen.'); ?>
+            <label class="hgc-admin-field">
+                <span>Melding tonen bij</span>
+                <select name="config[courses][<?php echo esc_attr($index); ?>][caveatCourse]">
+                    <option value="large" <?php selected($course['caveatCourse'] ?? 'both', 'large'); ?>>Grote baan</option>
+                    <option value="small" <?php selected($course['caveatCourse'] ?? 'both', 'small'); ?>>Kleine baan</option>
+                    <option value="both" <?php selected($course['caveatCourse'] ?? 'both', 'both'); ?>>Grote en kleine baan</option>
+                </select>
+            </label>
+            </div>
         </article>
         <?php
     }

@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.0.3
+ * Version: 2.0.4
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.0.3');
+define('HGC_CALCULATOR_VERSION', '2.0.4');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -48,7 +48,7 @@ function hgc_calculator_config(): array
     }
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $id = $course['id'] ?? '';
-        foreach (array('shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'caveat') as $field) {
+        foreach (array('shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'caveat', 'caveatCourse') as $field) {
             if (!array_key_exists($field, $course)) {
                 $saved['courses'][$index][$field] = $default_courses[$id][$field] ?? null;
             }
@@ -96,7 +96,7 @@ function hgc_calculator_config(): array
         $defaults['handicapRegistration'] ?? array()
     );
     $saved['loyalTee'] = array_intersect_key($saved['loyalTee'] ?? array(), $defaults['loyalTee'] ?? array());
-    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'provisional', 'note', 'caveat'));
+    $course_keys = array_flip(array('id', 'name', 'location', 'largeHoles', 'largeRate', 'shortRate', 'shortGolfRate', 'greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull', 'provisional', 'note', 'caveat', 'caveatCourse'));
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $saved['courses'][$index] = array_intersect_key($course, $course_keys);
     }
