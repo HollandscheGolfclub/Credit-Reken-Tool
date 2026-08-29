@@ -585,6 +585,43 @@
         }
       }
     }
+
+    // Regressie voor Mandy's voorbeeld: 31 rondes op Westerpark met 20
+    // credits laat zonder handicapregistratie 11 resterende rondes zien en
+    // met handicapregistratie 9, doordat de twee gratis rondes eraf gaan.
+    const westerpark = hgcConfig.courses.find((course) => course.id === "westerpark");
+    const fallbackSmall = hgcConfig.courses.find((course) => Number.isFinite(course.shortRate));
+    const westerparkResult = recommendationFor({
+      largeRounds: 31,
+      smallRounds: 0,
+      largeCourse: westerpark,
+      smallCourse: fallbackSmall,
+      youth: false,
+      canPlayOffPeak: false,
+    });
+    const westerparkContext = { largeRounds: 31, smallRounds: 0, largeCourse: "westerpark", test: "handicap-vouchers" };
+    if (Number(westerparkResult.best.credits) !== 20) {
+      report("westerpark-verkeerd-speelrecht", { ...westerparkContext, credits: westerparkResult.best.credits });
+    }
+    if (Number(westerparkResult.best.greenFeeExtraRoundsNoReg) !== 11) {
+      report("westerpark-zonder-registratie-geen-11-rondes", { ...westerparkContext, rounds: westerparkResult.best.greenFeeExtraRoundsNoReg });
+    }
+    if (Number(westerparkResult.best.greenFeeExtraRounds) !== 9) {
+      report("westerpark-met-registratie-geen-9-rondes", { ...westerparkContext, rounds: westerparkResult.best.greenFeeExtraRounds });
+    }
+    renderResult(westerparkResult);
+    const westerparkInstruction = resultContent.querySelector(".package-instruction");
+    applyRegistrationSwitch(false);
+    const westerparkWithoutRegistration = westerparkInstruction ? westerparkInstruction.textContent : "";
+    applyRegistrationSwitch(true);
+    const westerparkWithRegistration = westerparkInstruction ? westerparkInstruction.textContent : "";
+    applyRegistrationSwitch(handicapDefault());
+    if (!/11 rondes/.test(westerparkWithoutRegistration)) {
+      report("westerpark-tekst-zonder-registratie-onjuist", { ...westerparkContext, text: westerparkWithoutRegistration });
+    }
+    if (!/9 rondes/.test(westerparkWithRegistration) || /11 rondes/.test(westerparkWithRegistration)) {
+      report("westerpark-tekst-met-registratie-onjuist", { ...westerparkContext, text: westerparkWithRegistration });
+    }
     return { cases, cardsChecked, errorCounts, errors };
   };
 

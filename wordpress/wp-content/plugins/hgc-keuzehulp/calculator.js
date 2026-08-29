@@ -303,6 +303,7 @@ function candidatePlans(context) {
   const { largeRounds, smallRounds, largeCourse, smallCourse, youth, canPlayOffPeak } = context;
   const totalRounds = largeRounds + smallRounds;
   const handicapPrice = youth ? Number(hgcConfig.handicapRegistration.youthPrice) : Number(hgcConfig.handicapRegistration.adultPrice);
+  const vouchers = Math.max(0, Number(hgcConfig.handicapRegistration.vouchers || 0));
   const standardCredits = largeRounds * largeCourse.largeRate + smallRounds * smallCourse.shortRate;
   const shortGolfFitsPlayStyle = smallRounds > 0;
   const candidates = [];
@@ -403,7 +404,15 @@ function candidatePlans(context) {
         // deze route niet eerlijk beprijzen en bieden we hem niet aan.
         const extraRounds = Math.ceil(shortfall / largeRate - 1e-8);
         if (extraRounds > largeRounds + 1e-8) return;
-        const rounded = extraRounds;
+        // De gratis rondes uit de handicapregistratie worden eerst gebruikt
+        // voor het tekort na de gekochte credits. Zonder registratie blijft
+        // het volledige tekort tegen greenfee staan.
+        const registrationRounds = Math.min(extraRounds, vouchers);
+        const extraRoundsWithRegistration = Math.max(0, extraRounds - registrationRounds);
+        const instructionWithRegistration = extraRoundsWithRegistration > 0
+          ? `Na ${decimal.format(credits)} credits worden ${roundWord(registrationRounds)} gedekt door je handicapregistratie. De overige ${roundWord(extraRoundsWithRegistration)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`
+          : `Na ${decimal.format(credits)} credits ${registrationRounds === 1 ? "wordt de resterende ronde" : "worden de resterende rondes"} gedekt door je handicapregistratie. Je betaalt daarvoor geen greenfee.`;
+        const instructionWithoutRegistration = `De ${roundWord(extraRounds)} die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`;
         const plan = {
           type: "credits",
           group: `${choice.group}-greenfee-${credits}`,
@@ -417,8 +426,10 @@ function candidatePlans(context) {
           packageItems: [{ ...item, credits, price }],
           availablePackages: choice.packages,
           cheaperRoute: null,
-          greenFeeExtraRounds: extraRounds,
-          greenFeeExtraTotal: extraRounds * largeGreenFee,
+          greenFeeExtraRounds: extraRoundsWithRegistration,
+          greenFeeExtraTotal: extraRoundsWithRegistration * largeGreenFee,
+          greenFeeExtraRoundsNoReg: extraRounds,
+          greenFeeExtraTotalNoReg: extraRounds * largeGreenFee,
           coveredRounds: totalRounds * Math.min(1, credits / standardCredits),
           // Op basis van de credits: de prijs per ronde spreidt over de credits
           // die je koopt, niet over de rondes die je daarna nog op greenfee
@@ -426,7 +437,8 @@ function candidatePlans(context) {
           largeBaseCost: largeRate * (price / credits),
           smallBaseCost: Number(smallCourse.shortRate) * (price / credits),
           detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het grootste deel van je rondes.`,
-          instruction: `De ${decimal.format(rounded)} rondes die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
+          instruction: instructionWithRegistration,
+          instructionNoReg: instructionWithoutRegistration,
         };
         candidates.push(addRegistration(plan, handicapPrice));
       });
@@ -553,7 +565,6 @@ function candidatePlans(context) {
   // rondes per stuk af, dus we bieden ze alleen aan wanneer alle rondes op de
   // grote baan vallen; voor de kleine baan is geen greenfeetarief vastgesteld.
   const loyalTee = hgcConfig.loyalTee || null;
-  const vouchers = Math.max(0, Number(hgcConfig.handicapRegistration.vouchers || 0));
   // De vrije rondes gaan naar de duurste rondes, en de grote baan is op iedere
   // baan duurder dan de kleine.
   const freeLarge = Math.min(largeRounds, vouchers);
@@ -1076,6 +1087,8 @@ function renderSingleAdvice(result) {
   // Het greenfeetarief wordt nooit als bedrag getoond, dus ook niet als kosten
   // per ronde op de grote baan.
   const greenFeeExtraRounds = Number(best.greenFeeExtraRounds || 0);
+  const greenFeeExtraRoundsNoReg = Number(best.greenFeeExtraRoundsNoReg ?? greenFeeExtraRounds);
+  const hasGreenFeeExtraRounds = greenFeeExtraRounds > 0 || greenFeeExtraRoundsNoReg > 0;
   const perRondeRoute = ["handicap", "loyaltee"].includes(best.type);
   // largeBaseCost/smallBaseCost spreiden de prijs bij bijspelen op greenfee
   // over de credits die je kocht, niet over rondes die daarna nog op greenfee
@@ -1085,7 +1098,7 @@ function renderSingleAdvice(result) {
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
   const showSmallRoundCost = result.smallRounds > 0 && !perRondeRoute;
   const herhaalt = Number(best.repeatPurchases || 0) > 1;
-  const rondesBuitenPrijs = greenFeeExtraRounds > 0 || greenFeeRounds > 0 || uncoveredLargeRounds > 0;
+  const rondesBuitenPrijs = hasGreenFeeExtraRounds || greenFeeRounds > 0 || uncoveredLargeRounds > 0;
   const totalCostLabel = herhaalt || rondesBuitenPrijs ? "Wat je vooraf betaalt" : "Verwachte kosten per jaar";
   const totalCostNote = herhaalt
     ? `per aankoop van ${decimal.format(best.credits)} credits`
