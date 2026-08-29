@@ -3,7 +3,7 @@
  * Plugin Name: Hollandsche Golfclub Keuzehulp
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.0.4
+ * Version: 2.0.5
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.0.4');
+define('HGC_CALCULATOR_VERSION', '2.0.5');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -229,6 +229,7 @@ final class HGC_Calculator_GitHub_Updater
             $update->new_version = $release['version'];
             $update->url = $release['html_url'];
             $update->package = $release['package'];
+            $update->icons = $this->plugin_icons();
             $update->tested = '';
             $update->requires_php = '7.4';
             $transient->response[$this->plugin_file] = $update;
@@ -257,12 +258,27 @@ final class HGC_Calculator_GitHub_Updater
         $information->requires = '6.0';
         $information->requires_php = '7.4';
         $information->download_link = $release['package'];
+        $information->icons = $this->plugin_icons();
         $information->sections = array(
             'description' => 'Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub.',
             'changelog' => nl2br(esc_html($release['notes'] ?: 'Bekijk de GitHub Release voor de wijzigingen.')),
         );
 
         return $information;
+    }
+
+    /**
+     * WordPress toont anders het grijze standaard-stekkericoon bij updates
+     * van plugins die niet via WordPress.org worden aangeboden.
+     */
+    private function plugin_icons(): array
+    {
+        $icon_url = HGC_CALCULATOR_URL . 'assets/plugin-icon.png';
+        return array(
+            '1x' => $icon_url,
+            '2x' => $icon_url,
+            'default' => $icon_url,
+        );
     }
 
     private function get_release(bool $force = false): ?array

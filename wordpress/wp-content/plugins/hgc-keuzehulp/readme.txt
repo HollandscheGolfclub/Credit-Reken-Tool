@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.0.5 =
+* Het officiële HGC-schaapje vervangt het standaard grijze stekkericoon in de WordPress-updatekaart en het scherm met plugininformatie.
 
 = 2.0.4 =
 * Bij een voorbehoud per golfpark is nu instelbaar of de melding geldt voor de grote baan, de kleine baan of beide. Bestaande eigen meldingen zonder deze instelling blijven voor beide baantypen zichtbaar.
