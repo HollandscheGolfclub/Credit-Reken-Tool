@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.0.1 =
+* De golfswing-iconen bij "Grote baan" en "Kleine baan" (toegevoegd in 2.0.0) zijn weer verwijderd; die kaarten tonen nu alleen de titel en toelichting.
+* "Bezoek pluginwebsite" in het WordPress-pluginoverzicht verwijst nu naar hollandschegolfclub.nl in plaats van de GitHub-repository.
 
 = 2.0.0 =
 * Iconen bij "Grote baan" en "Kleine baan" in stap 1 zijn vervangen: beide tonen nu dezelfde golfswing-pictogram (was een "9" resp. een vlaggetje) in het groen van de club, in plaats van twee verschillende stijlen.

@@ -110,8 +110,6 @@
 .hgc-calculator .choice-card input { position: absolute; opacity: 0; pointer-events: none; }
 .hgc-calculator .choice-card strong, .hgc-calculator .choice-card small { display: block; }
 .hgc-calculator .choice-card small { margin-top: 3px; color: var(--ink-soft); font-weight: 400; }
-.hgc-calculator .choice-icon { flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: var(--green-light); color: var(--green-deep); }
-.hgc-calculator .choice-icon svg { width: 22px; height: 22px; }
 .hgc-calculator .field-row { display: grid; grid-template-columns: 1.35fr .65fr; gap: 18px; }
 .hgc-calculator .round-plan-grid { margin-bottom: 30px; display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid #dce5d3; border-radius: 10px; background: #fff; box-shadow: 0 10px 28px rgba(48,62,40,.06); }
 .hgc-calculator .round-plan-card { min-width: 0; padding: 28px 30px; display: grid; grid-template-columns: 178px minmax(285px, 1fr) minmax(280px, 1fr); align-items: start; gap: 28px; border: 0; background: transparent; }
@@ -119,7 +117,6 @@
 .hgc-calculator .round-plan-card:first-child { border-radius: 9px 9px 0 0; }
 .hgc-calculator .round-plan-card:last-child { border-radius: 0 0 9px 9px; }
 .hgc-calculator .round-plan-title { margin: 0; padding: 1px 0 0; display: flex; align-items: center; gap: 13px; border: 0; }
-.hgc-calculator .round-plan-title .choice-icon { border-radius: 9px; }
 .hgc-calculator .round-plan-title h4 { margin: 0 0 4px; font-size: 20px; }
 .hgc-calculator .round-plan-title h4 { white-space: nowrap; }
 .hgc-calculator .round-plan-title p { margin: 0; color: var(--ink-soft); font-size: 12px; }

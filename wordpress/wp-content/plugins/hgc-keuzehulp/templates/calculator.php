@@ -29,7 +29,7 @@
 
         <div class="round-plan-grid">
           <article class="round-plan-card">
-            <div class="round-plan-title"><span class="choice-icon"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="38" cy="14" r="10" fill="currentColor" /><line x1="38" y1="26" x2="56" y2="40" stroke="currentColor" stroke-width="8" stroke-linecap="round" /><line x1="56" y1="40" x2="94" y2="4" stroke="currentColor" stroke-width="5" stroke-linecap="round" /><line x1="38" y1="26" x2="46" y2="54" stroke="currentColor" stroke-width="16" stroke-linecap="round" /><line x1="46" y1="54" x2="28" y2="94" stroke="currentColor" stroke-width="11" stroke-linecap="round" /><line x1="46" y1="54" x2="72" y2="90" stroke="currentColor" stroke-width="10" stroke-linecap="round" /><ellipse cx="24" cy="96" rx="10" ry="4" fill="currentColor" /><ellipse cx="76" cy="92" rx="10" ry="4" fill="currentColor" /></svg></span><div><h4>Grote baan</h4><p>Par 3/4/5-baan</p></div></div>
+            <div class="round-plan-title"><div><h4>Grote baan</h4><p>Par 3/4/5-baan</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
                 <label for="large-rounds-number">Hoeveel rondes van 9 holes per 12 maanden?</label>
@@ -46,7 +46,7 @@
           </article>
 
           <article class="round-plan-card">
-            <div class="round-plan-title"><span class="choice-icon"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="38" cy="14" r="10" fill="currentColor" /><line x1="38" y1="26" x2="56" y2="40" stroke="currentColor" stroke-width="8" stroke-linecap="round" /><line x1="56" y1="40" x2="94" y2="4" stroke="currentColor" stroke-width="5" stroke-linecap="round" /><line x1="38" y1="26" x2="46" y2="54" stroke="currentColor" stroke-width="16" stroke-linecap="round" /><line x1="46" y1="54" x2="28" y2="94" stroke="currentColor" stroke-width="11" stroke-linecap="round" /><line x1="46" y1="54" x2="72" y2="90" stroke="currentColor" stroke-width="10" stroke-linecap="round" /><ellipse cx="24" cy="96" rx="10" ry="4" fill="currentColor" /><ellipse cx="76" cy="92" rx="10" ry="4" fill="currentColor" /></svg></span><div><h4>Kleine baan</h4><p>Shortgolfbaan / Par 3-baan</p></div></div>
+            <div class="round-plan-title"><div><h4>Kleine baan</h4><p>Shortgolfbaan / Par 3-baan</p></div></div>
             <div class="field-group">
               <div class="field-label-row">
                 <label for="small-rounds-number">Hoeveel rondes per 12 maanden?</label>
