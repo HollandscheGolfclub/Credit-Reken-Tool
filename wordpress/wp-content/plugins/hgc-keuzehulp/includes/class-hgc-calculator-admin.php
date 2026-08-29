@@ -64,6 +64,13 @@ final class HGC_Calculator_Admin
         <div class="wrap hgc-admin">
             <h1>Hollandsche Golfclub Calculator</h1>
             <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
+            <nav class="hgc-admin-nav" aria-label="Snel naar instellingengroep">
+                <a href="#hgc-general">Algemeen</a>
+                <a href="#hgc-products">Pakketten</a>
+                <a href="#hgc-courses">Golfbanen</a>
+                <a href="#hgc-benefits">Voordelen</a>
+                <a href="#hgc-restaurant">Restaurant</a>
+            </nav>
 
             <?php if (isset($_GET['updated'])) : ?>
                 <div class="notice notice-success is-dismissible"><p>De calculatorinstellingen zijn opgeslagen.</p></div>
@@ -88,15 +95,11 @@ final class HGC_Calculator_Admin
                 </div>
             </section>
 
-            <?php if (isset($GLOBALS['hgc_restaurant'])) : ?>
-                <?php $GLOBALS['hgc_restaurant']->render_admin_section(); ?>
-            <?php endif; ?>
-
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="hgc_calculator_save" />
                 <?php wp_nonce_field('hgc_calculator_save'); ?>
 
-                <section class="hgc-admin-panel">
+                <section class="hgc-admin-panel" id="hgc-general">
                     <h2>Algemene instellingen</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--three">
                         <?php $this->number_field('Jaar', 'config[year]', $config['year'] ?? date('Y'), 1); ?>
@@ -132,11 +135,15 @@ final class HGC_Calculator_Admin
                     </div>
                 </section>
 
+                <div class="hgc-admin-section-heading" id="hgc-products">
+                    <h2>Speelrechten en pakketten</h2>
+                    <p>Open alleen de pakketgroep die je wilt aanpassen. Aantallen en creditbereik blijven in het overzicht zichtbaar.</p>
+                </div>
                 <?php foreach ($package_groups as $key => $title) : ?>
                     <?php $this->package_table($key, $title, $config[$key] ?? array()); ?>
                 <?php endforeach; ?>
 
-                <section class="hgc-admin-panel">
+                <section class="hgc-admin-panel" id="hgc-courses">
                     <div class="hgc-admin-heading">
                         <div><h2>Golfbanen en creditwaarden</h2><p>Een lege creditwaarde betekent dat die spelvorm niet beschikbaar is.</p></div>
                         <button class="button button-secondary" type="button" data-add-course>Nieuwe baan toevoegen</button>
@@ -177,7 +184,7 @@ final class HGC_Calculator_Admin
                     <?php $this->course_template(); ?>
                 </section>
 
-                <section class="hgc-admin-panel">
+                <section class="hgc-admin-panel" id="hgc-benefits">
                     <h2>Voordelen</h2>
                     <p>Zet ieder voordeel op een nieuwe regel.</p>
                     <div class="hgc-admin-grid hgc-admin-grid--two">
@@ -196,8 +203,12 @@ final class HGC_Calculator_Admin
             <form id="hgc-reset" class="hgc-admin-reset" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" onsubmit="return confirm('Weet je zeker dat je alle eigen calculatorinstellingen wilt verwijderen?');">
                 <input type="hidden" name="action" value="hgc_calculator_reset" />
                 <?php wp_nonce_field('hgc_calculator_reset'); ?>
-                <button class="button button-link-delete" type="submit">Alle instellingen terugzetten naar GitHub-standaardwaarden</button>
+                <button class="button button-link-delete" type="submit">Alle calculatorinstellingen terugzetten naar GitHub-standaardwaarden</button>
             </form>
+
+            <?php if (isset($GLOBALS['hgc_restaurant'])) : ?>
+                <?php $GLOBALS['hgc_restaurant']->render_admin_section(); ?>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -349,18 +360,44 @@ final class HGC_Calculator_Admin
 
     private function package_table(string $key, string $title, array $packages): void
     {
+        $package_count = count($packages);
+        $credits = array_values(array_filter(array_map(static fn(array $package): float => (float) ($package['credits'] ?? 0), $packages), static fn(float $value): bool => $value > 0));
+        $credit_summary = '';
+        if ($credits) {
+            $minimum = min($credits);
+            $maximum = max($credits);
+            $format_credits = static fn(float $value): string => rtrim(rtrim(number_format($value, 2, ',', '.'), '0'), ',');
+            $credit_summary = $minimum === $maximum
+                ? $format_credits($minimum) . ' credits'
+                : $format_credits($minimum) . '-' . $format_credits($maximum) . ' credits';
+        }
         ?>
-        <section class="hgc-admin-panel hgc-package-panel">
-            <div class="hgc-admin-heading"><h2><?php echo esc_html($title); ?></h2><button class="button" type="button" data-add-package="<?php echo esc_attr($key); ?>">Pakket toevoegen</button></div>
-            <table class="widefat striped" id="hgc-packages-<?php echo esc_attr($key); ?>">
+        <section class="hgc-admin-panel hgc-package-panel" data-package-panel>
+            <div class="hgc-package-panel__header">
+                <button class="hgc-package-panel__toggle" type="button" data-toggle-packages aria-expanded="true" aria-controls="hgc-package-content-<?php echo esc_attr($key); ?>">
+                    <span class="hgc-package-panel__chevron" aria-hidden="true"></span>
+                    <span class="hgc-package-panel__heading">
+                        <strong><?php echo esc_html($title); ?></strong>
+                        <small data-package-summary><?php echo esc_html(sprintf(_n('%d pakket', '%d pakketten', $package_count), $package_count) . ($credit_summary ? ' | ' . $credit_summary : '')); ?></small>
+                    </span>
+                </button>
+                <button class="button button-secondary" type="button" data-add-package="<?php echo esc_attr($key); ?>">Pakket toevoegen</button>
+            </div>
+            <div class="hgc-package-panel__content" id="hgc-package-content-<?php echo esc_attr($key); ?>">
+            <p class="hgc-package-panel__intro">Beheer de naam, het aantal credits en de verkoopprijs. De volgorde wordt na opslaan automatisch bepaald door het aantal credits.</p>
+            <div class="hgc-package-table-wrap">
+            <table class="widefat hgc-package-table" id="hgc-packages-<?php echo esc_attr($key); ?>">
                 <thead><tr><th>Naam</th><th>Credits</th><th>Prijs</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($packages as $index => $package) : ?>
-                    <tr><td><input class="large-text" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][name]" value="<?php echo esc_attr($package['name'] ?? ''); ?>" /></td><td><input type="number" min="0.01" step="0.01" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][credits]" value="<?php echo esc_attr($package['credits'] ?? ''); ?>" /></td><td><input type="number" min="0" step="0.01" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][price]" value="<?php echo esc_attr($package['price'] ?? ''); ?>" /></td><td><button class="button-link-delete" type="button" data-remove-row>Verwijderen</button></td></tr>
+                    <tr><td data-label="Naam"><input class="large-text" aria-label="Naam pakket" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][name]" value="<?php echo esc_attr($package['name'] ?? ''); ?>" /></td><td data-label="Credits"><input type="number" min="0.01" step="0.01" aria-label="Aantal credits" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][credits]" value="<?php echo esc_attr($package['credits'] ?? ''); ?>" /></td><td data-label="Prijs"><span class="hgc-package-price"><span aria-hidden="true">&euro;</span><input type="number" min="0" step="0.01" aria-label="Prijs in euro" name="config[<?php echo esc_attr($key); ?>][<?php echo esc_attr($index); ?>][price]" value="<?php echo esc_attr($package['price'] ?? ''); ?>" /></span></td><td><button class="button-link-delete" type="button" data-remove-row>Pakket verwijderen</button></td></tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
-            <template id="hgc-package-template-<?php echo esc_attr($key); ?>"><tr><td><input class="large-text" name="config[<?php echo esc_attr($key); ?>][__INDEX__][name]" /></td><td><input type="number" min="0.01" step="0.01" name="config[<?php echo esc_attr($key); ?>][__INDEX__][credits]" /></td><td><input type="number" min="0" step="0.01" name="config[<?php echo esc_attr($key); ?>][__INDEX__][price]" /></td><td><button class="button-link-delete" type="button" data-remove-row>Verwijderen</button></td></tr></template>
+            <p class="hgc-package-empty" data-package-empty <?php echo $package_count ? 'hidden' : ''; ?>>Nog geen pakketten in deze groep. Voeg het eerste pakket toe.</p>
+            </div>
+            </div>
+            <template id="hgc-package-template-<?php echo esc_attr($key); ?>"><tr><td data-label="Naam"><input class="large-text" aria-label="Naam pakket" name="config[<?php echo esc_attr($key); ?>][__INDEX__][name]" /></td><td data-label="Credits"><input type="number" min="0.01" step="0.01" aria-label="Aantal credits" name="config[<?php echo esc_attr($key); ?>][__INDEX__][credits]" /></td><td data-label="Prijs"><span class="hgc-package-price"><span aria-hidden="true">&euro;</span><input type="number" min="0" step="0.01" aria-label="Prijs in euro" name="config[<?php echo esc_attr($key); ?>][__INDEX__][price]" /></span></td><td><button class="button-link-delete" type="button" data-remove-row>Pakket verwijderen</button></td></tr></template>
         </section>
         <?php
     }

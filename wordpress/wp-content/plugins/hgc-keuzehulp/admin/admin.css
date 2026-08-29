@@ -1,6 +1,13 @@
 .hgc-admin { max-width: 1180px; }
 .hgc-admin-intro { max-width: 760px; font-size: 15px; }
+.hgc-admin-nav { position: sticky; top: 32px; z-index: 4; display: flex; gap: 4px; margin: 16px 0 20px; padding: 8px; border: 1px solid #dcdcde; border-radius: 8px; background: rgba(255,255,255,.96); box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+.hgc-admin-nav a { padding: 8px 12px; border-radius: 5px; color: #2c3f12; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.hgc-admin-nav a:hover, .hgc-admin-nav a:focus-visible { color: #1d3108; background: #edf4dd; }
+.hgc-admin-section-heading { margin: 30px 0 12px; scroll-margin-top: 95px; }
+.hgc-admin-section-heading h2 { margin: 0 0 5px; font-size: 20px; }
+.hgc-admin-section-heading p { margin: 0; color: #646970; }
 .hgc-admin-panel { margin: 20px 0; padding: 24px; border: 1px solid #dcdcde; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .04); }
+.hgc-admin-panel[id] { scroll-margin-top: 95px; }
 .hgc-admin-panel > h2:first-child, .hgc-admin-heading h2 { margin-top: 0; }
 .hgc-shortcode-card { padding: 18px; border: 1px solid #d9e4c2; border-radius: 7px; background: #fafcf6; }
 .hgc-shortcode-card h3 { margin: 0 0 7px; color: #527417; }
@@ -18,20 +25,47 @@
 .hgc-admin-number { display: flex; align-items: center; gap: 7px; }
 .hgc-admin-number input { flex: 1; min-width: 0; }
 .hgc-admin-number b { color: #646970; }
-.hgc-package-panel table input[type="number"] { width: 130px; }
-.hgc-package-panel th:last-child, .hgc-package-panel td:last-child { width: 100px; text-align: right; }
+.hgc-package-panel { padding: 0; overflow: hidden; }
+.hgc-package-panel.is-open { box-shadow: 0 2px 8px rgba(44, 63, 18, .08); }
+.hgc-package-panel__header { display: flex; min-height: 72px; align-items: center; gap: 16px; padding: 0 22px; }
+.hgc-package-panel__toggle { display: flex; flex: 1; align-items: center; gap: 13px; min-width: 0; padding: 14px 0; border: 0; color: #1d2327; text-align: left; background: transparent; cursor: pointer; }
+.hgc-package-panel__toggle:focus-visible { outline: 2px solid #2271b1; outline-offset: 3px; }
+.hgc-package-panel__chevron { width: 8px; height: 8px; flex: 0 0 auto; border-right: 2px solid #527417; border-bottom: 2px solid #527417; transform: rotate(-45deg); transition: transform .15s ease; }
+.hgc-package-panel.is-open .hgc-package-panel__chevron { transform: rotate(45deg); }
+.hgc-package-panel__heading { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.hgc-package-panel__heading strong { overflow: hidden; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
+.hgc-package-panel__heading small { color: #646970; font-size: 12px; font-weight: 500; }
+.hgc-package-panel__content { padding: 0 22px 22px; border-top: 1px solid #e5eadb; }
+.hgc-package-panel__intro { margin: 14px 0; color: #646970; }
+.hgc-package-table-wrap { overflow-x: auto; }
+.hgc-package-table { border: 1px solid #dcdcde; border-radius: 5px; border-spacing: 0; box-shadow: none; }
+.hgc-package-table th { color: #50575e; font-size: 12px; font-weight: 600; }
+.hgc-package-table th:nth-child(2), .hgc-package-table th:nth-child(3) { width: 150px; }
+.hgc-package-table th:last-child, .hgc-package-table td:last-child { width: 135px; text-align: right; }
+.hgc-package-table td { padding: 10px 12px; vertical-align: middle; }
+.hgc-package-table tbody tr:nth-child(even) { background: #f6f7f7; }
+.hgc-package-table input[type="number"] { width: 120px; }
+.hgc-package-price { display: inline-flex; align-items: center; gap: 6px; color: #646970; }
+.hgc-package-price input { min-width: 0; }
+.hgc-package-empty { margin: 0; padding: 28px 18px; border: 1px dashed #c3c4c7; color: #646970; text-align: center; background: #f6f7f7; }
+.hgc-package-empty[hidden] { display: none; }
 .hgc-course-list { display: grid; gap: 18px; }
-.hgc-course-list.has-no-results::after { content: "Geen golfbanen gevonden. Pas de zoekopdracht of filters aan."; display: block; padding: 32px 20px; border: 1px dashed #c3c4c7; border-radius: 7px; color: #646970; text-align: center; background: #f6f7f7; }
+#hgc-course-list.has-no-results::after { content: "Geen golfbanen gevonden. Pas de zoekopdracht of filters aan."; display: block; padding: 32px 20px; border: 1px dashed #c3c4c7; border-radius: 7px; color: #646970; text-align: center; background: #f6f7f7; }
 .hgc-course-toolbar { display: grid; grid-template-columns: minmax(240px, 1fr) auto auto auto; align-items: center; gap: 10px; margin-top: 18px; padding: 14px; border: 1px solid #dcdcde; border-radius: 7px; background: #f6f7f7; }
 .hgc-course-toolbar input[type="search"] { width: 100%; min-height: 36px; padding-left: 34px; background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20'%3E%3Cpath fill='%23646970' d='m17.5 16.1-3.8-3.8a6.5 6.5 0 1 0-1.4 1.4l3.8 3.8 1.4-1.4ZM3.5 8.5a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z'/%3E%3C/svg%3E"); background-position: 10px center; background-repeat: no-repeat; }
 .hgc-course-toolbar select { min-height: 36px; }
 .hgc-course-toolbar__actions { display: flex; gap: 6px; }
 .hgc-course-count { margin: 10px 2px 12px; color: #646970; font-size: 12px; font-weight: 600; }
+.hgc-restaurant-heading { margin-top: 24px; }
+.hgc-restaurant-heading h3 { margin: 0 0 8px; }
+.hgc-restaurant-toolbar { display: grid; grid-template-columns: minmax(260px, 1fr) auto; align-items: center; gap: 10px; margin-top: 14px; padding: 14px; border: 1px solid #dcdcde; border-radius: 7px; background: #f6f7f7; }
+.hgc-restaurant-toolbar input[type="search"] { width: 100%; min-height: 36px; padding-left: 34px; background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20'%3E%3Cpath fill='%23646970' d='m17.5 16.1-3.8-3.8a6.5 6.5 0 1 0-1.4 1.4l3.8 3.8 1.4-1.4ZM3.5 8.5a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z'/%3E%3C/svg%3E"); background-position: 10px center; background-repeat: no-repeat; }
+[data-hgc-restaurant-list].has-no-results::after { content: "Geen restaurantlocaties gevonden. Pas de zoekopdracht aan."; display: block; padding: 32px 20px; border: 1px dashed #c3c4c7; border-radius: 7px; color: #646970; text-align: center; background: #f6f7f7; }
 .hgc-admin-hint { margin: 0 0 14px; max-width: 900px; color: #646970; font-size: 12px; line-height: 1.6; }
-.hgc-course-card { border: 1px solid #d9e4c2; border-radius: 7px; background: #fafcf6; scroll-margin-top: 45px; }
+.hgc-course-card { min-width: 0; border: 1px solid #d9e4c2; border-radius: 7px; background: #fafcf6; scroll-margin-top: 45px; }
 .hgc-course-card[hidden] { display: none; }
 .hgc-course-card.is-open { box-shadow: 0 2px 8px rgba(44, 63, 18, .08); }
-.hgc-course-card__header { display: flex; align-items: center; gap: 14px; min-height: 66px; padding: 0 18px; }
+.hgc-course-card__header { display: flex; min-width: 0; align-items: center; gap: 14px; min-height: 66px; padding: 0 18px; }
 .hgc-course-card__toggle { display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; padding: 12px 0; border: 0; color: #1d2327; text-align: left; background: transparent; cursor: pointer; }
 .hgc-course-card__toggle:focus-visible { outline: 2px solid #2271b1; outline-offset: 3px; }
 .hgc-course-card__chevron { width: 8px; height: 8px; flex: 0 0 auto; border-right: 2px solid #527417; border-bottom: 2px solid #527417; transform: rotate(-45deg); transition: transform .15s ease; }
@@ -49,15 +83,32 @@
   .hgc-admin-grid--four, .hgc-admin-grid--three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hgc-course-toolbar { grid-template-columns: 1fr 1fr; }
   .hgc-course-search { grid-column: 1 / -1; }
+  .hgc-restaurant-toolbar { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
+  .hgc-admin-nav { top: 46px; overflow-x: auto; }
   .hgc-admin-grid--four, .hgc-admin-grid--three, .hgc-admin-grid--two { grid-template-columns: 1fr; }
   .hgc-admin-heading { flex-direction: column; }
-  .hgc-package-panel { overflow-x: auto; }
+  .hgc-package-panel__header { align-items: center; gap: 10px; padding: 0 14px; }
+  .hgc-package-panel__header > .button { flex: 0 0 auto; }
+  .hgc-package-panel__content { padding: 0 14px 16px; }
+  .hgc-package-table-wrap { overflow: visible; }
+  .hgc-package-table, .hgc-package-table tbody, .hgc-package-table tr, .hgc-package-table td { display: block; }
+  .hgc-package-table thead { display: none; }
+  .hgc-package-table { border: 0; background: transparent; }
+  .hgc-package-table tbody { display: grid; gap: 12px; }
+  .hgc-package-table tbody tr { padding: 14px; border: 1px solid #dcdcde; border-radius: 6px; background: #fff; }
+  .hgc-package-table tbody tr:nth-child(even) { background: #fff; }
+  .hgc-package-table td { display: grid; grid-template-columns: 82px minmax(0, 1fr); align-items: center; gap: 8px; width: auto !important; padding: 5px 0; text-align: left !important; }
+  .hgc-package-table td[data-label]::before { content: attr(data-label); color: #50575e; font-size: 12px; font-weight: 600; }
+  .hgc-package-table td input, .hgc-package-table input[type="number"], .hgc-package-price { width: 100%; max-width: none; }
+  .hgc-package-price input, .hgc-package-table .hgc-package-price input[type="number"] { width: auto; flex: 1; }
+  .hgc-package-table td:last-child { display: flex; justify-content: flex-end; padding-top: 10px; }
   .hgc-course-toolbar { grid-template-columns: 1fr; }
   .hgc-course-search { grid-column: auto; }
   .hgc-course-toolbar__actions { flex-wrap: wrap; }
+  .hgc-restaurant-toolbar { grid-template-columns: 1fr; }
   .hgc-course-card__header { align-items: flex-start; padding: 0 14px; }
   .hgc-course-card__header .button-link-delete { margin-top: 16px; }
   .hgc-course-card__body { padding: 4px 16px 18px; }

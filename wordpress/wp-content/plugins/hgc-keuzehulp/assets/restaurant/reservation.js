@@ -1,9 +1,9 @@
 (function () {
   'use strict';
-  var cfg = window.HGCRestaurant || {};
+  var globalCfg = window.HGCRestaurant || {};
   var labels = { SLOT_UNAVAILABLE: 'Dit tijdstip is zojuist volgeboekt. Kies een ander moment.', LOCATION_CLOSED: 'Het restaurant is op dit moment gesloten.', PARTY_TOO_LARGE: 'Voor deze groepsgrootte kun je het beste rechtstreeks contact opnemen.', RATE_LIMITED: 'Je hebt te veel aanvragen gedaan. Probeer het over een minuut opnieuw.' };
   function esc(value) { var node = document.createElement('span'); node.textContent = String(value == null ? '' : value); return node.innerHTML; }
-  function api(payload) {
+  function api(payload, cfg) {
     return fetch(cfg.ajaxUrl + '?action=hgc_restaurant_api&nonce=' + encodeURIComponent(cfg.nonce), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function (res) { return res.json().then(function (json) { if (!res.ok || !json.success) { var data = json.data || {}; var error = new Error(labels[data.code] || data.message || 'Er ging iets mis.'); error.code = data.code; throw error; } return json.data; }); });
   }
@@ -23,9 +23,9 @@
   // plaats van te wachten tot de Connect-koppeling antwoord geeft (die bij een
   // koude start enkele seconden kan duren). De echte naam en grenzen komen op
   // de achtergrond binnen en worden dan alsnog toegepast, zie applyInfo().
-  function defaultInfo() {
+  function defaultInfo(cfg) {
     var max = new Date(); max.setDate(max.getDate() + 90);
-    return { naam: 'Tafel reserveren', minDate: isoDate(new Date()), maxDate: isoDate(max), minGroepsgrootte: 1, maxGroepsgrootte: 12 };
+    return { naam: cfg.name || 'Tafel reserveren', minDate: isoDate(new Date()), maxDate: isoDate(max), minGroepsgrootte: 1, maxGroepsgrootte: 12 };
   }
 
   var DOW = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
@@ -34,7 +34,7 @@
   var MONTH_FULL = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
   function nextDays(count) { var out = []; for (var i = 0; i < count; i++) { var d = new Date(); d.setDate(d.getDate() + i); out.push(d); } return out; }
   function formatDateLong(iso) { var p = iso.split('-'); var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); return DOW_FULL[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_FULL[d.getMonth()] + ' ' + p[0]; }
-  function logosHtml() {
+  function logosHtml(cfg) {
     var parts = '';
     if (cfg.parkLogo) parts += '<img class="hgc-logo hgc-logo--park" src="' + esc(cfg.parkLogo) + '" alt="">';
     if (cfg.clubLogo) parts += '<img class="hgc-logo hgc-logo--club" src="' + esc(cfg.clubLogo) + '" alt="">';
@@ -46,7 +46,7 @@
   function confirmationHtml(r) {
     return '<div class="hgc-card hgc-confirm"><div class="hgc-checkmark">✓</div><h2>Je tafel is gereserveerd</h2><p>Een bevestiging is verstuurd naar <strong>' + esc(r.email) + '</strong>.</p><dl><dt>Referentie</dt><dd>' + esc(r.reserveringsnummer) + '</dd><dt>Aantal personen</dt><dd>' + r.aantalPersonen + '</dd></dl></div>';
   }
-  function detailsFieldsEl() {
+  function detailsFieldsEl(cfg) {
     var wrap = document.createElement('div');
     wrap.innerHTML = '<div class="hgc-grid">' + field('Naam', 'name', 'text', true, 'autocomplete="name"') + field('E-mailadres', 'email', 'email', true, 'autocomplete="email"') + field('Telefoonnummer', 'phone', 'tel', false, 'autocomplete="tel"') + field('Gelegenheid', 'occasion', 'text', false, '') + '</div>' +
       '<label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dietary" rows="3"></textarea></label>' +
@@ -63,11 +63,11 @@
    * hergebruikt voor zowel de ingebouwde desktopwizard als de mobiele
    * sheet, zodat er maar één plek is waar de boekingslogica leeft.
    */
-  function initWizard(root, park) {
+  function initWizard(root, park, cfg) {
     var app = root.querySelector('.hgc-reservation__app');
     var mq = window.matchMedia('(min-width: 760px)');
     var currentOverlay = null;
-    var state = { info: defaultInfo(), date: null, party: 2, slots: null, slotsForKey: null, slotsLoading: false, slotsError: null, time: null };
+    var state = { info: defaultInfo(cfg), date: null, party: 2, slots: null, slotsForKey: null, slotsLoading: false, slotsError: null, time: null };
     state.date = state.info.minDate;
 
     function clampParty() {
@@ -85,7 +85,7 @@
       if (state.slotsForKey === key) return;
       state.slots = null; state.slotsError = null; state.slotsLoading = true; state.time = null;
       render();
-      api({ action: 'availability', slug: park, date: state.date, partySize: state.party }).then(function (data) {
+      api({ action: 'availability', slug: park, date: state.date, partySize: state.party }, cfg).then(function (data) {
         if (slotsKey() !== key) return;
         state.slots = data.slots || []; state.slotsForKey = key; state.slotsLoading = false;
         render();
@@ -167,7 +167,7 @@
       container.appendChild(buildTimeArea());
       if (state.time) {
         container.insertAdjacentHTML('beforeend', stepHeadHtml(3, 'Jouw gegevens', 'active'));
-        container.appendChild(detailsFieldsEl());
+        container.appendChild(detailsFieldsEl(cfg));
       } else {
         container.insertAdjacentHTML('beforeend', stepHeadHtml(3, 'Jouw gegevens', 'upcoming'));
         container.insertAdjacentHTML('beforeend', '<div class="hgc-step-placeholder">Openen zodra een tijd is gekozen.</div>');
@@ -186,7 +186,7 @@
     }
 
     function wizardShellHtml() {
-      var logos = logosHtml();
+      var logos = logosHtml(cfg);
       return '<div class="hgc-wizard">' +
         (logos ? '<div class="hgc-wizard-logos">' + logos + '</div>' : '') +
         '<div class="hgc-wizard-hero"><div><p class="hgc-kicker">Tafel reserveren</p><h2></h2><p class="hgc-wizard-sub"></p></div><p class="hgc-wizard-step-badge"></p></div>' +
@@ -219,7 +219,7 @@
     }
 
     function teaserHtml() {
-      var logos = logosHtml();
+      var logos = logosHtml(cfg);
       var rows = '';
       if (cfg.hoursNote) rows += '<div class="hgc-teaser-row"><span class="hgc-teaser-row-label">Openingstijden</span><span class="hgc-teaser-row-val">' + esc(cfg.hoursNote) + '</span></div>';
       if (cfg.phone) rows += '<div class="hgc-teaser-row"><span class="hgc-teaser-row-label">Telefoon</span><span class="hgc-teaser-row-val">' + esc(cfg.phone) + '</span></div>';
@@ -288,7 +288,7 @@
       values.action = 'createPublic'; values.slug = park; values.date = state.date; values.time = state.time; values.partySize = state.party;
       values.privacyAccepted = form.elements.privacyAccepted ? form.elements.privacyAccepted.checked : false;
       if (btn) { btn.disabled = true; btn.textContent = 'Bezig met reserveren…'; }
-      api(values).then(function (data) {
+      api(values, cfg).then(function (data) {
         if (container.classList.contains('hgc-sheet')) {
           container.innerHTML = confirmationHtml(data.reservation);
         } else {
@@ -317,18 +317,18 @@
     };
   }
 
-  function initManage(root, park, ref, token) {
+  function initManage(root, park, ref, token, cfg) {
     var app = root.querySelector('.hgc-reservation__app');
-    api({ action: 'getPublic', slug: park, reservationNumber: ref, token: token }).then(function (data) {
+    api({ action: 'getPublic', slug: park, reservationNumber: ref, token: token }, cfg).then(function (data) {
       var r = data.reservation, start = new Date(r.startAt), dateValue = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(start), timeValue = new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' }).format(start);
       var controls = r.wijzigbaar ? '<form class="hgc-manage-form"><h3>Wijzigen</h3><div class="hgc-grid">' + field('Datum', 'date', 'date', true, 'value="' + esc(dateValue) + '"') + field('Aantal personen', 'partySize', 'number', true, 'min="1" value="' + r.aantalPersonen + '"') + '</div><button type="button" class="hgc-button hgc-check">Bekijk tijden</button><fieldset class="hgc-slots" hidden><legend>Beschikbare tijden</legend><div></div></fieldset><div class="hgc-grid">' + field('Telefoonnummer', 'phone', 'tel', false, 'value="' + esc(r.telefoon || '') + '"') + field('Gelegenheid', 'occasion', 'text', false, 'value="' + esc(r.gelegenheid || '') + '"') + '</div><label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dietary" rows="3">' + esc(r.dieetwensen || '') + '</textarea></label><div class="hgc-manage-actions"><button class="hgc-button hgc-save" type="submit">Wijziging opslaan</button><button type="button" class="hgc-button hgc-cancel">Annuleren</button></div></form>' : '<p>Online wijzigen of annuleren is niet meer mogelijk. Neem contact op met het restaurant.</p>';
       app.innerHTML = '<div class="hgc-card"><div class="hgc-header"><p class="hgc-kicker">Reservering beheren</p><h2>' + esc(r.restaurant) + '</h2></div><dl><dt>Referentie</dt><dd>' + esc(r.reserveringsnummer) + '</dd><dt>Datum en tijd</dt><dd>' + esc(start.toLocaleString('nl-NL', { dateStyle: 'full', timeStyle: 'short' })) + '</dd><dt>Personen</dt><dd>' + r.aantalPersonen + '</dd><dt>Status</dt><dd>' + esc(r.status) + '</dd></dl>' + controls + '<div class="hgc-status" tabindex="-1" role="status" aria-live="polite"></div></div>';
       reveal(root);
       var form = app.querySelector('.hgc-manage-form'), selected = timeValue;
       if (form) {
-        form.querySelector('.hgc-check').addEventListener('click', function () { var date = form.elements.date.value, party = Number(form.elements.partySize.value); api({ action: 'availability', slug: park, date: date, partySize: party, reservationNumber: ref, token: token }).then(function (result) { var slots = form.querySelector('.hgc-slots'); slots.hidden = false; slots.querySelector('div').innerHTML = result.slots.map(function (slot) { return '<button type="button" class="hgc-slot' + (slot.time === selected ? ' is-selected' : '') + '" data-time="' + esc(slot.time) + '">' + esc(slot.time) + '</button>'; }).join('') || '<p>Geen tijden beschikbaar.</p>'; slots.querySelectorAll('.hgc-slot').forEach(function (button) { button.addEventListener('click', function () { slots.querySelectorAll('.hgc-slot').forEach(function (b) { b.classList.remove('is-selected'); }); button.classList.add('is-selected'); selected = button.dataset.time; }); }); }).catch(function (error) { announce(app, error.message, true); }); });
-        form.addEventListener('submit', function (event) { event.preventDefault(); var values = Object.fromEntries(new FormData(form).entries()); values.action = 'updatePublic'; values.slug = park; values.reservationNumber = ref; values.token = token; values.partySize = Number(values.partySize); values.time = selected; form.querySelector('.hgc-save').disabled = true; api(values).then(function () { announce(app, 'Je reservering is gewijzigd. Je ontvangt een bevestiging per e-mail.'); window.setTimeout(function () { initManage(root, park, ref, token); }, 900); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); }); });
-        var cancel = form.querySelector('.hgc-cancel'); cancel.addEventListener('click', function () { if (!window.confirm('Weet je zeker dat je deze reservering wilt annuleren?')) return; cancel.disabled = true; api({ action: 'cancelPublic', slug: park, reservationNumber: ref, token: token, reason: 'Via website geannuleerd' }).then(function () { form.remove(); announce(app, 'Je reservering is geannuleerd. Je ontvangt een bevestiging per e-mail.'); }).catch(function (error) { cancel.disabled = false; announce(app, error.message, true); }); });
+        form.querySelector('.hgc-check').addEventListener('click', function () { var date = form.elements.date.value, party = Number(form.elements.partySize.value); api({ action: 'availability', slug: park, date: date, partySize: party, reservationNumber: ref, token: token }, cfg).then(function (result) { var slots = form.querySelector('.hgc-slots'); slots.hidden = false; slots.querySelector('div').innerHTML = result.slots.map(function (slot) { return '<button type="button" class="hgc-slot' + (slot.time === selected ? ' is-selected' : '') + '" data-time="' + esc(slot.time) + '">' + esc(slot.time) + '</button>'; }).join('') || '<p>Geen tijden beschikbaar.</p>'; slots.querySelectorAll('.hgc-slot').forEach(function (button) { button.addEventListener('click', function () { slots.querySelectorAll('.hgc-slot').forEach(function (b) { b.classList.remove('is-selected'); }); button.classList.add('is-selected'); selected = button.dataset.time; }); }); }).catch(function (error) { announce(app, error.message, true); }); });
+        form.addEventListener('submit', function (event) { event.preventDefault(); var values = Object.fromEntries(new FormData(form).entries()); values.action = 'updatePublic'; values.slug = park; values.reservationNumber = ref; values.token = token; values.partySize = Number(values.partySize); values.time = selected; form.querySelector('.hgc-save').disabled = true; api(values, cfg).then(function () { announce(app, 'Je reservering is gewijzigd. Je ontvangt een bevestiging per e-mail.'); window.setTimeout(function () { initManage(root, park, ref, token, cfg); }, 900); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); }); });
+        var cancel = form.querySelector('.hgc-cancel'); cancel.addEventListener('click', function () { if (!window.confirm('Weet je zeker dat je deze reservering wilt annuleren?')) return; cancel.disabled = true; api({ action: 'cancelPublic', slug: park, reservationNumber: ref, token: token, reason: 'Via website geannuleerd' }, cfg).then(function () { form.remove(); announce(app, 'Je reservering is geannuleerd. Je ontvangt een bevestiging per e-mail.'); }).catch(function (error) { cancel.disabled = false; announce(app, error.message, true); }); });
       }
     }).catch(function (error) { app.innerHTML = '<div class="hgc-card"><div class="hgc-status is-error" role="alert">' + esc(error.message) + '</div></div>'; reveal(root); });
   }
@@ -337,12 +337,14 @@
     document.querySelectorAll('.hgc-reservation').forEach(function (root) {
       var app = root.querySelector('.hgc-reservation__app');
       var park = root.dataset.park, ref = root.dataset.ref, token = root.dataset.token;
+      var profile = globalCfg.locations && globalCfg.locations[park] ? globalCfg.locations[park] : (globalCfg.fallbackProfile || {});
+      var cfg = Object.assign({}, globalCfg, profile);
       if (ref && token) {
-        initManage(root, park, ref, token);
+        initManage(root, park, ref, token, cfg);
         return;
       }
-      var controller = initWizard(root, park);
-      api({ action: 'publicInfo', slug: park })
+      var controller = initWizard(root, park, cfg);
+      api({ action: 'publicInfo', slug: park }, cfg)
         .then(function (info) { controller.applyInfo(info); })
         .catch(function (error) { announce(app.querySelector('.hgc-wizard, .hgc-teaser') || app, error.message, true); });
     });

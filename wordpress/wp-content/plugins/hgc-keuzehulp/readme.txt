@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.5
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,13 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.1.0 =
+* Het restaurantbeheer staat nu helemaal onderaan de instellingenpagina en ondersteunt een onbeperkt aantal afzonderlijke restaurantlocaties met elk een eigen parkcode, naam, parklogo, telefoonnummer, adres en openingstijden.
+* Bestaande restaurantinstellingen worden automatisch als eerste locatie overgenomen. De shortcode en het Gutenberg-blok kiezen het juiste locatieprofiel; meerdere restaurantwidgets op één pagina kunnen ieder hun eigen branding gebruiken.
+* Restaurantlocaties zijn doorzoekbaar en inklapbaar, met een live teller en dubbele-parkcodecontrole. De Gutenberg-editor toont de ingestelde locaties in een keuzelijst.
+* De vier pakketgroepen zijn inklapbaar en tonen in het overzicht hun aantal pakketten en creditbereik. Toevoegen focust direct het nieuwe pakket; verwijderen vraagt om bevestiging; op mobiel worden pakketrijen als leesbare kaarten getoond.
+* Bovenaan het beheer staat een compacte navigatie naar algemeen, pakketten, golfbanen, voordelen en restaurant.
 
 = 2.0.5 =
 * Het officiële HGC-schaapje vervangt het standaard grijze stekkericoon in de WordPress-updatekaart en het scherm met plugininformatie.

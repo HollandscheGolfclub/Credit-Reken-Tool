@@ -12,7 +12,6 @@ defined('ABSPATH') || exit;
 final class HGC_Restaurant
 {
     private const OPTION = 'hgc_restaurant_settings';
-
     private const WARMUP_HOOK = 'hgc_restaurant_warmup';
     private const WARMUP_INTERVAL = 'hgc_five_minutes';
 
@@ -55,15 +54,17 @@ final class HGC_Restaurant
     public function warmup_ping(): void
     {
         $settings = self::settings();
-        if (!$settings['api_url'] || !$settings['park']) {
+        if (!$settings['api_url'] || !$settings['locations']) {
             return;
         }
-        wp_remote_post(esc_url_raw($settings['api_url']), array(
-            'timeout' => 8,
-            'blocking' => false,
-            'headers' => array('Content-Type' => 'application/json'),
-            'body' => wp_json_encode(array('action' => 'publicInfo', 'slug' => $settings['park'])),
-        ));
+        foreach (array_keys($settings['locations']) as $park) {
+            wp_remote_post(esc_url_raw($settings['api_url']), array(
+                'timeout' => 8,
+                'blocking' => false,
+                'headers' => array('Content-Type' => 'application/json'),
+                'body' => wp_json_encode(array('action' => 'publicInfo', 'slug' => $park)),
+            ));
+        }
     }
 
     public static function deactivate_cleanup(): void
@@ -76,7 +77,7 @@ final class HGC_Restaurant
 
     public static function settings(): array
     {
-        return wp_parse_args(get_option(self::OPTION, array()), array(
+        $settings = wp_parse_args(get_option(self::OPTION, array()), array(
             'api_url' => '',
             'park' => '',
             'accent' => '#7cb63a',
@@ -86,7 +87,59 @@ final class HGC_Restaurant
             'phone' => '',
             'address' => '',
             'hours_note' => '',
+            'locations' => array(),
         ));
+
+        $locations = self::sanitize_locations($settings['locations']);
+        $legacy_park = sanitize_title($settings['park']);
+        if (!$locations && $legacy_park !== '') {
+            $locations[$legacy_park] = array(
+                'slug' => $legacy_park,
+                'name' => ucwords(str_replace('-', ' ', $legacy_park)),
+                'park_logo' => esc_url_raw($settings['park_logo']),
+                'phone' => sanitize_text_field($settings['phone']),
+                'address' => sanitize_text_field($settings['address']),
+                'hours_note' => sanitize_text_field($settings['hours_note']),
+            );
+        }
+        if ($legacy_park === '' || !isset($locations[$legacy_park])) {
+            $legacy_park = (string) array_key_first($locations);
+        }
+        $settings['park'] = $legacy_park;
+        $settings['locations'] = $locations;
+        return $settings;
+    }
+
+    /**
+     * Normaliseert locatieprofielen. De sleutel is bewust gelijk aan de slug
+     * die HGC Connect verwacht, zodat lookup en warmhoud-pings niet
+     * uiteenlopen.
+     */
+    private static function sanitize_locations($raw): array
+    {
+        if (!is_array($raw)) {
+            return array();
+        }
+        $locations = array();
+        foreach ($raw as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $slug = sanitize_title($item['slug'] ?? $item['code'] ?? '');
+            if ($slug === '' || isset($locations[$slug])) {
+                continue;
+            }
+            $name = sanitize_text_field($item['name'] ?? '');
+            $locations[$slug] = array(
+                'slug' => $slug,
+                'name' => $name !== '' ? $name : ucwords(str_replace('-', ' ', $slug)),
+                'park_logo' => esc_url_raw($item['park_logo'] ?? ''),
+                'phone' => sanitize_text_field($item['phone'] ?? ''),
+                'address' => sanitize_text_field($item['address'] ?? ''),
+                'hours_note' => sanitize_text_field($item['hours_note'] ?? ''),
+            );
+        }
+        return $locations;
     }
 
     public function register_assets(): void
@@ -111,6 +164,13 @@ final class HGC_Restaurant
             HGC_CALCULATOR_VERSION,
             true
         );
+        $settings = self::settings();
+        wp_localize_script('hgc-restaurant-block', 'HGCRestaurantBlock', array(
+            'locations' => array_values(array_map(static function (array $location): array {
+                return array('value' => $location['slug'], 'label' => $location['name']);
+            }, $settings['locations'])),
+            'defaultPark' => $settings['park'],
+        ));
         register_block_type('hgc/restaurant-reserveren', array(
             'api_version' => 2,
             'editor_script' => 'hgc-restaurant-block',
@@ -135,7 +195,6 @@ final class HGC_Restaurant
                 ? '<p>Stel eerst een parkcode in bij Instellingen → Hollandsche Golfclub Calculator.</p>'
                 : '';
         }
-
         wp_enqueue_style('hgc-restaurant');
         wp_enqueue_script('hgc-restaurant');
         wp_add_inline_script(
@@ -145,11 +204,23 @@ final class HGC_Restaurant
                 'nonce' => wp_create_nonce('hgc_restaurant'),
                 'privacyUrl' => esc_url_raw($settings['privacy_url']),
                 'clubLogo' => esc_url_raw($settings['club_logo']),
-                'parkLogo' => esc_url_raw($settings['park_logo']),
                 'grasUrl' => HGC_CALCULATOR_URL . 'assets/restaurant/img/hgc-gras.png',
-                'phone' => sanitize_text_field($settings['phone']),
-                'address' => sanitize_text_field($settings['address']),
-                'hoursNote' => sanitize_text_field($settings['hours_note']),
+                'fallbackProfile' => isset($settings['locations'][$settings['park']]) ? array(
+                    'name' => $settings['locations'][$settings['park']]['name'],
+                    'parkLogo' => $settings['locations'][$settings['park']]['park_logo'],
+                    'phone' => $settings['locations'][$settings['park']]['phone'],
+                    'address' => $settings['locations'][$settings['park']]['address'],
+                    'hoursNote' => $settings['locations'][$settings['park']]['hours_note'],
+                ) : array(),
+                'locations' => array_map(static function (array $location): array {
+                    return array(
+                        'name' => $location['name'],
+                        'parkLogo' => $location['park_logo'],
+                        'phone' => $location['phone'],
+                        'address' => $location['address'],
+                        'hoursNote' => $location['hours_note'],
+                    );
+                }, $settings['locations']),
             )) . ';',
             'before'
         );
@@ -189,6 +260,11 @@ final class HGC_Restaurant
 
         $raw = json_decode(file_get_contents('php://input'), true);
         $payload = is_array($raw) ? $this->sanitize_payload($raw) : array();
+        $park = sanitize_title($payload['slug'] ?? '');
+        if ($park === '') {
+            wp_send_json_error(array('message' => 'Dit restaurant is niet geconfigureerd.', 'code' => 'UNKNOWN_LOCATION'), 400);
+        }
+        $payload['slug'] = $park;
 
         $response = wp_remote_post(esc_url_raw($settings['api_url']), array(
             'timeout' => 15,
@@ -241,19 +317,43 @@ final class HGC_Restaurant
         check_admin_referer('hgc_restaurant_save');
 
         $raw = isset($_POST['restaurant']) && is_array($_POST['restaurant']) ? wp_unslash($_POST['restaurant']) : array();
+        $submitted_locations = isset($raw['locations']) && is_array($raw['locations']) ? $raw['locations'] : array();
+        $seen = array();
+        foreach ($submitted_locations as $location) {
+            if (!is_array($location)) {
+                continue;
+            }
+            $slug = sanitize_title($location['slug'] ?? $location['code'] ?? '');
+            if ($slug === '') {
+                continue;
+            }
+            if (isset($seen[$slug])) {
+                wp_safe_redirect(add_query_arg('restaurant_error', 'duplicate', admin_url('options-general.php?page=hgc-calculator')) . '#hgc-restaurant');
+                exit;
+            }
+            $seen[$slug] = true;
+        }
+        $locations = self::sanitize_locations($raw['locations'] ?? array());
+        $park = sanitize_title($raw['park'] ?? '');
+        if ($park === '' || !isset($locations[$park])) {
+            $park = (string) array_key_first($locations);
+        }
+        $legacy = $locations[$park] ?? array('park_logo' => '', 'phone' => '', 'address' => '', 'hours_note' => '');
         update_option(self::OPTION, array(
             'api_url' => esc_url_raw($raw['api_url'] ?? ''),
-            'park' => sanitize_title($raw['park'] ?? ''),
+            'park' => $park,
             'accent' => sanitize_hex_color($raw['accent'] ?? '') ?: '#95c11f',
             'privacy_url' => esc_url_raw($raw['privacy_url'] ?? ''),
             'club_logo' => esc_url_raw($raw['club_logo'] ?? ''),
-            'park_logo' => esc_url_raw($raw['park_logo'] ?? ''),
-            'phone' => sanitize_text_field($raw['phone'] ?? ''),
-            'address' => sanitize_text_field($raw['address'] ?? ''),
-            'hours_note' => sanitize_text_field($raw['hours_note'] ?? ''),
+            // Legacy-spiegels houden oudere code/pluginversies functioneel.
+            'park_logo' => $legacy['park_logo'],
+            'phone' => $legacy['phone'],
+            'address' => $legacy['address'],
+            'hours_note' => $legacy['hours_note'],
+            'locations' => array_values($locations),
         ), false);
 
-        wp_safe_redirect(add_query_arg('restaurant_updated', '1', admin_url('options-general.php?page=hgc-calculator')));
+        wp_safe_redirect(add_query_arg('restaurant_updated', '1', admin_url('options-general.php?page=hgc-calculator')) . '#hgc-restaurant');
         exit;
     }
 
@@ -265,38 +365,85 @@ final class HGC_Restaurant
     {
         $s = self::settings();
         ?>
-        <section class="hgc-admin-panel">
+        <section class="hgc-admin-panel" id="hgc-restaurant" data-hgc-restaurant-section>
             <h2>Restaurant reserveren</h2>
             <p class="hgc-admin-hint">Koppelt aan de reserveringsfunctie van HGC Connect. De plugin bewaart zelf geen reserveringen; alle data en capaciteitsregels blijven centraal in Connect.</p>
             <?php if (isset($_GET['restaurant_updated'])) : ?>
                 <div class="notice notice-success is-dismissible"><p>De restaurantinstellingen zijn opgeslagen.</p></div>
+            <?php endif; ?>
+            <?php if (($_GET['restaurant_error'] ?? '') === 'duplicate') : ?>
+                <div class="notice notice-error"><p>Elke restaurantlocatie moet een unieke parkcode hebben. Er is niets opgeslagen.</p></div>
             <?php endif; ?>
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="hgc_restaurant_save" />
                 <?php wp_nonce_field('hgc_restaurant_save'); ?>
                 <div class="hgc-admin-grid hgc-admin-grid--two">
                     <label class="hgc-admin-field"><span>Connect API-URL</span><input class="large-text code" type="url" name="restaurant[api_url]" value="<?php echo esc_attr($s['api_url']); ?>" required /></label>
-                    <label class="hgc-admin-field"><span>Standaard parkcode</span><input type="text" name="restaurant[park]" value="<?php echo esc_attr($s['park']); ?>" placeholder="almkreek" /></label>
+                    <label class="hgc-admin-field"><span>Standaard restaurant</span><select name="restaurant[park]" data-hgc-restaurant-default>
+                        <option value="">Eerste restaurant in de lijst</option>
+                        <?php foreach ($s['locations'] as $location) : ?>
+                            <option value="<?php echo esc_attr($location['slug']); ?>" <?php selected($s['park'], $location['slug']); ?>><?php echo esc_html($location['name']); ?> (<?php echo esc_html($location['slug']); ?>)</option>
+                        <?php endforeach; ?>
+                    </select></label>
                     <label class="hgc-admin-field"><span>Accentkleur</span><input type="color" name="restaurant[accent]" value="<?php echo esc_attr($s['accent']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Privacyverklaring</span><input class="large-text" type="url" name="restaurant[privacy_url]" value="<?php echo esc_attr($s['privacy_url']); ?>" /></label>
+                    <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
                 </div>
                 <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code>.</p>
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
-                <h3 style="margin:24px 0 8px">Boekingsscherm — logo's en contactgegevens</h3>
-                <p class="hgc-admin-hint">Allemaal optioneel. Zonder logo's toont de kop alleen de titel; zonder telefoon/adres/openingstijden worden die regels gewoon weggelaten.</p>
-                <div class="hgc-admin-grid hgc-admin-grid--two">
-                    <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
-                    <label class="hgc-admin-field"><span>Parklogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[park_logo]" value="<?php echo esc_attr($s['park_logo']); ?>" placeholder="https://.../almkreek-logo.png" /></label>
-                    <label class="hgc-admin-field"><span>Telefoonnummer</span><input type="text" name="restaurant[phone]" value="<?php echo esc_attr($s['phone']); ?>" placeholder="0183 40 30 30" /></label>
-                    <label class="hgc-admin-field"><span>Adres</span><input type="text" name="restaurant[address]" value="<?php echo esc_attr($s['address']); ?>" placeholder="Almweg 2, Almkerk" /></label>
-                    <label class="hgc-admin-field"><span>Openingstijden (vrije tekst)</span><input class="large-text" type="text" name="restaurant[hours_note]" value="<?php echo esc_attr($s['hours_note']); ?>" placeholder="Keuken open van 12:00 tot 21:00" /></label>
+                <h3 style="margin:24px 0 8px">Boekingsschermen per restaurant</h3>
+                <p class="hgc-admin-hint">Iedere locatie krijgt een eigen parkcode, naam, logo en contactgegevens. De algemene API, accentkleur, privacyverklaring en het clublogo gelden voor alle locaties.</p>
+                <div class="hgc-admin-heading hgc-restaurant-heading">
+                    <div><h3>Restaurants en banen</h3><p class="hgc-admin-hint">Voeg zoveel locaties toe als nodig. De parkcode moet exact overeenkomen met de slug in HGC Connect.</p></div>
+                    <button type="button" class="button button-secondary" data-hgc-add-restaurant>Restaurant toevoegen</button>
                 </div>
+                <div class="hgc-restaurant-toolbar" role="search" aria-label="Restaurantlocaties doorzoeken">
+                    <label class="hgc-course-search"><span class="screen-reader-text">Zoek een restaurantlocatie</span><input type="search" placeholder="Zoek op naam, parkcode of adres…" autocomplete="off" data-hgc-restaurant-search /></label>
+                    <div class="hgc-course-toolbar__actions">
+                        <button class="button" type="button" data-hgc-expand-restaurants>Alles openen</button>
+                        <button class="button" type="button" data-hgc-collapse-restaurants>Alles sluiten</button>
+                    </div>
+                </div>
+                <p class="hgc-course-count" data-hgc-restaurant-count aria-live="polite"><?php echo esc_html(count($s['locations']) . ' locaties ingesteld'); ?></p>
+                <div class="hgc-course-list" data-hgc-restaurant-list>
+                    <?php foreach (array_values($s['locations']) as $index => $location) : ?>
+                        <?php $this->render_location_fields($location, (string) $index); ?>
+                    <?php endforeach; ?>
+                </div>
+                <template data-hgc-restaurant-template><?php $this->render_location_fields(array(), '__INDEX__'); ?></template>
                 <p class="hgc-admin-hint">Gebruik een afbeelding die al op de juiste grootte staat (bijv. via de mediabibliotheek geüpload en daar de URL van gekopieerd) — de plugin schaalt zelf niet.</p>
                 <div class="hgc-admin-actions">
                     <?php submit_button('Restaurantinstellingen opslaan', 'primary', 'submit', false); ?>
                 </div>
             </form>
         </section>
+        <?php
+    }
+
+    private function render_location_fields(array $location, string $index): void
+    {
+        $location = wp_parse_args($location, array('slug' => '', 'name' => '', 'park_logo' => '', 'phone' => '', 'address' => '', 'hours_note' => ''));
+        $base = 'restaurant[locations][' . $index . ']';
+        ?>
+        <article class="hgc-course-card" data-hgc-restaurant-row>
+            <div class="hgc-course-card__header">
+                <button class="hgc-course-card__toggle" type="button" data-hgc-toggle-restaurant aria-expanded="true">
+                    <span class="hgc-course-card__chevron" aria-hidden="true"></span>
+                    <span class="hgc-course-card__title"><strong data-hgc-location-title><?php echo esc_html($location['name'] ?: 'Nieuw restaurant'); ?></strong><small data-hgc-location-summary><?php echo esc_html(implode(' · ', array_filter(array($location['slug'], $location['address'])))); ?></small></span>
+                </button>
+                <button type="button" class="button-link-delete" data-hgc-remove-restaurant>Verwijderen</button>
+            </div>
+            <div class="hgc-course-card__body">
+                <div class="hgc-admin-grid hgc-admin-grid--two">
+                    <label class="hgc-admin-field"><span>Parkcode / slug</span><input type="text" name="<?php echo esc_attr($base); ?>[slug]" value="<?php echo esc_attr($location['slug']); ?>" placeholder="almkreek" data-hgc-location-slug required /></label>
+                    <label class="hgc-admin-field"><span>Naam</span><input type="text" name="<?php echo esc_attr($base); ?>[name]" value="<?php echo esc_attr($location['name']); ?>" placeholder="Golfpark Almkreek" data-hgc-location-name required /></label>
+                    <label class="hgc-admin-field"><span>Parklogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="<?php echo esc_attr($base); ?>[park_logo]" value="<?php echo esc_attr($location['park_logo']); ?>" placeholder="https://.../parklogo.png" /></label>
+                    <label class="hgc-admin-field"><span>Telefoonnummer</span><input type="text" name="<?php echo esc_attr($base); ?>[phone]" value="<?php echo esc_attr($location['phone']); ?>" placeholder="0183 40 30 30" /></label>
+                    <label class="hgc-admin-field"><span>Adres</span><input type="text" name="<?php echo esc_attr($base); ?>[address]" value="<?php echo esc_attr($location['address']); ?>" placeholder="Almweg 2, Almkerk" /></label>
+                    <label class="hgc-admin-field"><span>Openingstijden (vrije tekst)</span><input type="text" name="<?php echo esc_attr($base); ?>[hours_note]" value="<?php echo esc_attr($location['hours_note']); ?>" placeholder="Keuken open van 12:00 tot 21:00" /></label>
+                </div>
+            </div>
+        </article>
         <?php
     }
 }
