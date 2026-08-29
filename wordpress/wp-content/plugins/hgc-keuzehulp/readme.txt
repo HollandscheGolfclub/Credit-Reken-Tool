@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.2.3
+Stable tag: 2.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ Adviseert het best passende speelrecht op basis van rondes op grote en kleine go
 De alternatieve shortcode `[hgc_rekentool]` werkt eveneens.
 
 Beheer banen, creditwaarden, pakketten, voordelen en links via
-Instellingen > Hollandsche Golfclub Calculator.
+Instellingen > HGC Interne WebsiteTechniek.
 
 == GitHub-updates ==
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.2.4 =
+* De instellingenpagina heet nu HGC Interne WebsiteTechniek in de paginatitel, het WordPress-zijmenu en beheerdersmeldingen.
+* Jeugdgreenfee en het aantal gratis handicaprondes zijn nu rechtstreeks instelbaar.
+* LoyalTee-lidmaatschapsprijs, greenfeekorting en ballentegoed zijn nu rechtstreeks instelbaar en worden opgeslagen voor de keuzehulpberekening.
+* De beheerbare links zijn uitgebreid met LoyalTee en de pagina met greenfeeprijzen.
 
 = 2.2.3 =
 * De groene vulling van de rondesliders loopt nu exact door tot onder het midden van het schuifbolletje, zonder zichtbaar leeg stukje. Het oorspronkelijke bolletje met witte rand is hersteld.
@@ -73,7 +79,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 
 = 2.0.0 =
 * Iconen bij "Grote baan" en "Kleine baan" in stap 1 zijn vervangen: beide tonen nu dezelfde golfswing-pictogram (was een "9" resp. een vlaggetje) in het groen van de club, in plaats van twee verschillende stijlen.
-* Het "Voorbehoud bij uitslag" (het "Let op bij [baan]: ..." bericht op het resultaatscherm) is per baan instelbaar gemaakt in het adminscherm (Instellingen → Hollandsche Golfclub Calculator), in plaats van vast in de code.
+* Het "Voorbehoud bij uitslag" (het "Let op bij [baan]: ..." bericht op het resultaatscherm) is per baan instelbaar gemaakt in het adminscherm (Instellingen → HGC Interne WebsiteTechniek), in plaats van vast in de code.
 * De alternatiefkaart "Meer speelruimte" (het grotere speelrecht als upsell) is anders ingevuld: in plaats van "Je krijgt X credits extra voor € Y meer" staat er nu of dit grotere speelrecht al je opgegeven rondes volledig dekt of een groter deel daarvan, zonder een bedrag te herhalen dat al bovenaan de kaart staat.
 * Auteur bijgewerkt naar Jesse Weevers | Hollandsche Golfclub.
 
@@ -116,7 +122,7 @@ De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automati
 * De restaurantreservering in de HGC-huisstijl gezet: Poppins-lettertype (werd nog geladen als dat nog niet gebeurd was), de groentinten van de keuzehulp in plaats van de generieke standaardkleur, en afgeronde pil-chips voor de tijdstippen in plaats van vierkante knopjes. Functioneel ongewijzigd.
 
 = 1.25.0 =
-* Restaurantreservering (voorheen de losse plugin HGC Restaurant Reserveren) samengevoegd in deze plugin: één plugin, één versienummer, één auto-updater vanuit deze GitHub-repo, en de instellingen staan op dezelfde pagina (Instellingen → Hollandsche Golfclub Calculator). Shortcode [hgc_restaurant_reserveren park="almkreek"] of het blok “HGC Restaurant Reserveren”. De reserveringsdata zelf blijft buiten WordPress, bij HGC Connect; deze plugin doet alleen het formulier en een dunne AJAX-proxy naar de Connect-koppeling.
+* Restaurantreservering (voorheen de losse plugin HGC Restaurant Reserveren) samengevoegd in deze plugin: één plugin, één versienummer, één auto-updater vanuit deze GitHub-repo, en de instellingen staan op dezelfde pagina (Instellingen → HGC Interne WebsiteTechniek). Shortcode [hgc_restaurant_reserveren park="almkreek"] of het blok “HGC Restaurant Reserveren”. De reserveringsdata zelf blijft buiten WordPress, bij HGC Connect; deze plugin doet alleen het formulier en een dunne AJAX-proxy naar de Connect-koppeling.
 * Was eerder de losse plugin HGC Restaurant Reserveren v1.0.0; die kan na deze update gedeactiveerd en verwijderd worden.
 
 = 1.24.0 =

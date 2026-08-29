@@ -18,8 +18,8 @@ final class HGC_Calculator_Admin
     public function register_page(): void
     {
         add_options_page(
-            'Hollandsche Golfclub Calculator',
-            'Hollandsche Golfclub Calculator',
+            'HGC Interne WebsiteTechniek',
+            'HGC Interne WebsiteTechniek',
             'manage_options',
             self::PAGE_SLUG,
             array($this, 'render_page')
@@ -62,10 +62,11 @@ final class HGC_Calculator_Admin
         );
         ?>
         <div class="wrap hgc-admin">
-            <h1>Hollandsche Golfclub Calculator</h1>
+            <h1>HGC Interne WebsiteTechniek</h1>
             <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
             <nav class="hgc-admin-nav" aria-label="Snel naar instellingengroep">
                 <a href="#hgc-general">Algemeen</a>
+                <a href="#hgc-memberships">Tarieven</a>
                 <a href="#hgc-plugin-updates">Updates</a>
                 <a href="#hgc-products">Pakketten</a>
                 <a href="#hgc-courses">Golfbanen</a>
@@ -156,20 +157,30 @@ final class HGC_Calculator_Admin
                     </div>
                 </section>
 
-                <section class="hgc-admin-panel">
-                    <h2>Handicapregistratie</h2>
+                <section class="hgc-admin-panel" id="hgc-memberships">
+                    <h2>Handicapregistratie en jeugdgreenfee</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--three">
                         <?php $this->number_field('Handicapregistratie volwassenen', 'config[handicapRegistration][adultPrice]', $config['handicapRegistration']['adultPrice'] ?? 0, 0.01, '€'); ?>
                         <?php $this->number_field('Handicapregistratie jeugd', 'config[handicapRegistration][youthPrice]', $config['handicapRegistration']['youthPrice'] ?? 0, 0.01, '€'); ?>
+                        <?php $this->number_field('Greenfee jeugd per ronde', 'config[handicapRegistration][youthGreenFee]', $config['handicapRegistration']['youthGreenFee'] ?? 0, 0.01, '€'); ?>
+                        <?php $this->number_field('Gratis rondes bij handicapregistratie', 'config[handicapRegistration][vouchers]', $config['handicapRegistration']['vouchers'] ?? 0, 1, 'rondes'); ?>
                     </div>
                     <label class="hgc-admin-check"><input type="checkbox" name="config[settings][includeHandicapByDefault]" value="1" <?php checked(!empty($config['settings']['includeHandicapByDefault'])); ?> /> Handicapregistratie staat standaard in de getoonde bedragen</label>
                     <p class="hgc-admin-hint">Staat dit uit, dan tonen de bedragen alleen de prijs van het speelrecht en kan de bezoeker handicapregistratie in het advies zelf aanvinken. De keuze verandert nooit welk speelrecht wordt geadviseerd, omdat de registratieprijs voor ieder speelrecht gelijk is.</p>
+
+                    <h3>LoyalTee-tarieven</h3>
+                    <div class="hgc-admin-grid hgc-admin-grid--three">
+                        <?php $this->number_field('LoyalTee-lidmaatschap', 'config[loyalTee][membershipPrice]', $config['loyalTee']['membershipPrice'] ?? 0, 0.01, '€'); ?>
+                        <?php $this->number_field('Korting op greenfee', 'config[loyalTee][discountPercentage]', $config['loyalTee']['discountPercentage'] ?? 0, 0.01, '%'); ?>
+                        <?php $this->number_field('Ballentegoed', 'config[loyalTee][ballCredit]', $config['loyalTee']['ballCredit'] ?? 0, 0.01, '€'); ?>
+                    </div>
+                    <p class="hgc-admin-hint">Deze waarden worden direct meegenomen in de financiële vergelijking van LoyalTee met handicapregistratie, losse greenfee en speelrechten.</p>
                 </section>
 
                 <section class="hgc-admin-panel">
                     <h2>Links</h2>
                     <div class="hgc-admin-grid hgc-admin-grid--two">
-                        <?php foreach (array('webshop' => 'Webshop', 'playingRights' => 'Speelrechten', 'handicapRegistration' => 'Handicapregistratie', 'terms' => 'Voorwaarden') as $key => $label) : ?>
+                        <?php foreach (array('webshop' => 'Webshop', 'playingRights' => 'Speelrechten', 'handicapRegistration' => 'Handicapregistratie', 'loyalTee' => 'LoyalTee', 'greenFeePrices' => 'Greenfeeprijzen', 'terms' => 'Voorwaarden') as $key => $label) : ?>
                             <label class="hgc-admin-field"><span><?php echo esc_html($label); ?></span><input class="large-text" type="url" name="config[links][<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($config['links'][$key] ?? ''); ?>" /></label>
                         <?php endforeach; ?>
                     </div>
@@ -291,11 +302,16 @@ final class HGC_Calculator_Admin
         $config['settings']['dualAdviceMarginPercent'] = $this->percentage($raw['settings']['dualAdviceMarginPercent'] ?? null, 15);
         $config['settings']['feeRouteMaxRounds'] = max(0, (int) $this->number($raw['settings']['feeRouteMaxRounds'] ?? null, 20));
 
-        foreach (array('adultPrice', 'youthPrice') as $key) {
-            $config['handicapRegistration'][$key] = $this->number($raw['handicapRegistration'][$key] ?? 0);
+        foreach (array('adultPrice', 'youthPrice', 'youthGreenFee') as $key) {
+            $config['handicapRegistration'][$key] = max(0, $this->number($raw['handicapRegistration'][$key] ?? 0));
         }
+        $config['handicapRegistration']['vouchers'] = max(0, (int) $this->number($raw['handicapRegistration']['vouchers'] ?? 0));
 
-        foreach (array('webshop', 'playingRights', 'handicapRegistration', 'terms') as $key) {
+        $config['loyalTee']['membershipPrice'] = max(0, $this->number($raw['loyalTee']['membershipPrice'] ?? 0));
+        $config['loyalTee']['discountPercentage'] = min(100, max(0, $this->number($raw['loyalTee']['discountPercentage'] ?? 20)));
+        $config['loyalTee']['ballCredit'] = max(0, $this->number($raw['loyalTee']['ballCredit'] ?? 0));
+
+        foreach (array('webshop', 'playingRights', 'handicapRegistration', 'loyalTee', 'greenFeePrices', 'terms') as $key) {
             $config['links'][$key] = esc_url_raw($raw['links'][$key] ?? '');
         }
 

@@ -203,7 +203,7 @@ final class HGC_Restaurant
         $settings = self::settings();
         if (!$settings['locations']) {
             return current_user_can('manage_options')
-                ? '<p>Voeg eerst restaurantlocaties toe bij Instellingen &rarr; Hollandsche Golfclub Calculator.</p>'
+                ? '<p>Voeg eerst restaurantlocaties toe bij Instellingen &rarr; HGC Interne WebsiteTechniek.</p>'
                 : '';
         }
 
@@ -285,7 +285,7 @@ final class HGC_Restaurant
         $park = sanitize_title($atts['park'] ?: $settings['park']);
         if ($park === '') {
             return current_user_can('manage_options')
-                ? '<p>Stel eerst een parkcode in bij Instellingen → Hollandsche Golfclub Calculator.</p>'
+                ? '<p>Stel eerst een parkcode in bij Instellingen → HGC Interne WebsiteTechniek.</p>'
                 : '';
         }
         wp_enqueue_style('hgc-restaurant');
