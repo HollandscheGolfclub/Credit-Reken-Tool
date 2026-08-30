@@ -20,6 +20,7 @@ final class HGC_Restaurant
         add_action('init', array($this, 'register_block'));
         add_shortcode('hgc_restaurant_reserveren', array($this, 'shortcode'));
         add_shortcode('hgc_restaurant_kiezer', array($this, 'selector_shortcode'));
+        add_shortcode('hgc_event_aanmelden', array($this, 'event_shortcode'));
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
         add_action('wp_ajax_hgc_restaurant_api', array($this, 'ajax'));
         add_action('wp_ajax_nopriv_hgc_restaurant_api', array($this, 'ajax'));
@@ -81,6 +82,7 @@ final class HGC_Restaurant
         $settings = wp_parse_args(get_option(self::OPTION, array()), array(
             'api_url' => '',
             'park' => '',
+            'event' => '',
             'accent' => '#7cb63a',
             'privacy_url' => '',
             'club_logo' => '',
@@ -107,6 +109,7 @@ final class HGC_Restaurant
             $legacy_park = (string) array_key_first($locations);
         }
         $settings['park'] = $legacy_park;
+        $settings['event'] = sanitize_title($settings['event']);
         $settings['locations'] = $locations;
         return $settings;
     }
@@ -172,13 +175,14 @@ final class HGC_Restaurant
                 return array('value' => $location['slug'], 'label' => $location['name']);
             }, $settings['locations'])),
             'defaultPark' => $settings['park'],
+            'defaultEvent' => $settings['event'],
         ));
         register_block_type('hgc/restaurant-reserveren', array(
             'api_version' => 2,
             'editor_script' => 'hgc-restaurant-block',
             'attributes' => array('park' => array('type' => 'string', 'default' => '')),
             'render_callback' => function (array $attributes): string {
-                return $this->render(array('park' => $attributes['park'] ?? ''));
+                return $this->render(array('park' => $attributes['park'] ?? ''), 'restaurant');
             },
         ));
         register_block_type('hgc/restaurant-kiezer', array(
@@ -186,11 +190,24 @@ final class HGC_Restaurant
             'editor_script' => 'hgc-restaurant-block',
             'render_callback' => array($this, 'selector_shortcode'),
         ));
+        register_block_type('hgc/event-aanmelden', array(
+            'api_version' => 2,
+            'editor_script' => 'hgc-restaurant-block',
+            'attributes' => array('event' => array('type' => 'string', 'default' => '')),
+            'render_callback' => function (array $attributes): string {
+                return $this->render(array('event' => $attributes['event'] ?? ''), 'event');
+            },
+        ));
     }
 
     public function shortcode($atts): string
     {
-        return $this->render(shortcode_atts(array('park' => ''), $atts, 'hgc_restaurant_reserveren'));
+        return $this->render(shortcode_atts(array('park' => ''), $atts, 'hgc_restaurant_reserveren'), 'restaurant');
+    }
+
+    public function event_shortcode($atts): string
+    {
+        return $this->render(shortcode_atts(array('event' => ''), $atts, 'hgc_event_aanmelden'), 'event');
     }
 
     /**
@@ -228,7 +245,7 @@ final class HGC_Restaurant
                 <a href="<?php echo esc_url($base_url . '#' . $selector_id); ?>">Andere locatie kiezen</a>
             </section>
             <?php
-            echo $this->render(array('park' => $selected)); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo $this->render(array('park' => $selected), 'restaurant'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             return (string) ob_get_clean();
         }
 
@@ -279,14 +296,19 @@ final class HGC_Restaurant
         return (string) ob_get_clean();
     }
 
-    private function render(array $atts): string
+    private function render(array $atts, string $mode = 'restaurant'): string
     {
         $settings = self::settings();
-        $park = sanitize_title($atts['park'] ?: $settings['park']);
-        if ($park === '') {
-            return current_user_can('manage_options')
-                ? '<p>Stel eerst een parkcode in bij Instellingen → HGC Interne WebsiteTechniek.</p>'
-                : '';
+        $slug = $mode === 'event'
+            ? sanitize_title($atts['event'] ?? '' ?: $settings['event'])
+            : sanitize_title($atts['park'] ?? '' ?: $settings['park']);
+        if ($slug === '') {
+            if (!current_user_can('manage_options')) {
+                return '';
+            }
+            return $mode === 'event'
+                ? '<p>Stel eerst een evenementcode in bij Instellingen → HGC Interne WebsiteTechniek.</p>'
+                : '<p>Stel eerst een parkcode in bij Instellingen → HGC Interne WebsiteTechniek.</p>';
         }
         wp_enqueue_style('hgc-restaurant');
         wp_enqueue_script('hgc-restaurant');
@@ -323,13 +345,13 @@ final class HGC_Restaurant
 
         ob_start();
         ?>
-        <div class="hgc-reservation" data-park="<?php echo esc_attr($park); ?>" data-ref="<?php echo esc_attr($ref); ?>" data-token="<?php echo esc_attr($token); ?>" style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
+        <div class="hgc-reservation" data-mode="<?php echo esc_attr($mode); ?>" data-slug="<?php echo esc_attr($slug); ?>" data-park="<?php echo esc_attr($mode === 'restaurant' ? $slug : ''); ?>" data-ref="<?php echo esc_attr($ref); ?>" data-token="<?php echo esc_attr($token); ?>" style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
             <div class="hgc-reservation__loading" role="status">
                 <span class="hgc-spinner" aria-hidden="true"></span>
-                <span>Beschikbaarheid laden…</span>
+                <span><?php echo $mode === 'event' ? 'Evenement laden…' : 'Beschikbaarheid laden…'; ?></span>
             </div>
             <div class="hgc-reservation__app" hidden></div>
-            <noscript><p>JavaScript is nodig om direct beschikbaarheid te controleren. Neem telefonisch contact op met het restaurant om te reserveren.</p></noscript>
+            <noscript><p><?php echo $mode === 'event' ? 'JavaScript is nodig om je aan te melden. Neem telefonisch contact op.' : 'JavaScript is nodig om direct beschikbaarheid te controleren. Neem telefonisch contact op met het restaurant om te reserveren.'; ?></p></noscript>
         </div>
         <?php
         return (string) ob_get_clean();
@@ -353,11 +375,15 @@ final class HGC_Restaurant
 
         $raw = json_decode(file_get_contents('php://input'), true);
         $payload = is_array($raw) ? $this->sanitize_payload($raw) : array();
-        $park = sanitize_title($payload['slug'] ?? '');
-        if ($park === '') {
-            wp_send_json_error(array('message' => 'Dit restaurant is niet geconfigureerd.', 'code' => 'UNKNOWN_LOCATION'), 400);
+        $is_event = isset($payload['action']) && strpos((string) $payload['action'], 'event') === 0;
+        $slug = sanitize_title($payload['slug'] ?? '');
+        if ($slug === '') {
+            wp_send_json_error(array(
+                'message' => $is_event ? 'Dit evenement is niet geconfigureerd.' : 'Dit restaurant is niet geconfigureerd.',
+                'code' => 'UNKNOWN_LOCATION',
+            ), 400);
         }
-        $payload['slug'] = $park;
+        $payload['slug'] = $slug;
 
         $response = wp_remote_post(esc_url_raw($settings['api_url']), array(
             'timeout' => 15,
@@ -379,9 +405,15 @@ final class HGC_Restaurant
         wp_send_json_success($body);
     }
 
+    /**
+     * Vaste, bekende velden voor zowel restaurant- als event-acties. `telefoon`/`dieetwensen`/
+     * `gelegenheid` zijn de systeemvelden uit de formulierbuilder (zelfde sleutels voor
+     * restaurant en events); welke ervan daadwerkelijk zichtbaar/verplicht zijn bepaalt Connect.
+     * Eigen, door de admin in Connect samengestelde vragen komen los binnen via `antwoorden`.
+     */
     private function sanitize_payload(array $input): array
     {
-        $allowed = array('action', 'slug', 'date', 'time', 'partySize', 'name', 'email', 'phone', 'dietary', 'occasion', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason');
+        $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason');
         $out = array();
         foreach ($allowed as $key) {
             if (!array_key_exists($key, $input)) {
@@ -393,11 +425,26 @@ final class HGC_Restaurant
                 $out[$key] = rest_sanitize_boolean($input[$key]);
             } elseif ($key === 'email') {
                 $out[$key] = sanitize_email($input[$key]);
-            } elseif (in_array($key, array('dietary', 'occasion', 'reason'), true)) {
+            } elseif (in_array($key, array('dieetwensen', 'gelegenheid', 'reason'), true)) {
                 $out[$key] = sanitize_textarea_field($input[$key]);
             } else {
                 $out[$key] = sanitize_text_field($input[$key]);
             }
+        }
+        if (isset($input['antwoorden']) && is_array($input['antwoorden'])) {
+            $answers = array();
+            $i = 0;
+            foreach ($input['antwoorden'] as $key => $value) {
+                if (++$i > 20) {
+                    break;
+                }
+                $safe_key = preg_replace('/[^a-z0-9_-]/', '', strtolower((string) $key));
+                if ($safe_key === '') {
+                    continue;
+                }
+                $answers[$safe_key] = is_bool($value) ? $value : sanitize_textarea_field((string) $value);
+            }
+            $out['antwoorden'] = $answers;
         }
         return $out;
     }
@@ -435,6 +482,7 @@ final class HGC_Restaurant
         update_option(self::OPTION, array(
             'api_url' => esc_url_raw($raw['api_url'] ?? ''),
             'park' => $park,
+            'event' => sanitize_title($raw['event'] ?? ''),
             'accent' => sanitize_hex_color($raw['accent'] ?? '') ?: '#95c11f',
             'privacy_url' => esc_url_raw($raw['privacy_url'] ?? ''),
             'club_logo' => esc_url_raw($raw['club_logo'] ?? ''),
@@ -478,12 +526,14 @@ final class HGC_Restaurant
                             <option value="<?php echo esc_attr($location['slug']); ?>" <?php selected($s['park'], $location['slug']); ?>><?php echo esc_html($location['name']); ?> (<?php echo esc_html($location['slug']); ?>)</option>
                         <?php endforeach; ?>
                     </select></label>
+                    <label class="hgc-admin-field"><span>Standaard evenementcode</span><input type="text" name="restaurant[event]" value="<?php echo esc_attr($s['event']); ?>" placeholder="wildavond-2026" /></label>
                     <label class="hgc-admin-field"><span>Accentkleur</span><input type="color" name="restaurant[accent]" value="<?php echo esc_attr($s['accent']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Privacyverklaring</span><input class="large-text" type="url" name="restaurant[privacy_url]" value="<?php echo esc_attr($s['privacy_url']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
                 </div>
-                <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code>.</p>
+                <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code> (gebruikt voor zowel tafelreserveringen als event-aanmeldingen).</p>
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
+                <p class="hgc-admin-hint">Gebruik <code>[hgc_restaurant_reserveren park="almkreek"]</code> of het blok "HGC Restaurant Reserveren" voor tafelreserveringen, en <code>[hgc_event_aanmelden event="wildavond-2026"]</code> of het blok "HGC Event Aanmelden" voor een evenement (bv. een wildavond). Het evenement, de zittingen en eventuele aanvullende vragen op het formulier stel je samen in Connect.</p>
                 <h3 style="margin:24px 0 8px">Boekingsschermen per restaurant</h3>
                 <p class="hgc-admin-hint">Iedere locatie krijgt een eigen parkcode, naam, logo en contactgegevens. De algemene API, accentkleur, privacyverklaring en het clublogo gelden voor alle locaties.</p>
                 <div class="hgc-admin-heading hgc-restaurant-heading">

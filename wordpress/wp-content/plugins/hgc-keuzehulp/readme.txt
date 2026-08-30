@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.2.4
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.3.0 =
+* Nieuw: evenementaanmeldingen (bv. een wildavond) via de shortcode `[hgc_event_aanmelden event="wildavond-2026"]` of het blok "HGC Event Aanmelden", met dezelfde Connect-koppeling als tafelreserveren.
+* Het reserverings- en aanmeldformulier toont nu ook aanvullende vragen die in Connect zijn samengesteld (formulierbuilder), naast de vaste velden.
+* Een standaard evenementcode is instelbaar op de bestaande restaurantinstellingenpagina.
 
 = 2.2.4 =
 * De instellingenpagina heet nu HGC Interne WebsiteTechniek in de paginatitel, het WordPress-zijmenu en beheerdersmeldingen.

@@ -26,4 +26,14 @@
       );
     }, save: function () { return null; }
   });
+  blocks.registerBlockType('hgc/event-aanmelden', {
+    title: 'HGC Event Aanmelden', icon: 'megaphone', category: 'widgets',
+    attributes: { event: { type: 'string', default: '' } },
+    edit: function (props) {
+      return el('div', { className: props.className },
+        el(blockEditor.InspectorControls, {}, el(components.PanelBody, { title: 'Instellingen' }, el(components.TextControl, { label: 'Evenementcode', value: props.attributes.event, onChange: function (value) { props.setAttributes({ event: value }); } }))),
+        el('div', { style: { border: '1px solid #ddd', borderRadius: '12px', padding: '24px' } }, el('strong', {}, 'HGC Event Aanmelden'), el('p', {}, props.attributes.event ? 'Evenement: ' + props.attributes.event : 'Gebruikt de standaard evenementcode.'))
+      );
+    }, save: function () { return null; }
+  });
 })(window.wp.blocks, window.wp.element, window.wp.components, window.wp.blockEditor);
