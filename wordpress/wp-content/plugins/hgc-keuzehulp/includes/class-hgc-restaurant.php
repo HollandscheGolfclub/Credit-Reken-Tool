@@ -15,6 +15,32 @@ final class HGC_Restaurant
     private const WARMUP_HOOK = 'hgc_restaurant_warmup';
     private const WARMUP_INTERVAL = 'hgc_five_minutes';
 
+    /**
+     * Enige acties die de proxy mag doorsturen naar Connect. `action` komt
+     * rechtstreeks uit het request; zonder deze allowlist zou de widget als
+     * open doorgeefluik naar willekeurige Connect-acties werken.
+     */
+    private const PUBLIC_ACTIONS = array(
+        'publicInfo', 'availability', 'createPublic', 'getPublic', 'updatePublic', 'cancelPublic',
+        'eventPublicInfo', 'eventCreatePublic', 'eventGetPublic', 'eventUpdatePublic', 'eventCancelPublic',
+    );
+
+    /** Acties die daadwerkelijk iets aanmaken/wijzigen: krijgen een striktere limiet. */
+    private const MUTATING_ACTIONS = array('createPublic', 'updatePublic', 'cancelPublic', 'eventCreatePublic', 'eventUpdatePublic', 'eventCancelPublic');
+
+    /** Acties die op een reserveringsnummer + token zoeken: gevoelig voor het raden van tokens. */
+    private const LOOKUP_ACTIONS = array('getPublic', 'eventGetPublic');
+
+    /**
+     * Foutcodes die de front-end al kent en zelf vertaalt (zie labels in
+     * reservation.js). Voor elke andere code sturen we Connects eigen
+     * berichttekst niet door, om te voorkomen dat interne details lekken.
+     */
+    private const SAFE_ERROR_CODES = array('SLOT_UNAVAILABLE', 'LOCATION_CLOSED', 'EVENT_CLOSED', 'PARTY_TOO_LARGE', 'TOO_SOON', 'MISSING_FIELD', 'UNKNOWN_LOCATION');
+
+    /** Ruim genoeg voor een reserveringsformulier (incl. aangepaste vragen), klein genoeg tegen misbruik. */
+    private const MAX_BODY_BYTES = 20000;
+
     public function __construct()
     {
         add_action('init', array($this, 'register_block'));
@@ -312,6 +338,8 @@ final class HGC_Restaurant
         }
         wp_enqueue_style('hgc-restaurant');
         wp_enqueue_script('hgc-restaurant');
+        // JSON_HEX_*: voorkomt dat een admin-ingevuld veld (adres, logo-URL, telefoonnummer)
+        // met bijvoorbeeld "</script>" erin uit deze inline <script>-tag zou kunnen breken.
         wp_add_inline_script(
             'hgc-restaurant',
             'window.HGCRestaurant = ' . wp_json_encode(array(
@@ -336,7 +364,7 @@ final class HGC_Restaurant
                         'hoursNote' => $location['hours_note'],
                     );
                 }, $settings['locations']),
-            )) . ';',
+            ), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';',
             'before'
         );
 
@@ -359,6 +387,9 @@ final class HGC_Restaurant
 
     public function ajax(): void
     {
+        // Een nonce bewijst alleen dat het verzoek van een pagina met deze widget komt; het is
+        // geen autorisatie. Alle daadwerkelijke beslissingen (beschikbaarheid, prijs, wie een
+        // reservering mag wijzigen) blijven hieronder en in Connect zelf gecontroleerd.
         check_ajax_referer('hgc_restaurant', 'nonce');
         $settings = self::settings();
         if (!$settings['api_url']) {
@@ -366,18 +397,37 @@ final class HGC_Restaurant
         }
 
         $ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-        $rate_key = 'hgc_rest_' . md5($ip . gmdate('YmdHi'));
-        $count = (int) get_transient($rate_key);
-        if ($count >= 45) {
+
+        // Grove limiet op alle acties samen (ook goedkope, zoals beschikbaarheid opvragen).
+        if (self::is_rate_limited('all:' . $ip, 45, MINUTE_IN_SECONDS)) {
             wp_send_json_error(array('message' => 'Te veel aanvragen. Probeer het over een minuut opnieuw.', 'code' => 'RATE_LIMITED'), 429);
         }
-        set_transient($rate_key, $count + 1, 90);
 
-        $raw = json_decode(file_get_contents('php://input'), true);
+        $raw_body = (string) file_get_contents('php://input');
+        if (strlen($raw_body) > self::MAX_BODY_BYTES) {
+            self::log('warning', sprintf('Aanvraag geweigerd: body te groot (%d bytes) vanaf %s.', strlen($raw_body), $ip));
+            wp_send_json_error(array('message' => 'Aanvraag is te groot.', 'code' => 'PAYLOAD_TOO_LARGE'), 413);
+        }
+
+        $raw = json_decode($raw_body, true);
         $payload = is_array($raw) ? $this->sanitize_payload($raw) : array();
-        $is_event = isset($payload['action']) && strpos((string) $payload['action'], 'event') === 0;
+
+        // `action` bepaalt welke Connect-operatie wordt uitgevoerd; zonder allowlist zou deze
+        // proxy elke stringwaarde blind doorsturen naar de externe backend.
+        $action = (string) ($payload['action'] ?? '');
+        if (!in_array($action, self::PUBLIC_ACTIONS, true)) {
+            wp_send_json_error(array('message' => 'Onbekende actie.', 'code' => 'UNKNOWN_ACTION'), 400);
+        }
+
+        // Honeypotveld: onzichtbaar voor mensen, alleen scripts die elk veld invullen raken dit.
+        if (!empty($payload['website'])) {
+            self::log('warning', sprintf('Honeypot geraakt (actie: %s, ip: %s).', $action, $ip));
+            wp_send_json_error(array('message' => 'Aanvraag kon niet worden verwerkt.', 'code' => 'API_ERROR'), 400);
+        }
+
         $slug = sanitize_title($payload['slug'] ?? '');
         if ($slug === '') {
+            $is_event = strpos($action, 'event') === 0;
             wp_send_json_error(array(
                 'message' => $is_event ? 'Dit evenement is niet geconfigureerd.' : 'Dit restaurant is niet geconfigureerd.',
                 'code' => 'UNKNOWN_LOCATION',
@@ -385,24 +435,95 @@ final class HGC_Restaurant
         }
         $payload['slug'] = $slug;
 
+        // Acties die daadwerkelijk iets aanmaken/wijzigen krijgen een striktere limiet, zowel per
+        // IP als per e-mailadres (een IP is triviaal te wisselen, een formulier met steeds
+        // hetzelfde e-mailadres nog niet).
+        if (in_array($action, self::MUTATING_ACTIONS, true)) {
+            if (self::is_rate_limited('mutate:' . $ip, 10, 10 * MINUTE_IN_SECONDS)) {
+                self::log('warning', sprintf('Limiet (mutatie/ip) bereikt: %s vanaf %s.', $action, $ip));
+                wp_send_json_error(array('message' => 'Te veel aanvragen. Probeer het over een paar minuten opnieuw.', 'code' => 'RATE_LIMITED'), 429);
+            }
+            $email = strtolower((string) ($payload['email'] ?? ''));
+            if ($email !== '' && self::is_rate_limited('mutate_email:' . $email, 5, HOUR_IN_SECONDS)) {
+                self::log('warning', sprintf('Limiet (mutatie/e-mail) bereikt: %s voor %s.', $action, $email));
+                wp_send_json_error(array('message' => 'Te veel aanvragen voor dit e-mailadres. Probeer het later opnieuw.', 'code' => 'RATE_LIMITED'), 429);
+            }
+        } elseif (in_array($action, self::LOOKUP_ACTIONS, true)) {
+            // getPublic/eventGetPublic zoeken op reservationNumber+token: een lagere limiet
+            // maakt het raden van geldige tokens onaantrekkelijk zonder legitieme bezoekers te hinderen.
+            if (self::is_rate_limited('lookup:' . $ip, 20, 10 * MINUTE_IN_SECONDS)) {
+                self::log('warning', sprintf('Limiet (opzoeken) bereikt vanaf %s.', $ip));
+                wp_send_json_error(array('message' => 'Te veel aanvragen. Probeer het over een paar minuten opnieuw.', 'code' => 'RATE_LIMITED'), 429);
+            }
+        }
+
+        if (stripos($settings['api_url'], 'https://') !== 0) {
+            self::log('error', 'Connect API-URL is niet HTTPS; verzoek geweigerd.');
+            wp_send_json_error(array('message' => 'De reserveringskoppeling is onjuist ingesteld.'), 500);
+        }
+
         $response = wp_remote_post(esc_url_raw($settings['api_url']), array(
             'timeout' => 15,
             'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
             'body' => wp_json_encode($payload),
         ));
         if (is_wp_error($response)) {
+            self::log('error', 'Connect onbereikbaar: ' . $response->get_error_message());
             wp_send_json_error(array('message' => 'Connect is tijdelijk niet bereikbaar. Probeer het later opnieuw.'), 502);
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
         $status = wp_remote_retrieve_response_code($response);
         if ($status >= 400 || isset($body['error'])) {
+            $code = is_string($body['code'] ?? null) ? sanitize_key($body['code']) : 'API_ERROR';
+            // Connects eigen foutmelding blijft in het serverlog; naar de bezoeker gaat alleen
+            // tekst voor codes die de front-end al kent, zodat interne details nooit lekken.
+            self::log('warning', sprintf(
+                'Connect-fout (actie: %s, status: %d, code: %s): %s',
+                $action,
+                $status,
+                $code,
+                sanitize_text_field((string) ($body['error'] ?? ''))
+            ));
             wp_send_json_error(array(
-                'message' => sanitize_text_field($body['error'] ?? 'Reservering kon niet worden verwerkt.'),
-                'code' => sanitize_key($body['code'] ?? 'API_ERROR'),
+                'message' => in_array($code, self::SAFE_ERROR_CODES, true)
+                    ? sanitize_text_field((string) ($body['error'] ?? 'Aanvraag kon niet worden verwerkt.'))
+                    : 'Aanvraag kon niet worden verwerkt.',
+                'code' => $code,
             ), $status ?: 500);
         }
+
+        if (in_array($action, self::MUTATING_ACTIONS, true)) {
+            self::log('info', sprintf('%s geslaagd (slug: %s).', $action, $slug));
+        }
+
         wp_send_json_success($body);
+    }
+
+    /**
+     * Simpele, herbruikbare transient-gebaseerde rate limiter: maximaal $limit
+     * aanroepen per $windowSeconds voor een gegeven sleutel (bv. per IP of
+     * per e-mailadres). Geen vervanging voor een WAF tegen gedistribueerd
+     * misbruik, maar voorkomt eenvoudig scripten van de widget.
+     */
+    private static function is_rate_limited(string $key, int $limit, int $windowSeconds): bool
+    {
+        $bucket = 'hgc_rl_' . md5($key . '|' . $windowSeconds . '|' . (int) floor(time() / $windowSeconds));
+        $count = (int) get_transient($bucket);
+        if ($count >= $limit) {
+            return true;
+        }
+        set_transient($bucket, $count + 1, $windowSeconds + 5);
+        return false;
+    }
+
+    /**
+     * Schrijft naar het PHP-errorlog (dus zichtbaar via WP_DEBUG_LOG/serverlogging),
+     * nooit naar de bezoeker. Log bewust geen tokens of volledige payloads.
+     */
+    private static function log(string $level, string $message): void
+    {
+        error_log(sprintf('[HGC Restaurant] [%s] %s', strtoupper($level), $message));
     }
 
     /**
@@ -414,17 +535,29 @@ final class HGC_Restaurant
     private function sanitize_payload(array $input): array
     {
         $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason');
+        // Vrije-vorm ID's (van Connect zelf, of door de bezoeker onbewust bewerkt): ruim genoeg
+        // voor een echte waarde, klein genoeg om geen onnodig grote payloads door te laten.
+        $id_max_length = 200;
         $out = array();
         foreach ($allowed as $key) {
             if (!array_key_exists($key, $input)) {
                 continue;
             }
             if ($key === 'partySize') {
-                $out[$key] = absint($input[$key]);
+                // Server-side geclampt: de browser mag nooit zelf een (onzinnig groot) aantal
+                // personen doordrukken. De echte, geldende grenzen per locatie bepaalt Connect.
+                $out[$key] = max(1, min(50, absint($input[$key])));
             } elseif ($key === 'privacyAccepted') {
                 $out[$key] = rest_sanitize_boolean($input[$key]);
             } elseif ($key === 'email') {
-                $out[$key] = sanitize_email($input[$key]);
+                $email = sanitize_email($input[$key]);
+                $out[$key] = is_email($email) ? $email : '';
+            } elseif ($key === 'date') {
+                $out[$key] = (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $input[$key]) ? $input[$key] : '';
+            } elseif ($key === 'time') {
+                $out[$key] = (bool) preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', (string) $input[$key]) ? $input[$key] : '';
+            } elseif (in_array($key, array('zittingId', 'reservationNumber', 'token'), true)) {
+                $out[$key] = substr(sanitize_text_field((string) $input[$key]), 0, $id_max_length);
             } elseif (in_array($key, array('dieetwensen', 'gelegenheid', 'reason'), true)) {
                 $out[$key] = sanitize_textarea_field($input[$key]);
             } else {
@@ -442,7 +575,7 @@ final class HGC_Restaurant
                 if ($safe_key === '') {
                     continue;
                 }
-                $answers[$safe_key] = is_bool($value) ? $value : sanitize_textarea_field((string) $value);
+                $answers[$safe_key] = is_bool($value) ? $value : substr(sanitize_textarea_field((string) $value), 0, 2000);
             }
             $out['antwoorden'] = $answers;
         }
@@ -479,8 +612,14 @@ final class HGC_Restaurant
             $park = (string) array_key_first($locations);
         }
         $legacy = $locations[$park] ?? array('park_logo' => '', 'phone' => '', 'address' => '', 'hours_note' => '');
+        // Alle communicatie met Connect moet via HTTPS; een http(s)-onveilige URL wordt genegeerd
+        // in plaats van opgeslagen, zodat reserveringsgegevens nooit onversleuteld verstuurd worden.
+        $api_url = esc_url_raw($raw['api_url'] ?? '');
+        if ($api_url !== '' && stripos($api_url, 'https://') !== 0) {
+            $api_url = '';
+        }
         update_option(self::OPTION, array(
-            'api_url' => esc_url_raw($raw['api_url'] ?? ''),
+            'api_url' => $api_url,
             'park' => $park,
             'event' => sanitize_title($raw['event'] ?? ''),
             'accent' => sanitize_hex_color($raw['accent'] ?? '') ?: '#95c11f',

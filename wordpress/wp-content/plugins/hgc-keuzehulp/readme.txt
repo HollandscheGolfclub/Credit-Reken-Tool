@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.3.2 =
+* Beveiligingsverharding van de reserverings-/aanmeldingsproxy: allowlist voor toegestane acties, striktere invoervalidatie (datum/tijd-formaat, e-mailadres, aantal personen, lengtebegrenzing op ID's en antwoorden), een echte server-side honeypotcontrole, gelaagde rate limiting (per IP en per e-mailadres, met een aparte limiet voor wijzigen/annuleren en voor het opzoeken van reserveringen), verplichte HTTPS naar Connect, en serverside logging van fouten/misbruik zonder gevoelige details naar de bezoeker te sturen.
 
 = 2.3.1 =
 * Lettertype van de keuzehulp is Montserrat geworden (in plaats van Poppins), zodat dit aansluit bij de huisstijl van hollandschegolfclub.nl.
