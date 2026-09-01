@@ -87,6 +87,16 @@ function esc_url_raw($value): string
     return filter_var((string) $value, FILTER_SANITIZE_URL) ?: '';
 }
 
+function wp_parse_url($url, $component = -1)
+{
+    return parse_url((string) $url, $component);
+}
+
+function wp_generate_password(int $length = 12, bool $special_chars = true, bool $extra_special_chars = false): string
+{
+    return substr(bin2hex(random_bytes((int) ceil($length / 2))), 0, $length);
+}
+
 function add_action(...$args): void {}
 function add_shortcode(...$args): void {}
 function add_filter(...$args): void {}
@@ -125,6 +135,13 @@ function call_is_rate_limited(string $key, int $limit, int $window): bool
     $method = new ReflectionMethod(HGC_Restaurant::class, 'is_rate_limited');
     $method->setAccessible(true);
     return $method->invoke(null, $key, $limit, $window);
+}
+
+function call_sign_headers(array $settings, string $body_json): array
+{
+    $method = new ReflectionMethod(HGC_Restaurant::class, 'sign_headers');
+    $method->setAccessible(true);
+    return $method->invoke(null, $settings, $body_json);
 }
 
 // De browser mag nooit zelf een onzinnig groot aantal personen doordrukken.
@@ -188,6 +205,12 @@ foreach ($out['antwoorden'] as $key => $value) {
 $out = call_sanitize_payload(array('isAdmin' => true, 'price' => 1, 'status' => 'betaald'));
 assert_same(array(), $out, 'Velden buiten de allowlist (bv. price/status/isAdmin) worden onterecht doorgelaten.');
 
+// idempotencyKey wordt behandeld als een vrije-vorm ID: doorgelaten, maar in lengte begrensd.
+$out = call_sanitize_payload(array('idempotencyKey' => 'abc-123'));
+assert_same('abc-123', $out['idempotencyKey'], 'Een normale idempotency-key wordt onterecht gewijzigd.');
+$out = call_sanitize_payload(array('idempotencyKey' => str_repeat('a', 500)));
+assert_same(200, strlen($out['idempotencyKey']), 'Een extreem lange idempotency-key wordt niet afgekapt.');
+
 // Rate limiter: binnen het venster wordt de limiet gehandhaafd, buiten het venster reset hij.
 $limited = false;
 for ($i = 0; $i < 5; $i++) {
@@ -195,4 +218,20 @@ for ($i = 0; $i < 5; $i++) {
 }
 assert_same(true, $limited, 'De rate limiter blokkeert niet nadat de limiet is overschreden.');
 
-fwrite(STDOUT, "Server-side invoervalidatie en rate limiting: alle tests geslaagd.\n");
+// Zonder Client-ID/HMAC-secret blijft het verzoek onondertekend (achterwaarts compatibel
+// zolang de backend nog geen afdwinging heeft aangezet).
+$headers = call_sign_headers(array('client_id' => '', 'hmac_secret' => '', 'api_url' => 'https://example.test/api'), '{}');
+assert_same(false, isset($headers['X-Signature']), 'Zonder ingestelde Client-ID/HMAC-secret wordt er toch een handtekening meegestuurd.');
+assert_same('application/json', $headers['Content-Type'], 'De basisheaders ontbreken wanneer er niet ondertekend wordt.');
+
+// Met beide ingesteld: de handtekening moet reproduceerbaar zijn volgens hetzelfde recept
+// als de backend gebruikt (methode+pad+tijd+nonce+bodyhash, HMAC-SHA256 met het secret).
+$settings = array('client_id' => 'wp-test', 'hmac_secret' => 'super-geheim', 'api_url' => 'https://example.test/functions/restaurantApi');
+$body_json = '{"action":"availability","slug":"almkreek"}';
+$headers = call_sign_headers($settings, $body_json);
+assert_same('wp-test', $headers['X-Client-ID'], 'De Client-ID-header komt niet overeen met de instelling.');
+$expected_message = "POST\n/functions/restaurantApi\n{$headers['X-Timestamp']}\n{$headers['X-Nonce']}\n" . hash('sha256', $body_json);
+$expected_signature = hash_hmac('sha256', $expected_message, 'super-geheim');
+assert_same($expected_signature, $headers['X-Signature'], 'De HMAC-handtekening komt niet overeen met het verwachte recept — dit zou de backend-verificatie laten falen.');
+
+fwrite(STDOUT, "Server-side invoervalidatie, rate limiting en HMAC-ondertekening: alle tests geslaagd.\n");

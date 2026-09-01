@@ -11,6 +11,13 @@
     MISSING_FIELD: 'Vul alle verplichte velden in.',
   };
   function esc(value) { var node = document.createElement('span'); node.textContent = String(value == null ? '' : value); return node.innerHTML; }
+  // Eén sleutel per formulierweergave: een dubbelklik op "bevestigen" of een fetch die de
+  // browser zelf opnieuw probeert, stuurt zo dezelfde idempotencyKey mee — de backend maakt
+  // dan niet per ongeluk een tweede reservering/aanmelding aan.
+  function newIdempotencyKey() {
+    if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'idem-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  }
   function api(payload, cfg) {
     return fetch(cfg.ajaxUrl + '?action=hgc_restaurant_api&nonce=' + encodeURIComponent(cfg.nonce), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function (res) { return res.json().then(function (json) { if (!res.ok || !json.success) { var data = json.data || {}; var error = new Error(labels[data.code] || data.message || 'Er ging iets mis.'); error.code = data.code; throw error; } return json.data; }); });
@@ -116,6 +123,7 @@
     var currentOverlay = null;
     var state = { info: defaultInfo(cfg), date: null, party: 2, slots: null, slotsForKey: null, slotsLoading: false, slotsError: null, time: null };
     state.date = state.info.minDate;
+    var idempotencyKey = newIdempotencyKey();
 
     function clampParty() {
       var min = state.info.minGroepsgrootte || 1, max = state.info.maxGroepsgrootte || 12;
@@ -332,7 +340,7 @@
       var container = form.closest('.hgc-wizard, .hgc-sheet');
       var btn = form.querySelector('[type="submit"]');
       var values = Object.fromEntries(new FormData(form).entries());
-      values.action = 'createPublic'; values.slug = park; values.date = state.date; values.time = state.time; values.partySize = state.party;
+      values.action = 'createPublic'; values.slug = park; values.date = state.date; values.time = state.time; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
       values.privacyAccepted = form.elements.privacyAccepted ? form.elements.privacyAccepted.checked : false;
       values.antwoorden = readDynFields(container, state.info.formVelden);
       if (btn) { btn.disabled = true; btn.textContent = 'Bezig met reserveren…'; }
@@ -376,6 +384,7 @@
     var mq = window.matchMedia('(min-width: 760px)');
     var currentOverlay = null;
     var state = { info: defaultEventInfo(cfg), zittingId: null, party: 2 };
+    var idempotencyKey = newIdempotencyKey();
 
     function clampParty() {
       var min = state.info.minAanmelding || 1, max = state.info.maxAanmelding || 12;
@@ -538,7 +547,7 @@
       var container = form.closest('.hgc-wizard, .hgc-sheet');
       var btn = form.querySelector('[type="submit"]');
       var values = Object.fromEntries(new FormData(form).entries());
-      values.action = 'eventCreatePublic'; values.slug = slug; values.zittingId = state.zittingId; values.partySize = state.party;
+      values.action = 'eventCreatePublic'; values.slug = slug; values.zittingId = state.zittingId; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
       values.privacyAccepted = form.elements.privacyAccepted ? form.elements.privacyAccepted.checked : false;
       values.antwoorden = readDynFields(container, state.info.formVelden);
       if (btn) { btn.disabled = true; btn.textContent = 'Bezig met aanmelden…'; }

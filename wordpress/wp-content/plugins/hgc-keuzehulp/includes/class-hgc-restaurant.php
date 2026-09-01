@@ -86,11 +86,12 @@ final class HGC_Restaurant
             return;
         }
         foreach (array_keys($settings['locations']) as $park) {
+            $body_json = wp_json_encode(array('action' => 'publicInfo', 'slug' => $park));
             wp_remote_post(esc_url_raw($settings['api_url']), array(
                 'timeout' => 8,
                 'blocking' => false,
-                'headers' => array('Content-Type' => 'application/json'),
-                'body' => wp_json_encode(array('action' => 'publicInfo', 'slug' => $park)),
+                'headers' => self::sign_headers($settings, $body_json),
+                'body' => $body_json,
             ));
         }
     }
@@ -117,6 +118,10 @@ final class HGC_Restaurant
             'address' => '',
             'hours_note' => '',
             'locations' => array(),
+            // Optioneel: server-naar-server ondertekening van elk verzoek naar Connect. Alleen
+            // gebruikt binnen ajax() (zie sign_headers()) en nooit naar de browser gestuurd.
+            'client_id' => '',
+            'hmac_secret' => '',
         ));
 
         $locations = self::sanitize_locations($settings['locations']);
@@ -462,10 +467,11 @@ final class HGC_Restaurant
             wp_send_json_error(array('message' => 'De reserveringskoppeling is onjuist ingesteld.'), 500);
         }
 
+        $body_json = wp_json_encode($payload);
         $response = wp_remote_post(esc_url_raw($settings['api_url']), array(
             'timeout' => 15,
-            'headers' => array('Content-Type' => 'application/json', 'Accept' => 'application/json'),
-            'body' => wp_json_encode($payload),
+            'headers' => self::sign_headers($settings, $body_json),
+            'body' => $body_json,
         ));
         if (is_wp_error($response)) {
             self::log('error', 'Connect onbereikbaar: ' . $response->get_error_message());
@@ -527,6 +533,30 @@ final class HGC_Restaurant
     }
 
     /**
+     * Server-naar-server ondertekening (HMAC-SHA256): dit gebeurt hier, in de PHP van
+     * WordPress zelf, dus het secret verlaat nooit de server/browser van de bezoeker.
+     * Alleen actief als zowel Client-ID als HMAC-secret zijn ingesteld — zo blijft de
+     * plugin ook werken zolang de backend afdwinging (RESTAURANT_HMAC_ENFORCE) nog niet
+     * heeft aangezet, en kan de koppeling geleidelijk (getest) worden aangescherpt.
+     */
+    private static function sign_headers(array $settings, string $body_json): array
+    {
+        $headers = array('Content-Type' => 'application/json', 'Accept' => 'application/json');
+        if (empty($settings['client_id']) || empty($settings['hmac_secret'])) {
+            return $headers;
+        }
+        $timestamp = (string) round(microtime(true) * 1000);
+        $nonce = wp_generate_password(24, false, false);
+        $path = (string) (wp_parse_url($settings['api_url'], PHP_URL_PATH) ?: '/');
+        $message = "POST\n{$path}\n{$timestamp}\n{$nonce}\n" . hash('sha256', $body_json);
+        $headers['X-Client-ID'] = $settings['client_id'];
+        $headers['X-Timestamp'] = $timestamp;
+        $headers['X-Nonce'] = $nonce;
+        $headers['X-Signature'] = hash_hmac('sha256', $message, $settings['hmac_secret']);
+        return $headers;
+    }
+
+    /**
      * Vaste, bekende velden voor zowel restaurant- als event-acties. `telefoon`/`dieetwensen`/
      * `gelegenheid` zijn de systeemvelden uit de formulierbuilder (zelfde sleutels voor
      * restaurant en events); welke ervan daadwerkelijk zichtbaar/verplicht zijn bepaalt Connect.
@@ -534,7 +564,7 @@ final class HGC_Restaurant
      */
     private function sanitize_payload(array $input): array
     {
-        $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason');
+        $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason', 'idempotencyKey');
         // Vrije-vorm ID's (van Connect zelf, of door de bezoeker onbewust bewerkt): ruim genoeg
         // voor een echte waarde, klein genoeg om geen onnodig grote payloads door te laten.
         $id_max_length = 200;
@@ -556,7 +586,7 @@ final class HGC_Restaurant
                 $out[$key] = (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $input[$key]) ? $input[$key] : '';
             } elseif ($key === 'time') {
                 $out[$key] = (bool) preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', (string) $input[$key]) ? $input[$key] : '';
-            } elseif (in_array($key, array('zittingId', 'reservationNumber', 'token'), true)) {
+            } elseif (in_array($key, array('zittingId', 'reservationNumber', 'token', 'idempotencyKey'), true)) {
                 $out[$key] = substr(sanitize_text_field((string) $input[$key]), 0, $id_max_length);
             } elseif (in_array($key, array('dieetwensen', 'gelegenheid', 'reason'), true)) {
                 $out[$key] = sanitize_textarea_field($input[$key]);
@@ -631,6 +661,11 @@ final class HGC_Restaurant
             'address' => $legacy['address'],
             'hours_note' => $legacy['hours_note'],
             'locations' => array_values($locations),
+            // Alleen server-side opgeslagen (wp_options) en alleen gebruikt binnen ajax()/
+            // warmup_ping() om het verzoek richting de backend te ondertekenen — bereikt de
+            // browser nooit.
+            'client_id' => sanitize_text_field($raw['client_id'] ?? ''),
+            'hmac_secret' => sanitize_text_field($raw['hmac_secret'] ?? ''),
         ), false);
 
         wp_safe_redirect(add_query_arg('restaurant_updated', '1', admin_url('options-general.php?page=hgc-calculator')) . '#hgc-restaurant');
@@ -669,9 +704,12 @@ final class HGC_Restaurant
                     <label class="hgc-admin-field"><span>Accentkleur</span><input type="color" name="restaurant[accent]" value="<?php echo esc_attr($s['accent']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Privacyverklaring</span><input class="large-text" type="url" name="restaurant[privacy_url]" value="<?php echo esc_attr($s['privacy_url']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
+                    <label class="hgc-admin-field"><span>Client-ID</span><input class="large-text code" type="text" name="restaurant[client_id]" value="<?php echo esc_attr($s['client_id']); ?>" placeholder="wp-hollandschegolfclub" /></label>
+                    <label class="hgc-admin-field"><span>HMAC-secret</span><input class="large-text code" type="password" autocomplete="off" name="restaurant[hmac_secret]" value="<?php echo esc_attr($s['hmac_secret']); ?>" /></label>
                 </div>
                 <p class="hgc-admin-hint">De publieke URL van de Base44-functie <code>restaurantApi</code> (gebruikt voor zowel tafelreserveringen als event-aanmeldingen).</p>
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
+                <p class="hgc-admin-hint">Client-ID en HMAC-secret zijn optioneel: samen ondertekent de plugin elk verzoek naar de backend, zodat die kan controleren dat het echt van deze site komt. Het HMAC-secret moet exact overeenkomen met <code>RESTAURANT_HMAC_SECRET</code> in de backend, en wordt alleen server-side gebruikt — nooit naar de browser gestuurd.</p>
                 <p class="hgc-admin-hint">Gebruik <code>[hgc_restaurant_reserveren park="almkreek"]</code> of het blok "HGC Restaurant Reserveren" voor tafelreserveringen, en <code>[hgc_event_aanmelden event="wildavond-2026"]</code> of het blok "HGC Event Aanmelden" voor een evenement (bv. een wildavond). Het evenement, de zittingen en eventuele aanvullende vragen op het formulier stel je samen in Connect.</p>
                 <h3 style="margin:24px 0 8px">Boekingsschermen per restaurant</h3>
                 <p class="hgc-admin-hint">Iedere locatie krijgt een eigen parkcode, naam, logo en contactgegevens. De algemene API, accentkleur, privacyverklaring en het clublogo gelden voor alle locaties.</p>

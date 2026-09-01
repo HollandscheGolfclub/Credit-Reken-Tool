@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.4.0 =
+* Optionele server-naar-server HMAC-ondertekening richting Connect (Client-ID + HMAC-secret, in te stellen bij Instellingen → HGC Interne WebsiteTechniek → Restaurant reserveren): elk verzoek krijgt X-Client-ID/X-Timestamp/X-Nonce/X-Signature-headers zodat de backend kan controleren dat het echt van deze site komt. Het secret wordt alleen server-side gebruikt en bereikt de browser nooit; zonder ingevulde waarden blijft de plugin exact als voorheen werken.
+* Elke reservering/aanmelding krijgt een idempotency-key mee, zodat een dubbelklik of een automatische fetch-retry niet per ongeluk een tweede boeking aanmaakt.
 
 = 2.3.2 =
 * Beveiligingsverharding van de reserverings-/aanmeldingsproxy: allowlist voor toegestane acties, striktere invoervalidatie (datum/tijd-formaat, e-mailadres, aantal personen, lengtebegrenzing op ID's en antwoorden), een echte server-side honeypotcontrole, gelaagde rate limiting (per IP en per e-mailadres, met een aparte limiet voor wijzigen/annuleren en voor het opzoeken van reserveringen), verplichte HTTPS naar Connect, en serverside logging van fouten/misbruik zonder gevoelige details naar de bezoeker te sturen.
