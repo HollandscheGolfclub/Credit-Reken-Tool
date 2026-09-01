@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.3.1 =
+* Lettertype van de keuzehulp is Montserrat geworden (in plaats van Poppins), zodat dit aansluit bij de huisstijl van hollandschegolfclub.nl.
+* De grootste koptekst-formaten (hero-titel en resultaattitel) zijn iets rustiger gemaakt, in lijn met de kopgroottes die de site zelf gebruikt.
 
 = 2.3.0 =
 * Nieuw: evenementaanmeldingen (bv. een wildavond) via de shortcode `[hgc_event_aanmelden event="wildavond-2026"]` of het blok "HGC Event Aanmelden", met dezelfde Connect-koppeling als tafelreserveren.

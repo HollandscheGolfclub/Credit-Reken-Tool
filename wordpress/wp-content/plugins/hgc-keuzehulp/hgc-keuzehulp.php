@@ -3,7 +3,7 @@
  * Plugin Name: HGC - Interne WebsiteTechniek
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.3.0
+ * Version: 2.3.1
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.3.0');
+define('HGC_CALCULATOR_VERSION', '2.3.1');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -132,7 +132,7 @@ function hgc_calculator_shortcode(array $atts = array()): string
 
     wp_enqueue_style(
         'hgc-calculator-font',
-        'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
+        'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap',
         array(),
         null
     );
