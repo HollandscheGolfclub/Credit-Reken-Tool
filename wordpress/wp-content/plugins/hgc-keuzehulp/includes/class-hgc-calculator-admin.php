@@ -494,7 +494,7 @@ final class HGC_Calculator_Admin
                 <label class="hgc-admin-check"><input type="checkbox" name="config[courses][<?php echo esc_attr($index); ?>][provisional]" value="1" <?php checked(!empty($course['provisional'])); ?> /> Tarieven zijn voorlopig</label>
                 <?php $this->text_input('Toelichting', "config[courses][$index][note]", $course['note'] ?? ''); ?>
             </div>
-            <?php $this->textarea_field('Voorbehoud bij uitslag (optioneel)', "config[courses][$index][caveat]", $course['caveat'] ?? '', 'Verschijnt op het resultaatscherm als "Let op bij ' . ($course['name'] ?? 'deze baan') . ': ...". Laat leeg om niets te tonen.'); ?>
+            <?php $this->textarea_field('Voorbehoud bij uitslag (optioneel)', "config[courses][$index][caveat]", $course['caveat'] ?? '', 'Verschijnt op het resultaatscherm als "Let op: ...". Laat leeg om niets te tonen.'); ?>
             <label class="hgc-admin-field">
                 <span>Melding tonen bij</span>
                 <select name="config[courses][<?php echo esc_attr($index); ?>][caveatCourse]">

@@ -568,7 +568,7 @@ function candidatePlans(context) {
   // rondes per stuk af, dus we bieden ze alleen aan wanneer alle rondes op de
   // grote baan vallen; voor de kleine baan is geen greenfeetarief vastgesteld.
   const loyalTee = hgcConfig.loyalTee || null;
-  // De vrije rondes gaan naar de duurste rondes, en de grote baan is op iedere
+  // De gratis rondes gaan naar de duurste rondes, en de grote baan is op iedere
   // baan duurder dan de kleine.
   const freeLarge = Math.min(largeRounds, vouchers);
   const freeSmall = Math.min(smallRounds, Math.max(0, vouchers - freeLarge));
@@ -608,13 +608,13 @@ function candidatePlans(context) {
       : paidLarge * (fee(largeCourse, largeKey) || 0) + paidSmall * (fee(smallCourse, smallKey) || 0);
     const paidRounds = paidLarge + paidSmall;
     const freeRounds = freeLarge + freeSmall;
-    // De vrije rondes komen uit de handicapregistratie. Rekent de bezoeker die
-    // niet mee, dan heeft die ook de vrije rondes niet en betaalt hij LoyalTee's
+    // De gratis rondes komen uit de handicapregistratie. Rekent de bezoeker die
+    // niet mee, dan heeft die ook de gratis rondes niet en betaalt hij LoyalTee's
     // gereduceerde greenfeetarief over al zijn rondes.
     const perRondeNoReg = (largeKey, smallKey) => youth
       ? totalRounds * youthGreenFee
       : largeRounds * (fee(largeCourse, largeKey) || 0) + smallRounds * (fee(smallCourse, smallKey) || 0);
-    const vrijeRondesTekst = vouchers > 0
+    const gratisRondesTekst = vouchers > 0
       ? `Een handicapregistratielidmaatschap is inclusief ${decimal.format(vouchers)} gratis ${vouchers === 1 ? "ronde" : "rondes"} golf van 9 holes.`
       : "Met handicapregistratie speel je op elke HGC-baan tegen het greenfeetarief.";
 
@@ -626,10 +626,10 @@ function candidatePlans(context) {
         price: handicapPrice,
         registration: false,
         total: perRonde("greenFeeFull", "shortGreenFeeFull"),
-        detail: vrijeRondesTekst,
+        detail: gratisRondesTekst,
         instruction: paidRounds > 0
-          ? `Je ${roundWord(paidRounds)} na die vrije rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
-          : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes, dus je betaalt verder niets per ronde.`,
+          ? `Je ${roundWord(paidRounds)} na die gratis rondes reken je per ronde af tegen het greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${roundWord(totalRounds)} vallen binnen de gratis rondes, dus je betaalt verder niets per ronde.`,
       },
       // Jeugd heeft geen LoyalTee: die route bestaat alleen voor volwassenen.
       ...(youth ? [] : [{
@@ -641,8 +641,8 @@ function candidatePlans(context) {
         total: perRonde("greenFee", "shortGreenFee"),
         detail: `Met LoyalTee speel je zonder speelrecht tegen ${decimal.format(Number(loyalTee.discountPercentage))}% korting op de greenfee.`,
         instruction: paidRounds > 0
-          ? `Je ${roundWord(paidRounds)} na de vrije rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
-          : `Je ${roundWord(totalRounds)} vallen binnen de vrije rondes van je handicapregistratie.`,
+          ? `Je ${roundWord(paidRounds)} na de gratis rondes van je handicapregistratie reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+          : `Je ${roundWord(totalRounds)} vallen binnen de gratis rondes van je handicapregistratie.`,
         totalNoReg: perRondeNoReg("greenFee", "shortGreenFee"),
         instructionNoReg: `Je ${roundWord(totalRounds)} reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`,
       }]),
@@ -879,7 +879,7 @@ function switchableAmount(withRegistration, withoutRegistration) {
   return `<span class="switchable" data-with="${withText}" data-without="${withoutText}">${handicapDefault() ? withText : withoutText}</span>`;
 }
 
-// Voor tekst die verandert met de schakelaar, niet alleen een bedrag: de vrije
+// Voor tekst die verandert met de schakelaar, niet alleen een bedrag: de gratis
 // rondes bij LoyalTee komen uit de handicapregistratie, dus zonder die
 // registratie meegerekend geldt er ook geen vrijstelling.
 function switchableHtml(withHtml, withoutHtml) {
@@ -922,7 +922,7 @@ function courseCaveats(result) {
     .map(({ course }) => course);
   const unique = courses.filter((course, index, all) => all.findIndex((other) => other.id === course.id) === index);
   return unique
-    .map((course) => `<p class="result-disclaimer result-disclaimer--course">Let op bij ${course.name}: ${course.caveat}</p>`)
+    .map((course) => `<p class="result-disclaimer result-disclaimer--course">Let op: ${course.caveat}</p>`)
     .join("");
 }
 
