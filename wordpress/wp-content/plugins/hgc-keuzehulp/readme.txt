@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.4.1
+Stable tag: 2.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.4.2 =
+* De kaart met extra speelruimte onderbouwt zich nu correct. Dekt het geadviseerde speelrecht de opgegeven rondes al, dan meldt de kaart hoeveel credits speelruimte er bovenop komen; eerder stond er dat het grotere speelrecht de rondes "volledig in plaats van een deel" dekt, wat in dat geval niet klopte.
+* Bij een route die de rondes niet helemaal dekt, noemt de kaart nu het aantal gedekte rondes en dat de resterende rondes per ronde worden afgerekend of met een aanvullend speelrecht. Die tekst sprak de toelichting eronder tegen door te melden dat je alleen de credits koopt die je nodig hebt. Bij het bedrag staat er nu bij dat de greenfee erbij komt, zodat de twee kaarten naast elkaar eerlijk te vergelijken zijn.
+* Het voorstel om bij te kopen noemt nu het kleinste speelrecht dat het resterende tekort dekt, in plaats van nog een speelrecht van dezelfde omvang. Bij een paar resterende rondes werd zo een tweede groot speelrecht voorgesteld.
 
 = 2.4.1 =
 * Tekst "vrije rondes" is overal "gratis rondes" geworden, voor eenduidige taal rond kosteloze rondes.
