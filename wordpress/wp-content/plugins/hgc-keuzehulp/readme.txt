@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.4.2
+Stable tag: 2.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.4.3 =
+* De instellingenpagina opent nu met een overzicht van de modules: twee kaarten voor de onderdelen die op de website staan (de speelrechtkeuzehulp en het restaurant/evenementgedeelte) met daarbij de bijbehorende shortcodes, en daaronder tegels naar Algemeen, Golfbanen, Bestandsbeheer en Updates. De shortcode voor het reserveringsformulier vult de eerste ingestelde locatie automatisch in, zodat hij direct te kopieren is.
+* Het beheerscherm heeft een kopbalk met het clublogo gekregen en volgt nu de huisstijl van de keuzehulp op de website: dezelfde merkkleuren en Montserrat op de koppen, met de limegroene lijn uit het logo als terugkerend element bij de instellingengroepen en de opslaanbalk. De grijstinten en formuliervelden van WordPress blijven ongewijzigd.
+* Meldingen als "de instellingen zijn opgeslagen" verschijnen nu onder de kopbalk in plaats van er middenin.
 
 = 2.4.2 =
 * De kaart met extra speelruimte onderbouwt zich nu correct. Dekt het geadviseerde speelrecht de opgegeven rondes al, dan meldt de kaart hoeveel credits speelruimte er bovenop komen; eerder stond er dat het grotere speelrecht de rondes "volledig in plaats van een deel" dekt, wat in dat geval niet klopte.

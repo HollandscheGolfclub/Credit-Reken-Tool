@@ -32,10 +32,18 @@ final class HGC_Calculator_Admin
             return;
         }
 
+        // Hetzelfde merkfont als de keuzehulp op de website, zodat het
+        // beheerscherm bij de huisstijl aansluit.
+        wp_enqueue_style(
+            'hgc-calculator-admin-font',
+            'https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap',
+            array(),
+            null
+        );
         wp_enqueue_style(
             'hgc-calculator-admin',
             HGC_CALCULATOR_URL . 'admin/admin.css',
-            array(),
+            array('hgc-calculator-admin-font', 'dashicons'),
             (string) filemtime(HGC_CALCULATOR_DIR . 'admin/admin.css')
         );
         wp_enqueue_script(
@@ -62,8 +70,22 @@ final class HGC_Calculator_Admin
         );
         ?>
         <div class="wrap hgc-admin">
-            <h1>HGC Interne WebsiteTechniek</h1>
-            <p class="hgc-admin-intro">Beheer hier de gegevens die de calculator op de website gebruikt. Wijzigingen zijn direct actief na opslaan.</p>
+            <header class="hgc-admin-masthead">
+                <img
+                    class="hgc-admin-masthead__logo"
+                    src="<?php echo esc_url(HGC_CALCULATOR_URL . 'assets/logo-hgc-long.png'); ?>"
+                    alt="Hollandsche Golfclub"
+                    width="900"
+                    height="197"
+                />
+                <div class="hgc-admin-masthead__text">
+                    <h1>Interne WebsiteTechniek</h1>
+                    <p class="hgc-admin-intro">Beheer hier de gegevens die de keuzehulp en het restaurantformulier op de website gebruiken. Wijzigingen zijn direct actief na opslaan.</p>
+                </div>
+                <p class="hgc-admin-masthead__version">Versie <?php echo esc_html(HGC_CALCULATOR_VERSION); ?></p>
+            </header>
+            <?php // WordPress plaatst meldingen op deze markering, in plaats van middenin de masthead. ?>
+            <hr class="wp-header-end" />
             <nav class="hgc-admin-nav" aria-label="Snel naar instellingengroep">
                 <a href="#hgc-general">Algemeen</a>
                 <a href="#hgc-memberships">Tarieven</a>
@@ -114,25 +136,95 @@ final class HGC_Calculator_Admin
                 <?php endif; ?>
             </section>
 
-            <section class="hgc-admin-panel">
-                <h2>Plaatsen op de website</h2>
-                <p>Plaats de gekozen onderdelen met de bijbehorende shortcode, of via het Gutenberg-blok.</p>
-                <div class="hgc-admin-grid hgc-admin-grid--two">
-                    <article class="hgc-shortcode-card">
+            <?php
+            $course_count = count($config['courses'] ?? array());
+            $package_count = 0;
+            foreach (array_keys($package_groups) as $group_key) {
+                $package_count += count($config[$group_key] ?? array());
+            }
+            $restaurant_locations = 0;
+            $restaurant_park = '';
+            if (class_exists('HGC_Restaurant') && method_exists('HGC_Restaurant', 'settings')) {
+                $restaurant_settings = HGC_Restaurant::settings();
+                $restaurant_locations = count($restaurant_settings['locations'] ?? array());
+                $restaurant_park = (string) key($restaurant_settings['locations'] ?? array());
+            }
+            $reserveer_shortcode = $restaurant_park !== ''
+                ? '[hgc_restaurant_reserveren park="' . $restaurant_park . '"]'
+                : '[hgc_restaurant_reserveren]';
+            ?>
+            <section class="hgc-admin-panel hgc-home">
+                <div class="hgc-admin-heading">
+                    <div>
+                        <h2>Modules</h2>
+                        <p>Kies waar je aan wilt werken. De shortcode staat bij het onderdeel waar hij bij hoort.</p>
+                    </div>
+                </div>
+
+                <div class="hgc-home-grid hgc-home-grid--primary">
+                    <article class="hgc-home-card hgc-home-card--primary">
+                        <span class="hgc-home-card__icon dashicons dashicons-calculator" aria-hidden="true"></span>
                         <h3>Speelrechtkeuzehulp</h3>
-                        <p>Adviseert een speelrecht op basis van grote en kleine baanrondes.</p>
+                        <p>Adviseert een speelrecht op basis van het aantal rondes op grote en kleine banen.</p>
+                        <p class="hgc-home-card__meta"><?php echo esc_html($course_count); ?> golfbanen &middot; <?php echo esc_html($package_count); ?> speelrechten</p>
+                        <div class="hgc-home-card__links">
+                            <a href="#hgc-memberships">Tarieven</a>
+                            <a href="#hgc-products">Pakketten</a>
+                            <a href="#hgc-courses">Golfbanen</a>
+                            <a href="#hgc-benefits">Voordelen</a>
+                        </div>
                         <code>[hgc_calculator]</code>
                     </article>
-                    <article class="hgc-shortcode-card">
-                        <h3>Restaurant reserveren</h3>
-                        <p>Reserveringsformulier voor het restaurant van het opgegeven park, of het blok “HGC Restaurant Reserveren”.</p>
-                        <code>[hgc_restaurant_reserveren park="almkreek"]</code>
-                    </article>
-                    <article class="hgc-shortcode-card">
-                        <h3>Alle restaurantlocaties</h3>
-                        <p>Laat bezoekers eerst zoeken en kiezen uit alle ingestelde locaties, of gebruik het blok "HGC Restaurantkiezer".</p>
+
+                    <article class="hgc-home-card hgc-home-card--primary">
+                        <span class="hgc-home-card__icon dashicons dashicons-calendar-alt" aria-hidden="true"></span>
+                        <h3>Restaurant en evenementen</h3>
+                        <p>Reserveringsformulier per park, een kiezer voor alle locaties, en aanmeldingen voor evenementen.</p>
+                        <p class="hgc-home-card__meta">
+                            <?php if ($restaurant_locations > 0) : ?>
+                                <?php echo esc_html($restaurant_locations); ?> <?php echo $restaurant_locations === 1 ? 'locatie' : 'locaties'; ?> ingesteld
+                            <?php else : ?>
+                                Nog geen locaties ingesteld
+                            <?php endif; ?>
+                        </p>
+                        <div class="hgc-home-card__links">
+                            <a href="#hgc-restaurant">Instellingen en locaties</a>
+                        </div>
+                        <code><?php echo esc_html($reserveer_shortcode); ?></code>
                         <code>[hgc_restaurant_kiezer]</code>
+                        <code>[hgc_event_aanmelden event="wildavond-2026"]</code>
                     </article>
+                </div>
+
+                <div class="hgc-home-grid hgc-home-grid--secondary">
+                    <a class="hgc-home-tile" href="#hgc-general">
+                        <span class="hgc-home-tile__icon dashicons dashicons-admin-generic" aria-hidden="true"></span>
+                        <span class="hgc-home-tile__text">
+                            <strong>Algemeen</strong>
+                            <small>Jaar en speelbeeld</small>
+                        </span>
+                    </a>
+                    <a class="hgc-home-tile" href="#hgc-courses">
+                        <span class="hgc-home-tile__icon dashicons dashicons-flag" aria-hidden="true"></span>
+                        <span class="hgc-home-tile__text">
+                            <strong>Golfbanen</strong>
+                            <small><?php echo esc_html($course_count); ?> parken</small>
+                        </span>
+                    </a>
+                    <a class="hgc-home-tile" href="<?php echo esc_url(admin_url('tools.php?page=hgc-bestandsbeheer')); ?>">
+                        <span class="hgc-home-tile__icon dashicons dashicons-media-default" aria-hidden="true"></span>
+                        <span class="hgc-home-tile__text">
+                            <strong>Bestandsbeheer</strong>
+                            <small>Oude pluginmappen opruimen</small>
+                        </span>
+                    </a>
+                    <a class="hgc-home-tile" href="#hgc-plugin-updates">
+                        <span class="hgc-home-tile__icon dashicons dashicons-update" aria-hidden="true"></span>
+                        <span class="hgc-home-tile__text">
+                            <strong>Updates</strong>
+                            <small>Versie <?php echo esc_html(HGC_CALCULATOR_VERSION); ?></small>
+                        </span>
+                    </a>
                 </div>
             </section>
 
