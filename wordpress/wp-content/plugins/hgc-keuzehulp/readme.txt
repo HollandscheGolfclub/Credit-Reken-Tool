@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.4.3
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.5.0 =
+* De prijs per ronde op de adviespagina heet nu ook zo, en rekent ook zo. Het bedrag werd eerder over de credits gespreid die je nodig had; nu altijd over de credits die je koopt. Bij 60 credits op De Loonsche Duynen staat er dus 17,17 euro per ronde, de prijs van een ronde, in plaats van een bedrag waarin ook de credits zaten die je niet opmaakt.
+* Liggen twee speelrechten dicht bij elkaar, dan staat op beide kaarten de prijs per ronde. Zonder dat getal waren twee pakketten van verschillende omvang niet te vergelijken: het grotere pakket kost meer, maar per ronde vaak minder.
+* De toelichting op die kaarten volgt nu de schakelaar voor handicapregistratie. Stond die op "zonder", dan verscheen er toch tekst over gratis rondes uit de registratie.
+* Het advies om aan te vullen met een tweede speelrecht is vervallen.
 
 = 2.4.3 =
 * De instellingenpagina opent nu met een overzicht van de modules: twee kaarten voor de onderdelen die op de website staan (de speelrechtkeuzehulp en het restaurant/evenementgedeelte) met daarbij de bijbehorende shortcodes, en daaronder tegels naar Algemeen, Golfbanen, Bestandsbeheer en Updates. De shortcode voor het reserveringsformulier vult de eerste ingestelde locatie automatisch in, zodat hij direct te kopieren is.

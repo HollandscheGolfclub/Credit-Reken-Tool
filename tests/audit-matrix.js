@@ -150,14 +150,13 @@
                   if (Math.abs(Number(plan.annualCost) - Number(plan.price) - Number(plan.registrationPrice || 0)) > 0.001) {
                     report("annual-cost-mismatch", { ...context, group: plan.group });
                   }
-                  // Dekt het pakket alle rondes (of rekent het per ronde af, of
-                  // koopt het zichzelf herhaald), dan hoort de prijs per ronde
-                  // maal het aantal rondes exact op te tellen tot de jaarlast.
-                  // Dekt het pakket niet alles, dan is de prijs per ronde bewust
-                  // gebaseerd op de credits die je kocht, niet op alle rondes die
-                  // je speelt (de rest gaat op greenfee); die twee tellen dan niet
-                  // meer exact op, en dat hoort ook niet meer.
-                  if (plan.coversRounds || plan.repeatPurchases || ["handicap", "loyaltee"].includes(plan.type)) {
+                  // Alleen routes die daadwerkelijk per ronde afrekenen hebben een
+                  // prijs per ronde die maal het aantal rondes exact optelt tot de
+                  // jaarlast. Bij een speelrecht is de prijs per ronde gebaseerd op
+                  // de credits die je koopt: koop je er meer dan je opmaakt, dan
+                  // ligt de jaarlast hoger dan die som, en speel je bij op greenfee,
+                  // dan juist lager. Dat hoort zo.
+                  if (["handicap", "loyaltee"].includes(plan.type)) {
                     const reconstructed = largeRounds * Number(plan.largeRoundCost || 0) + smallRounds * Number(plan.smallRoundCost || 0);
                     const jaarlast = Number(plan.annualCost) + Number(plan.repeatExtraTotal || 0);
                     if (Math.abs(reconstructed - jaarlast) > 0.01) {

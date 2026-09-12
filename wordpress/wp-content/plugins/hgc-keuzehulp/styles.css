@@ -259,6 +259,8 @@
 .hgc-calculator .advice-card-amount small, .hgc-calculator .recommendation-amount small, .hgc-calculator .next-option-amount small { display: block; margin-top: 6px; color: var(--ink-soft); font: 500 13px/1.4 "Montserrat", sans-serif; }
 .hgc-calculator .next-option-amount { font-size: 24px; }
 .hgc-calculator .advice-card-coverage { margin-bottom: 13px; color: var(--ink-soft) !important; font-size: 13px; line-height: 1.55; }
+.hgc-calculator .advice-card-rounds { margin-bottom: 13px; color: var(--ink) !important; font: 700 15px/1.4 "Montserrat", sans-serif; }
+.hgc-calculator .advice-card-rounds small { display: block; margin-top: 4px; color: var(--ink-soft); font: 500 13px/1.4 "Montserrat", sans-serif; }
 .hgc-calculator .advice-card-instruction { margin-bottom: 20px; padding: 12px 14px; border-left: 3px solid var(--green); color: var(--ink) !important; background: #f3f7e9; font-size: 13px; font-weight: 650; }
 .hgc-calculator .advice-card--shortgolf .advice-card-instruction { border-left-color: var(--orange); background: #fdf2e6; }
 .hgc-calculator .advice-card .button { width: 100%; margin-top: auto; }

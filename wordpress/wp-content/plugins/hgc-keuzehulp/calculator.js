@@ -339,12 +339,11 @@ function candidatePlans(context) {
       if (!shortfallFairlyPriced) {
         plan.availablePackages = choice.packages;
         plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
-        // Dekt het pakket alles, dan spreiden we de prijs over de credits die je
-        // nodig hebt: dat is exact wat je gaat spelen. Dekt het pakket niet
-        // alles, dan bestaat dat "nodig" aantal niet eerlijk meer (een deel
-        // blijft onbeprijsd); dan spreiden we over de credits die je wél kocht,
-        // zodat de prijs per ronde alleen over de credit-gedekte rondes gaat.
-        const priceBasis = plan.coversRounds ? standardCredits : plan.credits;
+        // De prijs per ronde spreidt altijd over de credits die je koopt, nooit
+        // over de credits die je nodig hebt. Zo staat er wat één ronde op deze
+        // baan kost, ongeacht of je het pakket helemaal opmaakt. Credits die je
+        // overhoudt zitten dus niet in dit bedrag.
+        const priceBasis = plan.credits;
         plan.largeBaseCost = priceBasis > 0 ? largeCourse.largeRate * (plan.price / priceBasis) : 0;
         plan.smallBaseCost = priceBasis > 0 ? smallCourse.shortRate * (plan.price / priceBasis) : 0;
         plan.detail = plan.coversRounds
@@ -385,8 +384,10 @@ function candidatePlans(context) {
         repeatPurchases: aankopen,
         repeatExtraTotal: (aankopen - 1) * price,
         coveredRounds: totalRounds * Math.min(1, credits / standardCredits),
-        largeBaseCost: standardCredits > 0 ? largeCourse.largeRate * (aankopen * price / standardCredits) : 0,
-        smallBaseCost: standardCredits > 0 ? Number(smallCourse.shortRate) * (aankopen * price / standardCredits) : 0,
+        // Ook hier de prijs van één ronde: elke aankoop kost evenveel per
+        // credit, dus het aantal aankopen verandert die prijs niet.
+        largeBaseCost: largeCourse.largeRate * (price / credits),
+        smallBaseCost: Number(smallCourse.shortRate) * (price / credits),
         detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het eerste deel van je rondes.`,
         instruction: `Koop een nieuw speelrecht van ${decimal.format(credits)} credits zodra deze op zijn. Zo betaal je alleen voor de credits die je gebruikt.`,
       };
@@ -412,19 +413,10 @@ function candidatePlans(context) {
         // het volledige tekort tegen greenfee staan.
         const registrationRounds = Math.min(extraRounds, vouchers);
         const extraRoundsWithRegistration = Math.max(0, extraRounds - registrationRounds);
-        // Voor het restant hoort het kleinste speelrecht genoemd te worden dat
-        // dat restant dekt, niet nog eens dezelfde omvang: bij een paar rondes
-        // tekort is een tweede groot speelrecht geen serieus alternatief.
-        const aanvulling = (choice.packages || [])
-          .map((option) => Number(option.credits))
-          .filter((optionCredits) => Number.isFinite(optionCredits) && optionCredits > 0)
-          .sort((a, b) => a - b)
-          .find((optionCredits) => optionCredits + 1e-8 >= shortfall) ?? credits;
-        const aanvullingTekst = `Of je vult aan met een speelrecht van ${decimal.format(aanvulling)} credits.`;
         const instructionWithRegistration = extraRoundsWithRegistration > 0
-          ? `Na ${decimal.format(credits)} credits worden ${roundWord(registrationRounds)} gedekt door je handicapregistratie. De overige ${roundWord(extraRoundsWithRegistration)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. ${aanvullingTekst}`
+          ? `Na ${decimal.format(credits)} credits worden ${roundWord(registrationRounds)} gedekt door je handicapregistratie. De overige ${roundWord(extraRoundsWithRegistration)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
           : `Na ${decimal.format(credits)} credits ${registrationRounds === 1 ? "wordt de resterende ronde" : "worden de resterende rondes"} gedekt door je handicapregistratie. Je betaalt daarvoor geen greenfee.`;
-        const instructionWithoutRegistration = `De ${roundWord(extraRounds)} die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs. ${aanvullingTekst}`;
+        const instructionWithoutRegistration = `De ${roundWord(extraRounds)} die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`;
         const plan = {
           type: "credits",
           group: `${choice.group}-greenfee-${credits}`,
@@ -475,13 +467,9 @@ function candidatePlans(context) {
       shortPlan.reducedGreenFeeTotal = greenFeeCost;
       shortPlan.uncoveredLargeRounds = payGreenFee ? 0 : largeRounds;
       shortPlan.largeBaseCost = 0;
-      // Dekt het pakket alles, dan spreiden we over de rondes die je speelt
-      // (gelijk aan spreiden over de credits die je nodig hebt). Dekt het niet
-      // alles, dan spreiden we over de credits die je wél kocht, niet over
-      // rondes die straks alsnog op greenfee gaan.
-      shortPlan.smallBaseCost = shortPlan.coversRounds
-        ? shortPlan.price / smallRounds
-        : shortGolfRate * (shortPlan.price / shortPlan.credits);
+      // De prijs van één ronde op de kleine baan: het Shortgolf-tarief maal de
+      // prijs per gekochte credit, of het pakket nu alles dekt of niet.
+      shortPlan.smallBaseCost = shortGolfRate * (shortPlan.price / shortPlan.credits);
       // Dekt het grootste Shortgolf-speelrecht de rondes niet, dan noemen we
       // hoeveel rondes het wél dekt in plaats van te doen alsof alles gedekt is.
       const coveredSmallRounds = Math.floor(shortPlan.credits / shortGolfRate);
@@ -562,7 +550,7 @@ function candidatePlans(context) {
       if (!plan) return;
       plan.availablePackages = choice.packages;
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
-      const localPriceBasis = plan.coversRounds ? localCredits : plan.credits;
+      const localPriceBasis = plan.credits;
       plan.largeBaseCost = localPriceBasis > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.smallBaseCost = localPriceBasis > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.detail = plan.coversRounds
@@ -986,6 +974,30 @@ function adviceAlt({ label, plan, amountNote, note }) {
   `;
 }
 
+function roundPriceLine(plan, registrationShare) {
+  const share = Number(registrationShare || 0);
+  const delen = [];
+  const bedrag = (waarde) => waarde != null && Number.isFinite(Number(waarde));
+  const toonGroot = bedrag(plan.largeRoundCost)
+    && Number(plan.largeBaseCost || 0) > 0
+    && !Number(plan.uncoveredLargeRounds || 0)
+    && !Number(plan.reducedGreenFeeRounds || 0);
+  if (toonGroot) delen.push(`Grote baan ${switchableAmount(plan.largeRoundCost, plan.largeRoundCost - share)}`);
+  if (bedrag(plan.smallRoundCost) && Number(plan.smallBaseCost || 0) > 0) {
+    delen.push(`Kleine baan ${switchableAmount(plan.smallRoundCost, plan.smallRoundCost - share)}`);
+  }
+  if (!delen.length) return "";
+  return `<p class="advice-card-rounds">${delen.join(" · ")}<small>prijs per ronde</small></p>`;
+}
+
+// De toelichting hoort dezelfde schakelaar te volgen als de bedragen: zonder
+// handicapregistratie gelden de gratis rondes daaruit niet.
+function cardInstruction(plan) {
+  return plan.instructionNoReg && plan.instructionNoReg !== plan.instruction
+    ? switchableHtml(plan.instruction, plan.instructionNoReg)
+    : plan.instruction;
+}
+
 function choiceCard(plan, options) {
   return `
     <article class="advice-card advice-card--${options.variant}">
@@ -994,7 +1006,8 @@ function choiceCard(plan, options) {
       <h4>${brandText(plan.name)}</h4>
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
-      ${plan.coversRounds ? "" : `<p class="advice-card-instruction">${plan.instruction}</p>`}
+      ${roundPriceLine(plan, options.registrationShare)}
+      ${plan.coversRounds ? "" : `<p class="advice-card-instruction">${cardInstruction(plan)}</p>`}
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
     </article>
   `;
@@ -1062,6 +1075,10 @@ function renderChoice(result) {
 function renderRouteChoice(result) {
   const zuinig = result.routeChoice.greenFee;
   const ruim = result.routeChoice.covering;
+  const deelPerRonde = (plan) => {
+    const rondes = result.largeRounds + result.smallRounds;
+    return rondes > 0 ? Number(plan.registrationPrice || 0) / rondes : 0;
+  };
   const ruimte = Math.round((Number(ruim.credits) - Number(ruim.requiredCredits)) * 10) / 10;
   // Deze route dekt de rondes niet helemaal; noem dat hier al, anders spreekt
   // deze tekst de toelichting over greenfee eronder tegen.
@@ -1081,6 +1098,7 @@ function renderRouteChoice(result) {
         question: "Weet je zeker dat je niet vaker speelt?",
         product: brandText(zuinig.productName),
         amountNote: "voor het speelrecht · greenfee komt hierbij",
+        registrationShare: deelPerRonde(zuinig),
         coverage: `Dit speelrecht dekt ${roundWord(gedekteRondes)} van je ${totaalRondes}. Je koopt dus geen credits die je niet gebruikt, maar je bent er nog niet mee klaar: de rondes die overblijven reken je per ronde af of vul je aan met een nieuw speelrecht.`,
         buttonClass: "button--primary",
       })}
@@ -1089,6 +1107,7 @@ function renderRouteChoice(result) {
         question: "Speel je misschien vaker dan je nu opgaf?",
         product: brandText(ruim.productName),
         amountNote: "voor al je rondes",
+        registrationShare: deelPerRonde(ruim),
         coverage: `Dit speelrecht dekt al je opgegeven rondes en houdt ${decimal.format(ruimte)} credits over voor rondes die je nu nog niet inplant.`,
         buttonClass: "button--primary",
       })}
@@ -1113,9 +1132,10 @@ function renderSingleAdvice(result) {
   const greenFeeExtraRoundsNoReg = Number(best.greenFeeExtraRoundsNoReg ?? greenFeeExtraRounds);
   const hasGreenFeeExtraRounds = greenFeeExtraRounds > 0 || greenFeeExtraRoundsNoReg > 0;
   const perRondeRoute = ["handicap", "loyaltee"].includes(best.type);
-  // largeBaseCost/smallBaseCost spreiden de prijs bij bijspelen op greenfee
-  // over de credits die je kocht, niet over rondes die daarna nog op greenfee
-  // gaan; die prijs per ronde klopt dus ook wanneer een deel wordt bijgespeeld.
+  // largeBaseCost/smallBaseCost spreiden de prijs altijd over de credits die
+  // je koopt, dus dit is de prijs van één ronde op die baan. Credits die je
+  // overhoudt en rondes die op greenfee gaan zitten er niet in; die staan
+  // apart onder "Wat je verder betaalt".
   // Bij shortgolf blijft largeBaseCost altijd 0 (Shortgolf-credits dekken de
   // grote baan nooit), dus die kaart blijft terecht verborgen.
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
@@ -1151,8 +1171,8 @@ function renderSingleAdvice(result) {
     ` : `
       <div class="choice-costs">
         <article class="choice-costs-total"><p>${totalCostLabel}</p><strong>${planAmount(best)}</strong><span>${totalCostNote}</span></article>
-        ${costCard("Grote baan", showLargeRoundCost ? best.largeRoundCost : null, "effectief per ronde", registrationShare)}
-        ${costCard("Kleine baan", showSmallRoundCost ? best.smallRoundCost : null, "effectief per ronde", registrationShare)}
+        ${costCard("Grote baan", showLargeRoundCost ? best.largeRoundCost : null, "prijs per ronde", registrationShare)}
+        ${costCard("Kleine baan", showSmallRoundCost ? best.smallRoundCost : null, "prijs per ronde", registrationShare)}
       </div>
       ${uncoveredLargeRounds || greenFeeRounds || !best.coversRounds ? `
         <h3 class="result-subheading">Wat je verder betaalt</h3>
