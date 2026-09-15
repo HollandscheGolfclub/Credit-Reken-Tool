@@ -99,13 +99,28 @@
     });
   }
 
+  /**
+   * Twee vinkjes onder het formulier: akkoord (verplicht) en nieuwsbrief
+   * (vrijwillig en standaard uit — een voorgevinkt vakje is geen geldige
+   * toestemming). Beide gaan als eigen boolean naar Connect, zodat daar
+   * vastligt waarmee de bezoeker op dat moment akkoord ging.
+   */
+  function consentHtml(cfg) {
+    var privacy = '<a href="' + esc(cfg.privacyUrl || '#') + '" target="_blank" rel="noopener">privacyverklaring</a>';
+    var terms = cfg.termsUrl
+      ? '<a href="' + esc(cfg.termsUrl) + '" target="_blank" rel="noopener">algemene voorwaarden</a>'
+      : 'algemene voorwaarden';
+    return '<label class="hgc-consent"><input name="termsAccepted" type="checkbox" required> Ik ga akkoord met de ' + terms + ' en de ' + privacy + '.</label>' +
+      '<label class="hgc-consent hgc-consent--optional"><input name="newsletterOptIn" type="checkbox"> Ja, houd mij per e-mail op de hoogte van nieuws en aanbiedingen.</label>';
+  }
+
   function detailsFieldsEl(cfg, formVelden) {
     var wrap = document.createElement('div');
     wrap.innerHTML = '<div class="hgc-grid">' + field('Naam', 'name', 'text', true, 'autocomplete="name"') + field('E-mailadres', 'email', 'email', true, 'autocomplete="email"') + field('Telefoonnummer', 'telefoon', 'tel', false, 'autocomplete="tel"') + field('Gelegenheid', 'gelegenheid', 'text', false, '') + '</div>' +
       '<label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dieetwensen" rows="3"></textarea></label>' +
       renderDynFields(formVelden) +
       '<label class="hgc-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>' +
-      '<label class="hgc-consent"><input name="privacyAccepted" type="checkbox" required> Ik ga akkoord met de <a href="' + esc(cfg.privacyUrl || '#') + '" target="_blank" rel="noopener">privacyverklaring</a>.</label>';
+      consentHtml(cfg);
     return wrap;
   }
 
@@ -184,7 +199,10 @@
       stepper.appendChild(minus); stepper.appendChild(val); stepper.appendChild(plus);
       wrap.appendChild(stepper);
       var hint = document.createElement('span'); hint.className = 'hgc-party-hint';
-      hint.innerHTML = 'Meer dan ' + max + ' personen?' + (cfg.phone ? ' <a href="tel:' + esc(cfg.phone.replace(/\s+/g, '')) + '">Bel ons</a>' : ' Neem contact op.');
+      // Grote groepen lopen niet via het online formulier maar via sales; een mailadres
+      // werkt daar beter dan een telefoonnummer (aanvraag staat meteen op schrift).
+      var groupEmail = cfg.groupEmail || 'sales@hollandschegolfclub.nl';
+      hint.innerHTML = 'Meer dan ' + max + ' personen? Mail ons: <a href="mailto:' + esc(groupEmail) + '">' + esc(groupEmail) + '</a>';
       wrap.appendChild(hint);
       return wrap;
     }
@@ -341,7 +359,11 @@
       var btn = form.querySelector('[type="submit"]');
       var values = Object.fromEntries(new FormData(form).entries());
       values.action = 'createPublic'; values.slug = park; values.date = state.date; values.time = state.time; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
-      values.privacyAccepted = form.elements.privacyAccepted ? form.elements.privacyAccepted.checked : false;
+      // termsAccepted vervangt het oude privacyAccepted; die laatste sturen we voorlopig
+      // mee met dezelfde waarde, zodat Connect blijft werken tot het veld daar is bijgewerkt.
+      values.termsAccepted = form.elements.termsAccepted ? form.elements.termsAccepted.checked : false;
+      values.newsletterOptIn = form.elements.newsletterOptIn ? form.elements.newsletterOptIn.checked : false;
+      values.privacyAccepted = values.termsAccepted;
       values.antwoorden = readDynFields(container, state.info.formVelden);
       if (btn) { btn.disabled = true; btn.textContent = 'Bezig met reserveren…'; }
       api(values, cfg).then(function (data) {
@@ -548,7 +570,11 @@
       var btn = form.querySelector('[type="submit"]');
       var values = Object.fromEntries(new FormData(form).entries());
       values.action = 'eventCreatePublic'; values.slug = slug; values.zittingId = state.zittingId; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
-      values.privacyAccepted = form.elements.privacyAccepted ? form.elements.privacyAccepted.checked : false;
+      // termsAccepted vervangt het oude privacyAccepted; die laatste sturen we voorlopig
+      // mee met dezelfde waarde, zodat Connect blijft werken tot het veld daar is bijgewerkt.
+      values.termsAccepted = form.elements.termsAccepted ? form.elements.termsAccepted.checked : false;
+      values.newsletterOptIn = form.elements.newsletterOptIn ? form.elements.newsletterOptIn.checked : false;
+      values.privacyAccepted = values.termsAccepted;
       values.antwoorden = readDynFields(container, state.info.formVelden);
       if (btn) { btn.disabled = true; btn.textContent = 'Bezig met aanmelden…'; }
       api(values, cfg).then(function (data) {

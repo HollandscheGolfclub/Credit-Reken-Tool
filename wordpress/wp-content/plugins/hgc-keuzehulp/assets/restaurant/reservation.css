@@ -72,7 +72,8 @@
 .hgc-manage-actions { display: flex; gap: 10px; }
 .hgc-manage-actions .hgc-cancel { background: #b91c1c; }
 .hgc-manage-actions .hgc-cancel:hover { background: #991616; }
-.hgc-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--hgc-ink-soft); line-height: 1.5; margin: 8px 0 22px; }
+.hgc-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--hgc-ink-soft); line-height: 1.5; margin: 8px 0 8px; }
+.hgc-consent--optional { margin-bottom: 22px; }
 .hgc-consent a { color: var(--hgc-accent-deep); font-weight: 600; }
 .hgc-consent input { margin-top: 3px; accent-color: var(--hgc-accent); }
 .hgc-honeypot { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
@@ -107,12 +108,15 @@
    Boekingswizard (desktop, 3 stappen) — id's 2a in de meegeleverde mockup.
    ------------------------------------------------------------------- */
 .hgc-wizard { background: #fff; border: 1px solid var(--hgc-line); border-radius: 18px; box-shadow: 0 16px 40px rgba(34, 48, 28, .08); overflow: hidden; color: var(--hgc-ink); animation: hgc-rise .35s ease both; }
-.hgc-wizard-logos { padding: 16px 32px; background: #fff; border-bottom: 1px solid #eef1e6; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.hgc-wizard-logos { padding: 14px 28px; background: #fff; border-bottom: 1px solid #eef1e6; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .hgc-wizard-logos:has(.hgc-logo--park):not(:has(.hgc-logo--club)) { justify-content: flex-start; }
 .hgc-wizard-logos:has(.hgc-logo--club):not(:has(.hgc-logo--park)) { justify-content: flex-end; }
-.hgc-logo { display: block; width: auto; object-fit: contain; }
-.hgc-logo--park { height: 44px; }
-.hgc-logo--club { height: 54px; }
+/* De aangeleverde logo's zijn JPG's met een witte achtergrond; multiply laat dat
+   witte blok opgaan in de (witte/getinte) balk in plaats van als grijzig kader te
+   blijven staan. max-width houdt een breed liggend logo binnen de balk. */
+.hgc-logo { display: block; width: auto; max-width: 210px; object-fit: contain; mix-blend-mode: multiply; }
+.hgc-logo--park { height: 42px; }
+.hgc-logo--club { height: 48px; }
 
 .hgc-wizard-hero { padding: 26px 32px; background: linear-gradient(135deg, var(--hgc-tint) 0%, #fff 100%); border-bottom: 1px solid var(--hgc-line); display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
 .hgc-wizard-hero h2 { font-size: clamp(1.35rem, 3vw, 1.7rem); font-weight: 700; line-height: 1.2; margin: 0; }
@@ -180,7 +184,9 @@
 .hgc-wizard-cta:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 .hgc-wizard-footer { position: relative; min-height: 90px; overflow: hidden; border-top: 1px solid #eef1e6; background: #fff; }
-.hgc-wizard-footer img { position: absolute; left: -16px; bottom: -8px; width: 190px; height: auto; pointer-events: none; z-index: 0; }
+/* Het grasje hoort in de hoek te staan: links en onder strak tegen de rand, zodat
+   het aansluit op de afgeronde hoek in plaats van er los overheen te hangen. */
+.hgc-wizard-footer img { position: absolute; left: 0; bottom: 0; display: block; width: 190px; height: auto; object-fit: contain; object-position: left bottom; pointer-events: none; z-index: 0; }
 .hgc-wizard-footer-text { position: relative; z-index: 1; padding: 20px 32px 20px 190px; font-size: 12px; color: var(--hgc-ink-soft); line-height: 1.7; }
 .hgc-wizard-footer-text span { display: block; color: #8d9585; }
 

@@ -112,6 +112,9 @@ final class HGC_Restaurant
             'event' => '',
             'accent' => '#7cb63a',
             'privacy_url' => '',
+            'terms_url' => '',
+            // Grote groepen worden niet online geboekt maar per mail aangevraagd.
+            'group_email' => 'sales@hollandschegolfclub.nl',
             'club_logo' => '',
             'park_logo' => '',
             'phone' => '',
@@ -351,6 +354,8 @@ final class HGC_Restaurant
     'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('hgc_restaurant'),
                 'privacyUrl' => esc_url_raw($settings['privacy_url']),
+                'termsUrl' => esc_url_raw($settings['terms_url']),
+                'groupEmail' => sanitize_email($settings['group_email']),
                 'clubLogo' => esc_url_raw($settings['club_logo']),
                 'grasUrl' => HGC_CALCULATOR_URL . 'assets/restaurant/img/hgc-gras.png',
                 'fallbackProfile' => isset($settings['locations'][$settings['park']]) ? array(
@@ -564,7 +569,7 @@ final class HGC_Restaurant
      */
     private function sanitize_payload(array $input): array
     {
-        $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'website', 'reservationNumber', 'token', 'reason', 'idempotencyKey');
+        $allowed = array('action', 'slug', 'date', 'time', 'zittingId', 'partySize', 'name', 'email', 'telefoon', 'dieetwensen', 'gelegenheid', 'privacyAccepted', 'termsAccepted', 'newsletterOptIn', 'website', 'reservationNumber', 'token', 'reason', 'idempotencyKey');
         // Vrije-vorm ID's (van Connect zelf, of door de bezoeker onbewust bewerkt): ruim genoeg
         // voor een echte waarde, klein genoeg om geen onnodig grote payloads door te laten.
         $id_max_length = 200;
@@ -577,7 +582,7 @@ final class HGC_Restaurant
                 // Server-side geclampt: de browser mag nooit zelf een (onzinnig groot) aantal
                 // personen doordrukken. De echte, geldende grenzen per locatie bepaalt Connect.
                 $out[$key] = max(1, min(50, absint($input[$key])));
-            } elseif ($key === 'privacyAccepted') {
+            } elseif (in_array($key, array('privacyAccepted', 'termsAccepted', 'newsletterOptIn'), true)) {
                 $out[$key] = rest_sanitize_boolean($input[$key]);
             } elseif ($key === 'email') {
                 $email = sanitize_email($input[$key]);
@@ -654,6 +659,8 @@ final class HGC_Restaurant
             'event' => sanitize_title($raw['event'] ?? ''),
             'accent' => sanitize_hex_color($raw['accent'] ?? '') ?: '#95c11f',
             'privacy_url' => esc_url_raw($raw['privacy_url'] ?? ''),
+            'terms_url' => esc_url_raw($raw['terms_url'] ?? ''),
+            'group_email' => sanitize_email($raw['group_email'] ?? ''),
             'club_logo' => esc_url_raw($raw['club_logo'] ?? ''),
             // Legacy-spiegels houden oudere code/pluginversies functioneel.
             'park_logo' => $legacy['park_logo'],
@@ -703,6 +710,8 @@ final class HGC_Restaurant
                     <label class="hgc-admin-field"><span>Standaard evenementcode</span><input type="text" name="restaurant[event]" value="<?php echo esc_attr($s['event']); ?>" placeholder="wildavond-2026" /></label>
                     <label class="hgc-admin-field"><span>Accentkleur</span><input type="color" name="restaurant[accent]" value="<?php echo esc_attr($s['accent']); ?>" /></label>
                     <label class="hgc-admin-field"><span>Privacyverklaring</span><input class="large-text" type="url" name="restaurant[privacy_url]" value="<?php echo esc_attr($s['privacy_url']); ?>" /></label>
+                    <label class="hgc-admin-field"><span>Algemene voorwaarden</span><input class="large-text" type="url" name="restaurant[terms_url]" value="<?php echo esc_attr($s['terms_url']); ?>" /></label>
+                    <label class="hgc-admin-field"><span>E-mailadres grote groepen</span><input class="large-text" type="email" name="restaurant[group_email]" value="<?php echo esc_attr($s['group_email']); ?>" placeholder="sales@hollandschegolfclub.nl" /></label>
                     <label class="hgc-admin-field"><span>Clublogo (afbeeldings-URL)</span><input class="large-text code" type="url" name="restaurant[club_logo]" value="<?php echo esc_attr($s['club_logo']); ?>" placeholder="https://.../hgc-logo.png" /></label>
                     <label class="hgc-admin-field"><span>Client-ID</span><input class="large-text code" type="text" name="restaurant[client_id]" value="<?php echo esc_attr($s['client_id']); ?>" placeholder="wp-hollandschegolfclub" /></label>
                     <label class="hgc-admin-field"><span>HMAC-secret</span><input class="large-text code" type="password" autocomplete="off" name="restaurant[hmac_secret]" value="<?php echo esc_attr($s['hmac_secret']); ?>" /></label>
