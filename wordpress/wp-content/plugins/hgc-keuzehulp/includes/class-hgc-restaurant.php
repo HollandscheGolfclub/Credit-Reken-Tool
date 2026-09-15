@@ -357,7 +357,6 @@ final class HGC_Restaurant
                 'termsUrl' => esc_url_raw($settings['terms_url']),
                 'groupEmail' => sanitize_email($settings['group_email']),
                 'clubLogo' => esc_url_raw($settings['club_logo']),
-                'grasUrl' => HGC_CALCULATOR_URL . 'assets/restaurant/img/hgc-gras.png',
                 'fallbackProfile' => isset($settings['locations'][$settings['park']]) ? array(
                     'name' => $settings['locations'][$settings['park']]['name'],
                     'parkLogo' => $settings['locations'][$settings['park']]['park_logo'],

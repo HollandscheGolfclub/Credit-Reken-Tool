@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.0
+Stable tag: 2.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.1 =
+* De logobalk boven het reserverings- en aanmeldformulier is vervallen; de kaart begint nu meteen met de kop en de naam van het park. De parklogo's op de locatiekiezer blijven staan.
+* Het grasje linksonder is vervallen. De voetregel met adres en telefoonnummer gebruikt nu de volle breedte.
+* De regel "Je krijgt een bevestiging per e-mail met een link om te wijzigen of te annuleren" staat niet meer in de zijbalk.
 
 = 2.6.0 =
 * Onder het reserveringsformulier staan nu twee vinkjes: akkoord met de algemene voorwaarden en de privacyverklaring (verplicht), en aanmelden voor de nieuwsbrief (vrijwillig, standaard uit). Beide worden bij de reservering opgeslagen in Connect, zodat daar vastligt waarmee de gast akkoord ging en wie de nieuwsbrief wil.

@@ -57,12 +57,6 @@
     var text = DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_SHORT[d.getMonth()] + ' · ' + z.tijd;
     return z.label ? text + ' — ' + z.label : text;
   }
-  function logosHtml(cfg) {
-    var parts = '';
-    if (cfg.parkLogo) parts += '<img class="hgc-logo hgc-logo--park" src="' + esc(cfg.parkLogo) + '" alt="">';
-    if (cfg.clubLogo) parts += '<img class="hgc-logo hgc-logo--club" src="' + esc(cfg.clubLogo) + '" alt="">';
-    return parts;
-  }
   function stepHeadHtml(num, title, variant) {
     return '<div class="hgc-step-head' + (variant === 'upcoming' ? ' hgc-step-head--upcoming' : '') + '"><span class="hgc-step-num hgc-step-num--' + variant + '">' + num + '</span><h3>' + esc(title) + '</h3></div>';
   }
@@ -254,19 +248,16 @@
     function footerHtml() {
       if (!cfg.phone && !cfg.address && !cfg.hoursNote) return '';
       var bits = []; if (cfg.address) bits.push(esc(cfg.address)); if (cfg.phone) bits.push(esc(cfg.phone));
-      return '<div class="hgc-wizard-footer">' + (cfg.grasUrl ? '<img src="' + esc(cfg.grasUrl) + '" alt="">' : '') +
+      return '<div class="hgc-wizard-footer">' +
         '<div class="hgc-wizard-footer-text">' + bits.join(' · ') + (cfg.hoursNote ? '<br><span>' + esc(cfg.hoursNote) + '</span>' : '') + '</div></div>';
     }
 
     function wizardShellHtml() {
-      var logos = logosHtml(cfg);
       return '<div class="hgc-wizard">' +
-        (logos ? '<div class="hgc-wizard-logos">' + logos + '</div>' : '') +
         '<div class="hgc-wizard-hero"><div><p class="hgc-kicker">Tafel reserveren</p><h2></h2><p class="hgc-wizard-sub"></p></div><p class="hgc-wizard-step-badge"></p></div>' +
         '<div class="hgc-wizard-progress"><span></span></div>' +
         '<form class="hgc-wizard-form" novalidate><div class="hgc-wizard-body"><div class="hgc-wizard-main"></div>' +
         '<aside class="hgc-wizard-sidebar"><p class="hgc-summary-label">Jouw reservering</p><div class="hgc-summary-rows"></div><div class="hgc-summary-divider"></div>' +
-        '<p class="hgc-summary-note">Je krijgt een bevestiging per e-mail met een link om te wijzigen of te annuleren.</p>' +
         '<button type="submit" class="hgc-button hgc-wizard-cta" disabled>Kies eerst een tijd</button></aside></div></form>' +
         footerHtml() +
         '<div class="hgc-status" tabindex="-1" role="status" aria-live="polite"></div></div>';
@@ -292,11 +283,10 @@
     }
 
     function teaserHtml() {
-      var logos = logosHtml(cfg);
       var rows = '';
       if (cfg.hoursNote) rows += '<div class="hgc-teaser-row"><span class="hgc-teaser-row-label">Openingstijden</span><span class="hgc-teaser-row-val">' + esc(cfg.hoursNote) + '</span></div>';
       if (cfg.phone) rows += '<div class="hgc-teaser-row"><span class="hgc-teaser-row-label">Telefoon</span><span class="hgc-teaser-row-val">' + esc(cfg.phone) + '</span></div>';
-      return '<div class="hgc-teaser">' + (logos ? '<div class="hgc-wizard-logos">' + logos + '</div>' : '') +
+      return '<div class="hgc-teaser">' +
         '<div class="hgc-teaser-body"><h2></h2>' + (cfg.address ? '<p>' + esc(cfg.address) + '</p>' : '') +
         (rows ? '<div class="hgc-teaser-rows">' + rows + '</div>' : '') +
         '<button type="button" class="hgc-button hgc-teaser-cta">Reserveer uw tafel</button>' +
@@ -477,14 +467,11 @@
     }
 
     function wizardShellHtml() {
-      var logos = logosHtml(cfg);
       return '<div class="hgc-wizard">' +
-        (logos ? '<div class="hgc-wizard-logos">' + logos + '</div>' : '') +
         '<div class="hgc-wizard-hero"><div><p class="hgc-kicker">Aanmelden</p><h2></h2><p class="hgc-wizard-sub"></p></div><p class="hgc-wizard-step-badge"></p></div>' +
         '<div class="hgc-wizard-progress"><span></span></div>' +
         '<form class="hgc-wizard-form" novalidate><div class="hgc-wizard-body"><div class="hgc-wizard-main"></div>' +
         '<aside class="hgc-wizard-sidebar"><p class="hgc-summary-label">Jouw aanmelding</p><div class="hgc-summary-rows"></div><div class="hgc-summary-divider"></div>' +
-        '<p class="hgc-summary-note">Je krijgt een bevestiging per e-mail met een link om te wijzigen of te annuleren.</p>' +
         '<button type="submit" class="hgc-button hgc-wizard-cta" disabled>Kies eerst een zitting</button></aside></div></form>' +
         '<div class="hgc-status" tabindex="-1" role="status" aria-live="polite"></div></div>';
     }
@@ -509,9 +496,8 @@
     }
 
     function teaserHtml() {
-      var logos = logosHtml(cfg);
       var rows = state.info.prijsInfo ? '<div class="hgc-teaser-rows"><div class="hgc-teaser-row"><span class="hgc-teaser-row-label">Prijs</span><span class="hgc-teaser-row-val">' + esc(state.info.prijsInfo) + '</span></div></div>' : '';
-      return '<div class="hgc-teaser">' + (logos ? '<div class="hgc-wizard-logos">' + logos + '</div>' : '') +
+      return '<div class="hgc-teaser">' +
         '<div class="hgc-teaser-body"><h2></h2>' + (state.info.introtekst ? '<p>' + esc(state.info.introtekst) + '</p>' : '') +
         rows +
         '<button type="button" class="hgc-button hgc-teaser-cta">Meld je aan</button>' +
