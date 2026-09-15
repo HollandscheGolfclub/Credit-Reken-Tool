@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.5.0
+Stable tag: 2.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.0 =
+* Onder het reserveringsformulier staan nu twee vinkjes: akkoord met de algemene voorwaarden en de privacyverklaring (verplicht), en aanmelden voor de nieuwsbrief (vrijwillig, standaard uit). Beide worden bij de reservering opgeslagen in Connect, zodat daar vastligt waarmee de gast akkoord ging en wie de nieuwsbrief wil.
+* Twee nieuwe instellingen bij Restaurant reserveren: de URL van de algemene voorwaarden en het e-mailadres voor grote groepen.
+* Gezelschappen die groter zijn dan online geboekt kan worden, worden nu naar sales@hollandschegolfclub.nl verwezen in plaats van naar het telefoonnummer.
+* Het grasje linksonder sluit weer aan op de hoek van de kaart, en de logo's in de kopbalk staan strakker: de witte achtergrond van de aangeleverde JPG-bestanden valt niet langer als grijzig kader op.
 
 = 2.5.0 =
 * De prijs per ronde op de adviespagina heet nu ook zo, en rekent ook zo. Het bedrag werd eerder over de credits gespreid die je nodig had; nu altijd over de credits die je koopt. Bij 60 credits op De Loonsche Duynen staat er dus 17,17 euro per ronde, de prijs van een ronde, in plaats van een bedrag waarin ook de credits zaten die je niet opmaakt.
