@@ -54,8 +54,16 @@
 .hgc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .hgc-field { display: block; margin-bottom: 16px; }
 .hgc-field span { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--hgc-ink); }
-.hgc-field input, .hgc-field textarea { appearance: none; width: 100%; border: 1px solid var(--hgc-line); border-radius: 8px; background: #fff; color: var(--hgc-ink); font: inherit; font-size: 14px; padding: 11px 12px; min-height: 46px; transition: border-color .15s, box-shadow .15s; }
-.hgc-field input:focus, .hgc-field textarea:focus, .hgc-slot:focus-visible, .hgc-button:focus-visible { outline: none; border-color: var(--hgc-accent); box-shadow: 0 0 0 3px rgba(124, 182, 58, .22); }
+.hgc-field input, .hgc-field textarea, .hgc-field select { appearance: none; width: 100%; border: 1px solid var(--hgc-line); border-radius: 8px; background: #fff; color: var(--hgc-ink); font: inherit; font-size: 14px; padding: 11px 12px; min-height: 46px; transition: border-color .15s, box-shadow .15s; }
+.hgc-field input:focus, .hgc-field textarea:focus, .hgc-field select:focus, .hgc-slot:focus-visible, .hgc-button:focus-visible { outline: none; border-color: var(--hgc-accent); box-shadow: 0 0 0 3px rgba(124, 182, 58, .22); }
+/* Themastijlen voor formuliervelden hebben vaak dezelfde specificiteit als de
+   regel hierboven en laden erna, waardoor de ingevulde tekst de lichte kleur
+   van het thema kreeg. Deze regel wint daarvan zonder !important. */
+.hgc-reservation .hgc-field input,
+.hgc-reservation .hgc-field textarea,
+.hgc-reservation .hgc-field select { color: var(--hgc-ink); -webkit-text-fill-color: var(--hgc-ink); opacity: 1; }
+.hgc-reservation .hgc-field input::placeholder,
+.hgc-reservation .hgc-field textarea::placeholder { color: var(--hgc-ink-soft); -webkit-text-fill-color: var(--hgc-ink-soft); opacity: 1; }
 
 .hgc-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 8px; background: var(--hgc-accent); color: #fff; cursor: pointer; font: inherit; font-weight: 600; font-size: 14.5px; min-height: 48px; padding: 12px 22px; transition: transform .15s, box-shadow .15s, background .15s; }
 .hgc-button:hover { background: #6ea52f; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(124, 182, 58, .28); }

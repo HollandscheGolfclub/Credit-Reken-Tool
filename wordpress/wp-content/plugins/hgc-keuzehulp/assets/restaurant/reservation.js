@@ -100,12 +100,18 @@
    * vastligt waarmee de bezoeker op dat moment akkoord ging.
    */
   function consentHtml(cfg) {
-    var privacy = '<a href="' + esc(cfg.privacyUrl || '#') + '" target="_blank" rel="noopener">privacyverklaring</a>';
+    // Zonder ingestelde URL geen link: een href="#" bracht de bezoeker terug
+    // naar het beginscherm in plaats van naar de tekst.
+    var privacy = cfg.privacyUrl
+      ? '<a href="' + esc(cfg.privacyUrl) + '" target="_blank" rel="noopener">privacyverklaring</a>'
+      : 'privacyverklaring';
     var terms = cfg.termsUrl
-      ? '<a href="' + esc(cfg.termsUrl) + '" target="_blank" rel="noopener">algemene voorwaarden</a>'
-      : 'algemene voorwaarden';
-    return '<label class="hgc-consent"><input name="termsAccepted" type="checkbox" required> Ik ga akkoord met de ' + terms + ' en de ' + privacy + '.</label>' +
-      '<label class="hgc-consent hgc-consent--optional"><input name="newsletterOptIn" type="checkbox"> Ja, houd mij per e-mail op de hoogte van nieuws en aanbiedingen.</label>';
+      ? '<a href="' + esc(cfg.termsUrl) + '" target="_blank" rel="noopener">huisregels</a>'
+      : 'huisregels';
+    // De zin staat in één span: het label is een flexbox, dus zonder die span
+    // krijgt elk los stuk tekst en elke link de tussenruimte van de flex-gap.
+    return '<label class="hgc-consent"><input name="termsAccepted" type="checkbox" required><span>Ik ga akkoord met de ' + terms + ' en de ' + privacy + '.</span></label>' +
+      '<label class="hgc-consent hgc-consent--optional"><input name="newsletterOptIn" type="checkbox"><span>Ja, houd mij per e-mail op de hoogte van nieuws en aanbiedingen.</span></label>';
   }
 
   function detailsFieldsEl(cfg, formVelden) {
@@ -243,7 +249,7 @@
     function summaryRowsHtml() {
       return '<div><div class="hgc-summary-key">Datum</div><div class="hgc-summary-val">' + esc(formatDateLong(state.date)) + '</div></div>' +
         '<div><div class="hgc-summary-key">Tijd</div><div class="hgc-summary-val">' + esc(state.time || 'nog te kiezen') + '</div></div>' +
-        '<div><div class="hgc-summary-key">Gasten</div><div class="hgc-summary-val">' + state.party + ' persoon' + (state.party === 1 ? '' : 'en') + '</div></div>';
+        '<div><div class="hgc-summary-key">Gasten</div><div class="hgc-summary-val">' + state.party + (state.party === 1 ? ' persoon' : ' personen') + '</div></div>';
     }
     function footerHtml() {
       if (!cfg.phone && !cfg.address && !cfg.hoursNote) return '';
@@ -463,7 +469,7 @@
     }
     function summaryRowsHtml() {
       return '<div><div class="hgc-summary-key">Zitting</div><div class="hgc-summary-val">' + esc(selectedZittingLabel()) + '</div></div>' +
-        '<div><div class="hgc-summary-key">Gasten</div><div class="hgc-summary-val">' + state.party + ' persoon' + (state.party === 1 ? '' : 'en') + '</div></div>';
+        '<div><div class="hgc-summary-key">Gasten</div><div class="hgc-summary-val">' + state.party + (state.party === 1 ? ' persoon' : ' personen') + '</div></div>';
     }
 
     function wizardShellHtml() {

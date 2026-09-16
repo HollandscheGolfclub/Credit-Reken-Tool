@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,13 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.2 =
+* Het verplichte vinkje verwijst nu naar de huisregels in plaats van naar de algemene voorwaarden, met een link naar de pagina op de website. Het bijbehorende beheerveld heet daarom ook Huisregels.
+* Klikken op "privacyverklaring" bracht de bezoeker terug naar het beginscherm wanneer er geen URL was ingesteld: er stond dan een lege link. Zonder ingevulde URL blijven huisregels en privacyverklaring nu gewoon tekst, en met een URL openen ze in een nieuw tabblad.
+* De akkoordtekst stond met te veel ruimte tussen de woorden, onder meer voor de punt. Het label is een flexbox, waardoor elk los stuk tekst en elke link die tussenruimte kreeg; de zin staat nu als geheel in de opmaak.
+* De tekst die de bezoeker in het formulier invult was licht: themastijlen overschreven de kleur van de plugin. Invoervelden, keuzelijsten en placeholders houden nu hun eigen kleur.
+* In de samenvatting "Jouw reservering" stond "2 persoonen"; dat is nu "2 personen".
 
 = 2.6.1 =
 * De logobalk boven het reserverings- en aanmeldformulier is vervallen; de kaart begint nu meteen met de kop en de naam van het park. De parklogo's op de locatiekiezer blijven staan.
