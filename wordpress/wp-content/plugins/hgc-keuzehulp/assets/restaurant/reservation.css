@@ -198,10 +198,15 @@
 .hgc-teaser-row-label { color: #8d9585; width: 84px; flex: none; }
 .hgc-teaser-row-val { font-weight: 600; color: var(--hgc-ink); }
 .hgc-teaser-cta { width: 100%; }
-.hgc-teaser-note { margin: 12px 0 0; font-size: 11.5px; color: #8d9585; text-align: center; }
 
 .hgc-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(34, 48, 28, .45); display: flex; align-items: flex-end; justify-content: center; padding: 0; animation: hgc-fade .2s ease both; }
 .hgc-sheet { width: 100%; max-width: 480px; max-height: 92vh; background: #fff; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 30px rgba(34, 48, 28, .22); overflow-y: auto; color: var(--hgc-ink); animation: hgc-sheet-up .25s cubic-bezier(.2,.8,.3,1) both; }
+/* Met het toetsenbord in beeld krimpt de zichtbare hoogte wel in dvh, maar niet
+   in vh: zonder deze regel zakt de knop "Reservering bevestigen" achter het
+   toetsenbord. Browsers zonder dvh houden gewoon de 92vh hierboven. */
+@supports (max-height: 92dvh) {
+  .hgc-sheet { max-height: 92dvh; }
+}
 .hgc-sheet-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; background: #fff; border-bottom: 1px solid #eef1e6; }
 .hgc-sheet-head span:first-child { font: 600 14.5px "Poppins", sans-serif; }
 .hgc-sheet-close { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: #f6f7f1; color: var(--hgc-ink-soft); font-size: 15px; cursor: pointer; }
@@ -248,3 +253,6 @@
   .hgc-card, .hgc-wizard, .hgc-slots, .hgc-details, .hgc-manage-form, .hgc-confirm, .hgc-checkmark, .hgc-slot, .hgc-button:hover, .hgc-overlay, .hgc-sheet { animation: none !important; transform: none !important; }
   .hgc-spinner { animation-duration: 1.6s; }
 }
+
+.hgc-manage-hint { margin: 0 0 14px; padding: 11px 13px; border-radius: 10px; background: #fdf2e6; color: #a6702a; font-size: 13px; line-height: 1.5; }
+.hgc-manage-hint[hidden] { display: none; }

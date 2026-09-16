@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.3 =
+* De bezoeker vult voortaan voornaam en achternaam apart in; ze gaan samengevoegd als één naam naar Connect.
+* Telefoonnummer is nu een verplicht veld, ook bij het wijzigen van een reservering.
+* Het nieuwsbriefvinkje spreekt alleen nog over nieuws, niet meer over aanbiedingen.
 
 = 2.6.2 =
 * Het verplichte vinkje verwijst nu naar de huisregels in plaats van naar de algemene voorwaarden, met een link naar de pagina op de website. Het bijbehorende beheerveld heet daarom ook Huisregels.

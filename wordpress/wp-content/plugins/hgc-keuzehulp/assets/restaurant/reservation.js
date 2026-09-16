@@ -18,12 +18,33 @@
     if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
     return 'idem-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
   }
+  /**
+   * De bezoeker vult voornaam en achternaam apart in; de backend (en Connect)
+   * kent alleen één veld "name". Daarom voegen we ze hier samen en laten we de
+   * losse velden niet meelopen in de payload.
+   */
+  function mergeName(values) {
+    var first = (values.firstName || '').trim();
+    var last = (values.lastName || '').trim();
+    delete values.firstName; delete values.lastName;
+    values.name = (first + ' ' + last).trim();
+    return values;
+  }
+
   function api(payload, cfg) {
     return fetch(cfg.ajaxUrl + '?action=hgc_restaurant_api&nonce=' + encodeURIComponent(cfg.nonce), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function (res) { return res.json().then(function (json) { if (!res.ok || !json.success) { var data = json.data || {}; var error = new Error(labels[data.code] || data.message || 'Er ging iets mis.'); error.code = data.code; throw error; } return json.data; }); });
   }
   function field(label, name, type, required, extra) { return '<label class="hgc-field"><span>' + label + (required ? ' *' : '') + '</span><input name="' + name + '" type="' + type + '" ' + (required ? 'required ' : '') + (extra || '') + '></label>'; }
-  function announce(root, message, error) { var status = root.querySelector('.hgc-status'); if (!status) return; status.textContent = message; status.className = 'hgc-status ' + (error ? 'is-error' : 'is-success'); status.focus(); }
+  function announce(root, message, error) {
+    var status = root.querySelector('.hgc-status'); if (!status) return;
+    status.textContent = message;
+    status.className = 'hgc-status ' + (error ? 'is-error' : 'is-success');
+    status.focus();
+    // Op een telefoon staat de statusregel onder de knoppen, buiten beeld: zonder
+    // dit scrollen lijkt het alsof er na het opslaan helemaal niets gebeurt.
+    if (typeof status.scrollIntoView === 'function') status.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function isoDate(date) { return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate()); }
   // De laadtekst blijft zichtbaar totdat er echt iets te tonen is; anders
@@ -111,12 +132,40 @@
     // De zin staat in één span: het label is een flexbox, dus zonder die span
     // krijgt elk los stuk tekst en elke link de tussenruimte van de flex-gap.
     return '<label class="hgc-consent"><input name="termsAccepted" type="checkbox" required><span>Ik ga akkoord met de ' + terms + ' en de ' + privacy + '.</span></label>' +
-      '<label class="hgc-consent hgc-consent--optional"><input name="newsletterOptIn" type="checkbox"><span>Ja, houd mij per e-mail op de hoogte van nieuws en aanbiedingen.</span></label>';
+      '<label class="hgc-consent hgc-consent--optional"><input name="newsletterOptIn" type="checkbox"><span>Ja, houd mij per e-mail op de hoogte van nieuws.</span></label>';
+  }
+
+  /**
+   * De stapinhoud wordt bij elke wijziging (andere dag, ander aantal personen,
+   * andere tijd) opnieuw opgebouwd. Deze twee helpers bewaren wat de bezoeker
+   * al had ingevuld en zetten het daarna terug; zonder dat was het formulier
+   * leeg zodra je nog iets aanpaste. Op mobiel viel dat het hardst op: daar
+   * verdween de hele sheet-inhoud en sprong de pagina terug naar boven.
+   */
+  function captureDetails(container) {
+    var wrap = container.querySelector('.hgc-details-fields');
+    if (!wrap) return null;
+    var out = {};
+    wrap.querySelectorAll('input, textarea, select').forEach(function (el) {
+      var key = el.name || el.id;
+      if (key) out[key] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    return out;
+  }
+  function restoreDetails(container, values) {
+    var wrap = values && container.querySelector('.hgc-details-fields');
+    if (!wrap) return;
+    wrap.querySelectorAll('input, textarea, select').forEach(function (el) {
+      var key = el.name || el.id;
+      if (!key || !(key in values)) return;
+      if (el.type === 'checkbox') el.checked = !!values[key]; else el.value = values[key];
+    });
   }
 
   function detailsFieldsEl(cfg, formVelden) {
     var wrap = document.createElement('div');
-    wrap.innerHTML = '<div class="hgc-grid">' + field('Naam', 'name', 'text', true, 'autocomplete="name"') + field('E-mailadres', 'email', 'email', true, 'autocomplete="email"') + field('Telefoonnummer', 'telefoon', 'tel', false, 'autocomplete="tel"') + field('Gelegenheid', 'gelegenheid', 'text', false, '') + '</div>' +
+    wrap.className = 'hgc-details-fields';
+    wrap.innerHTML = '<div class="hgc-grid">' + field('Voornaam', 'firstName', 'text', true, 'autocomplete="given-name"') + field('Achternaam', 'lastName', 'text', true, 'autocomplete="family-name"') + field('E-mailadres', 'email', 'email', true, 'autocomplete="email"') + field('Telefoonnummer', 'telefoon', 'tel', true, 'autocomplete="tel"') + field('Gelegenheid', 'gelegenheid', 'text', false, '') + '</div>' +
       '<label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dieetwensen" rows="3"></textarea></label>' +
       renderDynFields(formVelden) +
       '<label class="hgc-honeypot" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>' +
@@ -232,6 +281,11 @@
       return wrap;
     }
     function renderStepsInto(container) {
+      // Ingevulde gegevens en de scrollpositie overleven de herbouw: op mobiel
+      // scrollt de sheet anders bij elke tik terug naar boven.
+      state.details = captureDetails(container) || state.details;
+      var scroller = container.closest(".hgc-sheet") || container;
+      var scroll = scroller.scrollTop;
       container.innerHTML = '';
       container.insertAdjacentHTML('beforeend', stepHeadHtml(1, 'Wanneer en met hoeveel?', 'complete'));
       container.appendChild(buildDayStrip());
@@ -245,6 +299,8 @@
         container.insertAdjacentHTML('beforeend', stepHeadHtml(3, 'Jouw gegevens', 'upcoming'));
         container.insertAdjacentHTML('beforeend', '<div class="hgc-step-placeholder">Openen zodra een tijd is gekozen.</div>');
       }
+      restoreDetails(container, state.details);
+      scroller.scrollTop = scroll;
     }
     function summaryRowsHtml() {
       return '<div><div class="hgc-summary-key">Datum</div><div class="hgc-summary-val">' + esc(formatDateLong(state.date)) + '</div></div>' +
@@ -295,8 +351,7 @@
       return '<div class="hgc-teaser">' +
         '<div class="hgc-teaser-body"><h2></h2>' + (cfg.address ? '<p>' + esc(cfg.address) + '</p>' : '') +
         (rows ? '<div class="hgc-teaser-rows">' + rows + '</div>' : '') +
-        '<button type="button" class="hgc-button hgc-teaser-cta">Reserveer uw tafel</button>' +
-        '<p class="hgc-teaser-note">Bevestiging per e-mail · wijzigen of annuleren via die e-mail.</p></div></div>';
+        '<button type="button" class="hgc-button hgc-teaser-cta">Reserveer uw tafel</button></div></div>';
     }
     function sheetHtml() {
       return '<div class="hgc-sheet"><div class="hgc-sheet-head"><span>Tafel reserveren</span><button type="button" class="hgc-sheet-close" aria-label="Sluiten">✕</button></div>' +
@@ -353,7 +408,7 @@
       var form = event.target;
       var container = form.closest('.hgc-wizard, .hgc-sheet');
       var btn = form.querySelector('[type="submit"]');
-      var values = Object.fromEntries(new FormData(form).entries());
+      var values = mergeName(Object.fromEntries(new FormData(form).entries()));
       values.action = 'createPublic'; values.slug = park; values.date = state.date; values.time = state.time; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
       // termsAccepted vervangt het oude privacyAccepted; die laatste sturen we voorlopig
       // mee met dezelfde waarde, zodat Connect blijft werken tot het veld daar is bijgewerkt.
@@ -450,6 +505,9 @@
       return wrap;
     }
     function renderStepsInto(container) {
+      state.details = captureDetails(container) || state.details;
+      var scroller = container.closest(".hgc-sheet") || container;
+      var scroll = scroller.scrollTop;
       container.innerHTML = '';
       container.insertAdjacentHTML('beforeend', stepHeadHtml(1, 'Kies een zitting', state.zittingId ? 'complete' : 'active'));
       container.appendChild(buildSessionList());
@@ -462,6 +520,8 @@
         container.insertAdjacentHTML('beforeend', stepHeadHtml(3, 'Jouw gegevens', 'upcoming'));
         container.insertAdjacentHTML('beforeend', '<div class="hgc-step-placeholder">Openen zodra een zitting is gekozen.</div>');
       }
+      restoreDetails(container, state.details);
+      scroller.scrollTop = scroll;
     }
     function selectedZittingLabel() {
       var match = (state.info.zittingen || []).filter(function (item) { return item.id === state.zittingId; });
@@ -506,8 +566,7 @@
       return '<div class="hgc-teaser">' +
         '<div class="hgc-teaser-body"><h2></h2>' + (state.info.introtekst ? '<p>' + esc(state.info.introtekst) + '</p>' : '') +
         rows +
-        '<button type="button" class="hgc-button hgc-teaser-cta">Meld je aan</button>' +
-        '<p class="hgc-teaser-note">Bevestiging per e-mail · wijzigen of annuleren via die e-mail.</p></div></div>';
+        '<button type="button" class="hgc-button hgc-teaser-cta">Meld je aan</button></div></div>';
     }
     function sheetHtml() {
       return '<div class="hgc-sheet"><div class="hgc-sheet-head"><span>Aanmelden</span><button type="button" class="hgc-sheet-close" aria-label="Sluiten">✕</button></div>' +
@@ -560,7 +619,7 @@
       var form = event.target;
       var container = form.closest('.hgc-wizard, .hgc-sheet');
       var btn = form.querySelector('[type="submit"]');
-      var values = Object.fromEntries(new FormData(form).entries());
+      var values = mergeName(Object.fromEntries(new FormData(form).entries()));
       values.action = 'eventCreatePublic'; values.slug = slug; values.zittingId = state.zittingId; values.partySize = state.party; values.idempotencyKey = idempotencyKey;
       // termsAccepted vervangt het oude privacyAccepted; die laatste sturen we voorlopig
       // mee met dezelfde waarde, zodat Connect blijft werken tot het veld daar is bijgewerkt.
@@ -597,8 +656,16 @@
   }
 
   /* ── wijzigen/annuleren, zowel voor tafelreserveringen als event-aanmeldingen ── */
-  function initManage(root, mode, slug, ref, token, cfg) {
+  /**
+   * Beheerscherm achter de link uit de bevestigingsmail. `notice` wordt na het
+   * opnieuw inlezen getoond: het scherm bouwt zichzelf na een geslaagde
+   * wijziging opnieuw op, en zonder deze doorgifte verdween de melding
+   * "je wijziging is opgeslagen" binnen een seconde weer — waarmee het leek
+   * alsof er niets was gebeurd.
+   */
+  function initManage(root, mode, slug, ref, token, cfg, notice) {
     var app = root.querySelector('.hgc-reservation__app');
+    function showNotice() { if (notice) announce(app, notice.message, notice.error); }
 
     if (mode === 'event') {
       api({ action: 'eventGetPublic', slug: slug, reservationNumber: ref, token: token }, cfg).then(function (data) {
@@ -608,6 +675,7 @@
         var controls = wijzigbaar ? '<form class="hgc-manage-form"><h3>Wijzigen</h3><div class="hgc-grid">' + field('Aantal personen', 'partySize', 'number', true, 'min="1" value="' + r.aantalPersonen + '"') + '</div>' + renderDynFields(formVelden) + '<div class="hgc-manage-actions"><button class="hgc-button hgc-save" type="submit">Wijziging opslaan</button><button type="button" class="hgc-button hgc-cancel">Afmelden</button></div></form>' : '<p>Online wijzigen of afmelden is niet meer mogelijk. Neem contact op.</p>';
         app.innerHTML = '<div class="hgc-card"><div class="hgc-header"><p class="hgc-kicker">Aanmelding beheren</p><h2>' + esc(r.reserveringsnummer) + '</h2></div><dl><dt>Referentie</dt><dd>' + esc(r.reserveringsnummer) + '</dd><dt>Zitting</dt><dd>' + esc(zittingText) + '</dd><dt>Personen</dt><dd>' + r.aantalPersonen + '</dd><dt>Status</dt><dd>' + esc(r.status) + '</dd></dl>' + controls + '<div class="hgc-status" tabindex="-1" role="status" aria-live="polite"></div></div>';
         reveal(root);
+        showNotice();
         var form = app.querySelector('.hgc-manage-form');
         if (form) {
           fillCustomFields(app, formVelden, extraAntwoorden);
@@ -617,7 +685,7 @@
             values.action = 'eventUpdatePublic'; values.slug = slug; values.reservationNumber = ref; values.token = token; values.partySize = Number(values.partySize);
             values.antwoorden = readDynFields(app, formVelden);
             form.querySelector('.hgc-save').disabled = true;
-            api(values, cfg).then(function () { announce(app, 'Je wijziging is opgeslagen. Je ontvangt een bevestiging per e-mail.'); window.setTimeout(function () { initManage(root, mode, slug, ref, token, cfg); }, 900); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); });
+            api(values, cfg).then(function () { initManage(root, mode, slug, ref, token, cfg, { message: "Je wijziging is opgeslagen. Je ontvangt een bevestiging per e-mail." }); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); });
           });
           var cancel = form.querySelector('.hgc-cancel');
           cancel.addEventListener('click', function () { if (!window.confirm('Weet je zeker dat je je wilt afmelden?')) return; cancel.disabled = true; api({ action: 'eventCancelPublic', slug: slug, reservationNumber: ref, token: token, reason: 'Via website afgemeld' }, cfg).then(function () { form.remove(); announce(app, 'Je bent afgemeld. Je ontvangt een bevestiging per e-mail.'); }).catch(function (error) { cancel.disabled = false; announce(app, error.message, true); }); });
@@ -629,14 +697,29 @@
     api({ action: 'getPublic', slug: slug, reservationNumber: ref, token: token }, cfg).then(function (data) {
       var r = data.reservation, formVelden = data.formVelden || [], extraAntwoorden = data.extraAntwoorden || {};
       var start = new Date(r.startAt), dateValue = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(start), timeValue = new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' }).format(start);
-      var controls = r.wijzigbaar ? '<form class="hgc-manage-form"><h3>Wijzigen</h3><div class="hgc-grid">' + field('Datum', 'date', 'date', true, 'value="' + esc(dateValue) + '"') + field('Aantal personen', 'partySize', 'number', true, 'min="1" value="' + r.aantalPersonen + '"') + '</div><button type="button" class="hgc-button hgc-check">Bekijk tijden</button><fieldset class="hgc-slots" hidden><legend>Beschikbare tijden</legend><div></div></fieldset><div class="hgc-grid">' + field('Telefoonnummer', 'telefoon', 'tel', false, 'value="' + esc(r.telefoon || '') + '"') + field('Gelegenheid', 'gelegenheid', 'text', false, 'value="' + esc(r.gelegenheid || '') + '"') + '</div><label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dieetwensen" rows="3">' + esc(r.dieetwensen || '') + '</textarea></label>' + renderDynFields(formVelden) + '<div class="hgc-manage-actions"><button class="hgc-button hgc-save" type="submit">Wijziging opslaan</button><button type="button" class="hgc-button hgc-cancel">Annuleren</button></div></form>' : '<p>Online wijzigen of annuleren is niet meer mogelijk. Neem contact op met het restaurant.</p>';
+      var controls = r.wijzigbaar ? '<form class="hgc-manage-form"><h3>Wijzigen</h3><div class="hgc-grid">' + field('Datum', 'date', 'date', true, 'value="' + esc(dateValue) + '"') + field('Aantal personen', 'partySize', 'number', true, 'min="1" value="' + r.aantalPersonen + '"') + '</div><button type="button" class="hgc-button hgc-check">Bekijk tijden</button><fieldset class="hgc-slots" hidden><legend>Beschikbare tijden</legend><div></div></fieldset><div class="hgc-grid">' + field('Telefoonnummer', 'telefoon', 'tel', true, 'value="' + esc(r.telefoon || '') + '"') + field('Gelegenheid', 'gelegenheid', 'text', false, 'value="' + esc(r.gelegenheid || '') + '"') + '</div><label class="hgc-field"><span>Dieetwensen of allergieën</span><textarea name="dieetwensen" rows="3">' + esc(r.dieetwensen || '') + '</textarea></label>' + renderDynFields(formVelden) + '<p class="hgc-manage-hint" hidden>Je hebt de datum of het aantal personen aangepast. Kies via "Bekijk tijden" een nieuwe tijd voordat je opslaat.</p><div class="hgc-manage-actions"><button class="hgc-button hgc-save" type="submit">Wijziging opslaan</button><button type="button" class="hgc-button hgc-cancel">Annuleren</button></div></form>' : '<p>Online wijzigen of annuleren is niet meer mogelijk. Neem contact op met het restaurant.</p>';
       app.innerHTML = '<div class="hgc-card"><div class="hgc-header"><p class="hgc-kicker">Reservering beheren</p><h2>' + esc(r.restaurant) + '</h2></div><dl><dt>Referentie</dt><dd>' + esc(r.reserveringsnummer) + '</dd><dt>Datum en tijd</dt><dd>' + esc(start.toLocaleString('nl-NL', { dateStyle: 'full', timeStyle: 'short' })) + '</dd><dt>Personen</dt><dd>' + r.aantalPersonen + '</dd><dt>Status</dt><dd>' + esc(r.status) + '</dd></dl>' + controls + '<div class="hgc-status" tabindex="-1" role="status" aria-live="polite"></div></div>';
       reveal(root);
+      showNotice();
       var form = app.querySelector('.hgc-manage-form'), selected = timeValue;
       if (form) {
         fillCustomFields(app, formVelden, extraAntwoorden);
-        form.querySelector('.hgc-check').addEventListener('click', function () { var date = form.elements.date.value, party = Number(form.elements.partySize.value); api({ action: 'availability', slug: slug, date: date, partySize: party, reservationNumber: ref, token: token }, cfg).then(function (result) { var slots = form.querySelector('.hgc-slots'); slots.hidden = false; slots.querySelector('div').innerHTML = result.slots.map(function (slot) { return '<button type="button" class="hgc-slot' + (slot.time === selected ? ' is-selected' : '') + '" data-time="' + esc(slot.time) + '">' + esc(slot.time) + '</button>'; }).join('') || '<p>Geen tijden beschikbaar.</p>'; slots.querySelectorAll('.hgc-slot').forEach(function (button) { button.addEventListener('click', function () { slots.querySelectorAll('.hgc-slot').forEach(function (b) { b.classList.remove('is-selected'); }); button.classList.add('is-selected'); selected = button.dataset.time; }); }); }).catch(function (error) { announce(app, error.message, true); }); });
-        form.addEventListener('submit', function (event) { event.preventDefault(); var values = Object.fromEntries(new FormData(form).entries()); values.action = 'updatePublic'; values.slug = slug; values.reservationNumber = ref; values.token = token; values.partySize = Number(values.partySize); values.time = selected; values.antwoorden = readDynFields(app, formVelden); form.querySelector('.hgc-save').disabled = true; api(values, cfg).then(function () { announce(app, 'Je reservering is gewijzigd. Je ontvangt een bevestiging per e-mail.'); window.setTimeout(function () { initManage(root, mode, slug, ref, token, cfg); }, 900); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); }); });
+        // Een andere datum of groepsgrootte maakt de eerder geboekte tijd onzeker:
+        // die hoeft op de nieuwe dag niet meer vrij te zijn. Opslaan blijft daarom
+        // geblokkeerd tot er via "Bekijk tijden" opnieuw een tijd is gekozen. Zonder
+        // dit werd stilzwijgend de oude tijd op de nieuwe datum ingestuurd en kreeg
+        // de gast alleen een afwijzing terug, zonder te zien waarom.
+        var save = form.querySelector('.hgc-save');
+        var timeHint = form.querySelector('.hgc-manage-hint');
+        function invalidateTime() {
+          selected = null;
+          save.disabled = true;
+          if (timeHint) timeHint.hidden = false;
+        }
+        form.elements.date.addEventListener('change', invalidateTime);
+        form.elements.partySize.addEventListener('change', invalidateTime);
+        form.querySelector('.hgc-check').addEventListener('click', function () { var date = form.elements.date.value, party = Number(form.elements.partySize.value); api({ action: 'availability', slug: slug, date: date, partySize: party, reservationNumber: ref, token: token }, cfg).then(function (result) { var slots = form.querySelector('.hgc-slots'); slots.hidden = false; slots.querySelector('div').innerHTML = result.slots.map(function (slot) { return '<button type="button" class="hgc-slot' + (slot.time === selected ? ' is-selected' : '') + '" data-time="' + esc(slot.time) + '">' + esc(slot.time) + '</button>'; }).join('') || '<p>Geen tijden beschikbaar.</p>'; slots.querySelectorAll('.hgc-slot').forEach(function (button) { button.addEventListener('click', function () { slots.querySelectorAll('.hgc-slot').forEach(function (b) { b.classList.remove('is-selected'); }); button.classList.add('is-selected'); selected = button.dataset.time; save.disabled = false; if (timeHint) timeHint.hidden = true; }); }); }).catch(function (error) { announce(app, error.message, true); }); });
+        form.addEventListener('submit', function (event) { event.preventDefault(); var values = Object.fromEntries(new FormData(form).entries()); values.action = 'updatePublic'; values.slug = slug; values.reservationNumber = ref; values.token = token; values.partySize = Number(values.partySize); values.time = selected; values.antwoorden = readDynFields(app, formVelden); form.querySelector('.hgc-save').disabled = true; api(values, cfg).then(function () { initManage(root, mode, slug, ref, token, cfg, { message: "Je reservering is gewijzigd. Je ontvangt een bevestiging per e-mail." }); }).catch(function (error) { form.querySelector('.hgc-save').disabled = false; announce(app, error.message, true); }); });
         var cancel = form.querySelector('.hgc-cancel'); cancel.addEventListener('click', function () { if (!window.confirm('Weet je zeker dat je deze reservering wilt annuleren?')) return; cancel.disabled = true; api({ action: 'cancelPublic', slug: slug, reservationNumber: ref, token: token, reason: 'Via website geannuleerd' }, cfg).then(function () { form.remove(); announce(app, 'Je reservering is geannuleerd. Je ontvangt een bevestiging per e-mail.'); }).catch(function (error) { cancel.disabled = false; announce(app, error.message, true); }); });
       }
     }).catch(function (error) { app.innerHTML = '<div class="hgc-card"><div class="hgc-status is-error" role="alert">' + esc(error.message) + '</div></div>'; reveal(root); });
