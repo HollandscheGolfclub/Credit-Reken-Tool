@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.3
+Stable tag: 2.6.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,11 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.4 =
+* Online reserveren kan tot 24 uur van tevoren (instelbaar in Connect); voor eerdere tijden toont de widget het telefoonnummer van het restaurant.
+* De widget opent op de eerste dag die nog online te boeken is.
+* Nieuw: zwevende "Tafel boeken"-knop op de plek van het webshop-winkelmandje, per pagina in te stellen of met [hgc_tafelknop park="…"].
 
 = 2.6.3 =
 * De bezoeker vult voortaan voornaam en achternaam apart in; ze gaan samengevoegd als één naam naar Connect.

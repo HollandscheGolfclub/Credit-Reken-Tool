@@ -54,6 +54,14 @@ function wp_unique_id(string $prefix = ''): string
     static $id = 0;
     return $prefix . ++$id;
 }
+function sanitize_email($value): string { return trim((string) $value); }
+function apply_filters(string $hook, $value, ...$args) { return $value; }
+function has_action(...$args): bool { return false; }
+function wp_parse_url(string $url, int $component = -1) { return parse_url($url, $component); }
+function home_url(string $path = ''): string { return 'https://example.test' . $path; }
+function is_front_page(): bool { return ($_SERVER['REQUEST_URI'] ?? '') === '/'; }
+function get_queried_object() { return null; }
+function shortcode_atts(array $pairs, $atts, string $tag = ""): array { return array_merge($pairs, array_intersect_key((array) $atts, $pairs)); }
 function remove_query_arg($keys): string { return 'https://example.test/reserveren?bron=menu'; }
 function add_query_arg(string $key, string $value, string $url): string
 {
@@ -126,4 +134,36 @@ assert_same(true, strpos($booking, 'Gekozen locatie') !== false, 'Na kiezen ontb
 assert_same(true, strpos($booking, 'data-park="park-3"') !== false, 'Na kiezen wordt niet het juiste reserveringsscherm geladen.');
 assert_same(false, strpos($booking, 'data-hgc-location-card') !== false, 'Na kiezen wordt de volledige locatielijst onnodig opnieuw getoond.');
 
-fwrite(STDOUT, "Restaurantinstellingen en publieke locatiekiezer: alle tests geslaagd.\n");
+// Zwevende tafelknop: alleen op de ingestelde pagina's, en met een eigen (verborgen)
+// widget zolang de pagina er zelf geen heeft.
+function capture_fab(HGC_Restaurant $restaurant): string
+{
+    ob_start();
+    $restaurant->print_table_fab();
+    return (string) ob_get_clean();
+}
+$test_option = array('locations' => $locations, 'park' => 'park-1', 'fab_pages' => "restaurant\nhttps://example.test/golfbaan/park-2/", 'fab_park' => 'park-2', 'fab_hide_cart' => true);
+$_GET = array();
+$_SERVER['REQUEST_URI'] = '/contact/';
+assert_same('', capture_fab(new HGC_Restaurant()), 'De tafelknop verschijnt op een pagina die niet is ingesteld.');
+
+$_SERVER['REQUEST_URI'] = '/golfbaan/park-2/?utm=x';
+$fab = capture_fab(new HGC_Restaurant());
+assert_same(true, strpos($fab, 'data-hgc-table-fab') !== false, 'De tafelknop ontbreekt op een pagina die als URL is ingesteld.');
+assert_same(true, strpos($fab, 'data-hgc-table-modal') !== false && strpos($fab, 'data-park="park-2"') !== false, 'Achter de tafelknop staat niet de widget van het gekozen restaurant.');
+assert_same(true, strpos($fab, '#hge-floating-cart{display:none!important}') !== false, 'Het winkelmandje wordt niet verborgen.');
+
+$_SERVER['REQUEST_URI'] = '/restaurant';
+$restaurant = new HGC_Restaurant();
+$restaurant->shortcode(array('park' => 'park-4'));
+$fab = capture_fab($restaurant);
+assert_same(true, strpos($fab, 'data-hgc-table-fab') !== false, 'De tafelknop ontbreekt op een pagina die als slug is ingesteld.');
+assert_same(false, strpos($fab, 'data-hgc-table-modal') !== false, 'Er komt een tweede widget bij terwijl de pagina er al een heeft.');
+
+$_SERVER['REQUEST_URI'] = '/contact/';
+$restaurant = new HGC_Restaurant();
+$restaurant->fab_shortcode(array('park' => 'park-5'));
+$fab = capture_fab($restaurant);
+assert_same(true, strpos($fab, 'data-park="park-5"') !== false, '[hgc_tafelknop] zet de knop niet met het opgegeven restaurant.');
+
+fwrite(STDOUT, "Restaurantinstellingen, publieke locatiekiezer en tafelknop: alle tests geslaagd.\n");

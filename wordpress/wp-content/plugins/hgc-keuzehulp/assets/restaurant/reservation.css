@@ -161,6 +161,9 @@
 .hgc-time-group-label { margin: 0 0 8px; font-size: 11px; font-weight: 600; color: #8d9585; text-transform: uppercase; letter-spacing: .08em; }
 .hgc-time-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .hgc-time-empty { margin: 0 0 16px; font-size: 13.5px; color: var(--hgc-ink-soft); }
+/* Tijden binnen de vooraf-grens (standaard 24 uur) gaan alleen telefonisch. */
+.hgc-phone-only { margin: 0 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--hgc-tint); border: 1px solid var(--hgc-line); font-size: 13.5px; line-height: 1.5; color: var(--hgc-ink); }
+.hgc-phone-only a { color: var(--hgc-accent-deep); font-weight: 600; white-space: nowrap; }
 
 /* Zittingkeuze voor event-aanmeldingen: één rij per zitting i.p.v. losse tijdknoppen,
    omdat hier ook een label en het aantal vrije plekken bij moeten. */
@@ -256,3 +259,39 @@
 
 .hgc-manage-hint { margin: 0 0 14px; padding: 11px 13px; border-radius: 10px; background: #fdf2e6; color: #a6702a; font-size: 13px; line-height: 1.5; }
 .hgc-manage-hint[hidden] { display: none; }
+
+/* ── Zwevende tafelknop ──
+   Staat op exact de plek van het winkelmandje van de webshop (#hge-floating-cart:
+   bottom 100px / right 20px, mobiel 15px / 15px) en vervangt dat op de pagina's die in
+   de instellingen gekozen zijn. z-index onder .hgc-overlay, zodat de mobiele sheet
+   de knop gewoon afdekt. */
+.hgc-table-fab { --hgc-accent: #95c120; position: fixed; right: 20px; bottom: 100px; z-index: 9998; display: flex; align-items: center; gap: 10px; font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.hgc-table-fab[hidden] { display: none; }
+.hgc-table-fab__button { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; padding: 0; border: 0; border-radius: 50%; background: var(--hgc-accent); color: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); cursor: pointer; transition: transform .3s ease, box-shadow .3s ease, filter .3s ease; }
+.hgc-table-fab__button:hover { transform: scale(1.1); box-shadow: 0 6px 16px rgba(0, 0, 0, .3); filter: brightness(.92); }
+.hgc-table-fab__button:focus-visible { outline: 3px solid #22301c; outline-offset: 3px; }
+.hgc-table-fab__button svg { width: 30px; height: 30px; }
+.hgc-table-fab__label { padding: 8px 14px; border-radius: 999px; background: #fff; color: #22301c; font-size: 14px; font-weight: 600; line-height: 1.2; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, .15); cursor: pointer; border: 0; font-family: inherit; }
+.hgc-table-fab.is-open { visibility: hidden; }
+
+/* Bureaubladvenster met de reserveringswizard. Op een telefoon blijft dit onzichtbaar:
+   daar opent de knop meteen de bestaande sheet van de widget. De host staat buiten
+   beeld in plaats van display:none, anders kan de sheet (position:fixed, binnen de
+   widget) niet tevoorschijn komen. */
+/* z-index ook in gesloten stand: position:fixed maakt een eigen stapelcontext, en zonder
+   deze waarde zou de mobiele sheet (die hierbinnen hangt) onder de tafelknop vallen. */
+.hgc-table-modal { position: fixed; left: -10000px; top: 0; z-index: 10000; width: 1px; height: 1px; overflow: hidden; }
+.hgc-table-modal.is-open { inset: 0; left: 0; width: auto; height: auto; display: flex; align-items: flex-start; justify-content: center; padding: 5vh 20px; overflow-y: auto; background: rgba(34, 48, 28, .45); animation: hgc-fade .2s ease both; }
+.hgc-table-modal__panel { position: relative; width: 100%; max-width: 980px; }
+.hgc-table-modal.is-open .hgc-reservation { margin: 0 auto; }
+.hgc-table-modal__close { position: absolute; top: -14px; right: -14px; z-index: 2; width: 38px; height: 38px; border: 0; border-radius: 50%; background: #fff; color: #22301c; font-size: 18px; line-height: 1; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); cursor: pointer; }
+.hgc-table-modal:not(.is-open) .hgc-table-modal__close { display: none; }
+
+@media (max-width: 768px) {
+  .hgc-table-fab { right: 15px; bottom: 15px; }
+  .hgc-table-fab__button { width: 50px; height: 50px; }
+  .hgc-table-fab__button svg { width: 26px; height: 26px; }
+  .hgc-table-fab__label { font-size: 13px; padding: 7px 12px; }
+}
+@media print { .hgc-table-fab, .hgc-table-modal { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .hgc-table-fab__button, .hgc-table-modal.is-open { transition: none; animation: none; } }

@@ -41,12 +41,20 @@ final class HGC_Restaurant
     /** Ruim genoeg voor een reserveringsformulier (incl. aangepaste vragen), klein genoeg tegen misbruik. */
     private const MAX_BODY_BYTES = 20000;
 
+    /** Parkcode voor de zwevende tafelknop op deze pagina; null = geen knop. */
+    private ?string $fab_park = null;
+
+    /** Of er al een boekbare restaurantwidget in de pagina-inhoud staat (dan scrolt de knop daarheen). */
+    private bool $inline_booking_rendered = false;
+
     public function __construct()
     {
         add_action('init', array($this, 'register_block'));
         add_shortcode('hgc_restaurant_reserveren', array($this, 'shortcode'));
         add_shortcode('hgc_restaurant_kiezer', array($this, 'selector_shortcode'));
         add_shortcode('hgc_event_aanmelden', array($this, 'event_shortcode'));
+        add_shortcode('hgc_tafelknop', array($this, 'fab_shortcode'));
+        add_action('wp_footer', array($this, 'print_table_fab'), 5);
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
         add_action('wp_ajax_hgc_restaurant_api', array($this, 'ajax'));
         add_action('wp_ajax_nopriv_hgc_restaurant_api', array($this, 'ajax'));
@@ -116,6 +124,12 @@ final class HGC_Restaurant
             // Grote groepen worden niet online geboekt maar per mail aangevraagd.
             'group_email' => 'sales@hollandschegolfclub.nl',
             'club_logo' => '',
+            // Zwevende "Tafel boeken"-knop op de plek van het winkelmandje. Pagina's: één per
+            // regel, als pagina-ID, slug, pad of volledige URL. Leeg park = standaardrestaurant.
+            'fab_pages' => '',
+            'fab_park' => '',
+            'fab_label' => 'Tafel boeken',
+            'fab_hide_cart' => true,
             'park_logo' => '',
             'phone' => '',
             'address' => '',
@@ -192,6 +206,7 @@ final class HGC_Restaurant
         wp_register_style('hgc-restaurant', $base . 'reservation.css', array('hgc-restaurant-font'), HGC_CALCULATOR_VERSION);
         wp_register_script('hgc-restaurant', $base . 'reservation.js', array(), HGC_CALCULATOR_VERSION, true);
         wp_register_script('hgc-restaurant-selector', $base . 'selector.js', array(), HGC_CALCULATOR_VERSION, true);
+        wp_register_script('hgc-restaurant-fab', $base . 'table-fab.js', array(), HGC_CALCULATOR_VERSION, true);
     }
 
     public function register_block(): void
@@ -330,6 +345,103 @@ final class HGC_Restaurant
         return (string) ob_get_clean();
     }
 
+    /**
+     * `[hgc_tafelknop park="almkreek"]`: zet de zwevende tafelknop op precies deze pagina,
+     * zonder de lijst in de instellingen aan te passen. Rendert zelf niets op de plek van
+     * de shortcode; de knop komt in de footer.
+     */
+    public function fab_shortcode($atts): string
+    {
+        $atts = shortcode_atts(array('park' => ''), $atts, 'hgc_tafelknop');
+        $this->fab_park = sanitize_title($atts['park']);
+        return '';
+    }
+
+    /**
+     * Vergelijkt de huidige pagina met de ingestelde lijst. Elke regel mag een pagina-ID,
+     * slug, pad ("restaurant/almkreek") of volledige URL zijn; "/" is de voorpagina.
+     */
+    private static function fab_page_matches(string $list): bool
+    {
+        $wanted = array();
+        foreach (preg_split('/[\r\n,]+/', $list) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            if (preg_match('#^https?://#i', $line)) {
+                $line = (string) wp_parse_url($line, PHP_URL_PATH);
+            }
+            $wanted[] = strtolower(trim($line, '/'));
+        }
+        if (!$wanted) {
+            return false;
+        }
+        if (in_array('', $wanted, true) && is_front_page()) {
+            return true;
+        }
+
+        $request_path = (string) wp_parse_url(isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '', PHP_URL_PATH);
+        $home_path = (string) wp_parse_url(home_url('/'), PHP_URL_PATH);
+        if ($home_path !== '/' && strpos($request_path, $home_path) === 0) {
+            $request_path = substr($request_path, strlen($home_path));
+        }
+        $candidates = array(strtolower(trim(rawurldecode($request_path), '/')));
+        $object = get_queried_object();
+        if ($object instanceof WP_Post) {
+            $candidates[] = (string) $object->ID;
+            $candidates[] = strtolower($object->post_name);
+            $candidates[] = strtolower((string) get_page_uri($object));
+        }
+        return (bool) array_intersect(array_filter($candidates, 'strlen'), $wanted);
+    }
+
+    /**
+     * De zwevende "Tafel boeken"-knop, op de plek van het webshop-winkelmandje. Staat er al
+     * een boekbare widget op de pagina, dan scrolt de knop daarheen; anders zetten we er
+     * zelf een in een (verborgen) venster, dat op desktop als popup opent en op een
+     * telefoon meteen de bestaande boekingssheet van de widget.
+     */
+    public function print_table_fab(): void
+    {
+        $settings = self::settings();
+        $park = $this->fab_park;
+        if ($park === null && !self::fab_page_matches((string) $settings['fab_pages'])) {
+            return;
+        }
+        $park = $park ?: $settings['fab_park'] ?: $settings['park'];
+        if ($park === '' || !isset($settings['locations'][$park])) {
+            return;
+        }
+
+        $widget = $this->inline_booking_rendered ? '' : $this->render(array('park' => $park, 'booking_only' => true), 'restaurant');
+        if (!$this->inline_booking_rendered && $widget === '') {
+            return;
+        }
+        wp_enqueue_style('hgc-restaurant');
+        wp_enqueue_script('hgc-restaurant-fab');
+        $label = $settings['fab_label'] ?: 'Tafel boeken';
+        ?>
+        <div class="hgc-table-fab" data-hgc-table-fab style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
+            <button type="button" class="hgc-table-fab__label" data-hgc-table-fab-open tabindex="-1" aria-hidden="true"><?php echo esc_html($label); ?></button>
+            <button type="button" class="hgc-table-fab__button" data-hgc-table-fab-open aria-label="<?php echo esc_attr($label); ?>" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+            </button>
+        </div>
+        <?php if ($widget !== '') : ?>
+            <div class="hgc-table-modal" data-hgc-table-modal role="dialog" aria-modal="true" aria-hidden="true" aria-label="<?php echo esc_attr($label); ?>">
+                <div class="hgc-table-modal__panel">
+                    <button type="button" class="hgc-table-modal__close" data-hgc-table-modal-close aria-label="Sluiten">✕</button>
+                    <?php echo $widget; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- render() escapet zelf. ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <?php if (!empty($settings['fab_hide_cart'])) : ?>
+            <style>#hge-floating-cart{display:none!important}</style>
+        <?php endif; ?>
+        <?php
+    }
+
     private function render(array $atts, string $mode = 'restaurant'): string
     {
         $settings = self::settings();
@@ -377,8 +489,14 @@ final class HGC_Restaurant
             'before'
         );
 
-        $ref = isset($_GET['ref']) ? sanitize_text_field(wp_unslash($_GET['ref'])) : '';
-        $token = isset($_GET['token']) ? sanitize_text_field(wp_unslash($_GET['token'])) : '';
+        // De widget achter de tafelknop is altijd een nieuwe boeking, ook als de pagina via een
+        // beheerlink (?ref=…&token=…) geopend is.
+        $manage = empty($atts['booking_only']);
+        $ref = $manage && isset($_GET['ref']) ? sanitize_text_field(wp_unslash($_GET['ref'])) : '';
+        $token = $manage && isset($_GET['token']) ? sanitize_text_field(wp_unslash($_GET['token'])) : '';
+        if ($mode === 'restaurant' && $manage && ($ref === '' || $token === '')) {
+            $this->inline_booking_rendered = true;
+        }
 
         ob_start();
         ?>
@@ -661,6 +779,10 @@ final class HGC_Restaurant
             'terms_url' => esc_url_raw($raw['terms_url'] ?? ''),
             'group_email' => sanitize_email($raw['group_email'] ?? ''),
             'club_logo' => esc_url_raw($raw['club_logo'] ?? ''),
+            'fab_pages' => sanitize_textarea_field($raw['fab_pages'] ?? ''),
+            'fab_park' => isset($locations[sanitize_title($raw['fab_park'] ?? '')]) ? sanitize_title($raw['fab_park']) : '',
+            'fab_label' => sanitize_text_field($raw['fab_label'] ?? '') ?: 'Tafel boeken',
+            'fab_hide_cart' => !empty($raw['fab_hide_cart']),
             // Legacy-spiegels houden oudere code/pluginversies functioneel.
             'park_logo' => $legacy['park_logo'],
             'phone' => $legacy['phone'],
@@ -720,6 +842,22 @@ final class HGC_Restaurant
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
                 <p class="hgc-admin-hint">Client-ID en HMAC-secret zijn optioneel: samen ondertekent de plugin elk verzoek naar de backend, zodat die kan controleren dat het echt van deze site komt. Het HMAC-secret moet exact overeenkomen met <code>RESTAURANT_HMAC_SECRET</code> in de backend, en wordt alleen server-side gebruikt — nooit naar de browser gestuurd.</p>
                 <p class="hgc-admin-hint">Gebruik <code>[hgc_restaurant_reserveren park="almkreek"]</code> of het blok "HGC Restaurant Reserveren" voor tafelreserveringen, en <code>[hgc_event_aanmelden event="wildavond-2026"]</code> of het blok "HGC Event Aanmelden" voor een evenement (bv. een wildavond). Het evenement, de zittingen en eventuele aanvullende vragen op het formulier stel je samen in Connect.</p>
+                <h3 style="margin:24px 0 8px">Zwevende tafelknop</h3>
+                <p class="hgc-admin-hint">Een rond "Tafel boeken"-knopje rechtsonder, op de plek van het winkelmandje. Op desktop opent het de reservering in een venster, op een telefoon meteen de boekingssheet. Staat er al een reserveringsformulier op de pagina, dan scrolt de knop daarheen. Je kunt de knop ook op één pagina zetten met <code>[hgc_tafelknop park="almkreek"]</code>.</p>
+                <div class="hgc-admin-grid hgc-admin-grid--two">
+                    <label class="hgc-admin-field"><span>Pagina's (één per regel)</span><textarea class="large-text code" rows="4" name="restaurant[fab_pages]" placeholder="restaurant&#10;https://www.hollandschegolfclub.nl/golfbaan/almkreek/&#10;1234"><?php echo esc_textarea($s['fab_pages']); ?></textarea></label>
+                    <div>
+                        <label class="hgc-admin-field"><span>Restaurant achter de knop</span><select name="restaurant[fab_park]">
+                            <option value="">Standaard restaurant</option>
+                            <?php foreach ($s['locations'] as $location) : ?>
+                                <option value="<?php echo esc_attr($location['slug']); ?>" <?php selected($s['fab_park'], $location['slug']); ?>><?php echo esc_html($location['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select></label>
+                        <label class="hgc-admin-field"><span>Tekst naast de knop</span><input type="text" name="restaurant[fab_label]" value="<?php echo esc_attr($s['fab_label']); ?>" placeholder="Tafel boeken" /></label>
+                        <label><input type="checkbox" name="restaurant[fab_hide_cart]" value="1" <?php checked(!empty($s['fab_hide_cart'])); ?> /> Winkelmandje op deze pagina's verbergen</label>
+                    </div>
+                </div>
+                <p class="hgc-admin-hint">Pagina's mag je invullen als pagina-ID, slug, pad of volledige URL. Een regel met alleen <code>/</code> is de voorpagina.</p>
                 <h3 style="margin:24px 0 8px">Boekingsschermen per restaurant</h3>
                 <p class="hgc-admin-hint">Iedere locatie krijgt een eigen parkcode, naam, logo en contactgegevens. De algemene API, accentkleur, privacyverklaring en het clublogo gelden voor alle locaties.</p>
                 <div class="hgc-admin-heading hgc-restaurant-heading">

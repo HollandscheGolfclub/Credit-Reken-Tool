@@ -7,7 +7,7 @@
     EVENT_CLOSED: 'Aanmelden is op dit moment gesloten.',
     PARTY_TOO_LARGE: 'Voor deze groepsgrootte kun je het beste rechtstreeks contact opnemen.',
     RATE_LIMITED: 'Je hebt te veel aanvragen gedaan. Probeer het over een minuut opnieuw.',
-    TOO_SOON: 'Dit tijdstip kan niet meer online worden gekozen.',
+    TOO_SOON: 'Dit tijdstip ligt te dichtbij om nog online te reserveren. Bel het restaurant, dan kijken we wat er kan.',
     MISSING_FIELD: 'Vul alle verplichte velden in.',
   };
   function esc(value) { var node = document.createElement('span'); node.textContent = String(value == null ? '' : value); return node.innerHTML; }
@@ -61,7 +61,24 @@
   // de achtergrond binnen en worden dan alsnog toegepast, zie applyInfo().
   function defaultInfo(cfg) {
     var max = new Date(); max.setDate(max.getDate() + 90);
-    return { naam: cfg.name || 'Tafel reserveren', minDate: isoDate(new Date()), maxDate: isoDate(max), minGroepsgrootte: 1, maxGroepsgrootte: 12 };
+    return { naam: cfg.name || 'Tafel reserveren', minDate: isoDate(new Date()), maxDate: isoDate(max), minGroepsgrootte: 1, maxGroepsgrootte: 12, boekbaarVanafUren: 24 };
+  }
+  // Eerste dag waarop nog online te boeken valt. Met 24 uur vooraf is dat vandaag nooit;
+  // zonder deze sprong opende de widget standaard op een dag met alleen "bel ons".
+  function firstBookableDate(info) {
+    var lead = Number(info.boekbaarVanafUren);
+    if (!(lead >= 0)) lead = 24;
+    var first = isoDate(new Date(Date.now() + lead * 3600000));
+    return first > info.minDate ? first : info.minDate;
+  }
+  /** "Bel ons"-regel voor tijden die te dichtbij liggen om nog online te boeken. */
+  function phoneOnlyHtml(cfg, hours, hasSlots) {
+    var lead = hours || 24;
+    var tel = cfg.phone ? '<a href="tel:' + esc(String(cfg.phone).replace(/[^\d+]/g, '')) + '">' + esc(cfg.phone) + '</a>' : '';
+    var text = hasSlots
+      ? 'Eerder op deze dag? Binnen ' + lead + ' uur reserveren kan alleen telefonisch' + (tel ? ': ' + tel : '') + '.'
+      : 'Binnen ' + lead + ' uur reserveren kan alleen telefonisch. ' + (tel ? 'Bel ons op ' + tel + '.' : 'Bel het restaurant, dan kijken we wat er kan.');
+    return '<p class="hgc-phone-only">' + text + '</p>';
   }
   function defaultEventInfo(cfg) {
     return { titel: cfg.name || 'Aanmelden', minAanmelding: 1, maxAanmelding: 12, zittingen: [] };
@@ -185,8 +202,8 @@
     var app = root.querySelector('.hgc-reservation__app');
     var mq = window.matchMedia('(min-width: 760px)');
     var currentOverlay = null;
-    var state = { info: defaultInfo(cfg), date: null, party: 2, slots: null, slotsForKey: null, slotsLoading: false, slotsError: null, time: null };
-    state.date = state.info.minDate;
+    var state = { info: defaultInfo(cfg), date: null, dateTouched: false, party: 2, slots: null, phoneOnly: false, slotsForKey: null, slotsLoading: false, slotsError: null, time: null };
+    state.date = firstBookableDate(state.info);
     var idempotencyKey = newIdempotencyKey();
 
     function clampParty() {
@@ -202,11 +219,11 @@
     function ensureSlots() {
       var key = slotsKey();
       if (state.slotsForKey === key) return;
-      state.slots = null; state.slotsError = null; state.slotsLoading = true; state.time = null;
+      state.slots = null; state.phoneOnly = false; state.slotsError = null; state.slotsLoading = true; state.time = null;
       render();
       api({ action: 'availability', slug: park, date: state.date, partySize: state.party }, cfg).then(function (data) {
         if (slotsKey() !== key) return;
-        state.slots = data.slots || []; state.slotsForKey = key; state.slotsLoading = false;
+        state.slots = data.slots || []; state.phoneOnly = !!data.alleenTelefonisch; state.slotsForKey = key; state.slotsLoading = false;
         render();
       }).catch(function (error) {
         if (slotsKey() !== key) return;
@@ -214,7 +231,7 @@
         render();
       });
     }
-    function onDateChange(iso) { if (state.date === iso) return; state.date = iso; ensureSlots(); }
+    function onDateChange(iso) { state.dateTouched = true; if (state.date === iso) return; state.date = iso; ensureSlots(); }
     function onPartyChange(delta) {
       var min = state.info.minGroepsgrootte || 1, max = state.info.maxGroepsgrootte || 12;
       var next = state.party + delta;
@@ -260,7 +277,9 @@
       if (state.slotsLoading) { wrap.innerHTML = '<p class="hgc-time-empty">Tijden laden…</p>'; return wrap; }
       if (state.slotsError) { wrap.innerHTML = '<p class="hgc-time-empty">' + esc(state.slotsError) + '</p>'; return wrap; }
       var slots = state.slots || [];
-      if (!slots.length) { wrap.innerHTML = '<p class="hgc-time-empty">Geen tijden beschikbaar op deze dag. Kies een andere dag.</p>'; return wrap; }
+      var lead = state.info.boekbaarVanafUren;
+      if (!slots.length) { wrap.innerHTML = state.phoneOnly ? phoneOnlyHtml(cfg, lead, false) : '<p class="hgc-time-empty">Geen tijden beschikbaar op deze dag. Kies een andere dag.</p>'; return wrap; }
+      if (state.phoneOnly) wrap.insertAdjacentHTML('beforeend', phoneOnlyHtml(cfg, lead, true));
       var lunch = slots.filter(function (s) { return s.time < '15:00'; });
       var dinner = slots.filter(function (s) { return s.time >= '15:00'; });
       function group(label, list) {
@@ -440,6 +459,12 @@
       applyInfo: function (info) {
         state.info = info;
         var changed = clampParty();
+        // De echte vooraf-grens komt pas nu binnen; zolang de bezoeker zelf nog geen dag
+        // koos, schuift de startdag mee naar de eerste dag die online te boeken is.
+        if (!state.dateTouched) {
+          var first = firstBookableDate(info);
+          if (first !== state.date) { state.date = first; changed = true; }
+        }
         render();
         if (changed) ensureSlots();
       }
