@@ -201,8 +201,19 @@
 .hgc-teaser-row-label { color: #8d9585; width: 84px; flex: none; }
 .hgc-teaser-row-val { font-weight: 600; color: var(--hgc-ink); }
 .hgc-teaser-cta { width: 100%; }
+/* Losse knop voor in een tekst of in de header van een parkpagina: neemt de
+   breedte van zijn eigen label, en niet de marges en maximumbreedte die de
+   volledige widget wel heeft. */
+.hgc-reservation--knop { max-width: none; margin: 0; }
+.hgc-reservation--knop .hgc-reservation__app { display: inline-block; }
+.hgc-knop { width: auto; }
 
-.hgc-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(34, 48, 28, .45); display: flex; align-items: flex-end; justify-content: center; padding: 0; animation: hgc-fade .2s ease both; }
+/* De sheet hangt in document.body, zodat geen stapelcontext van het thema hem
+   opsluit. Daarom staan de kleuren, het lettertype en box-sizing hier opnieuw:
+   overerven van .hgc-reservation kan niet meer. De z-index ligt boven die van
+   chatwidgets, die zichzelf anders over de sheet heen leggen. */
+.hgc-overlay { --hgc-accent: #7cb63a; --hgc-accent-deep: #2f4d12; --hgc-ink: #22301c; --hgc-ink-soft: #57604f; --hgc-line: #dfe3d6; --hgc-tint: #f7fbef; position: fixed; inset: 0; z-index: 2147483647; background: rgba(34, 48, 28, .45); display: flex; align-items: flex-end; justify-content: center; padding: 0; font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--hgc-ink); animation: hgc-fade .2s ease both; }
+.hgc-overlay, .hgc-overlay * { box-sizing: border-box; }
 .hgc-sheet { width: 100%; max-width: 480px; max-height: 92vh; background: #fff; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 30px rgba(34, 48, 28, .22); overflow-y: auto; color: var(--hgc-ink); animation: hgc-sheet-up .25s cubic-bezier(.2,.8,.3,1) both; }
 /* Met het toetsenbord in beeld krimpt de zichtbare hoogte wel in dvh, maar niet
    in vh: zonder deze regel zakt de knop "Reservering bevestigen" achter het
@@ -221,9 +232,13 @@
 .hgc-sheet-body { padding: 18px 20px 4px; }
 .hgc-sheet-body .hgc-step-head { margin: 20px 0 12px; }
 .hgc-sheet-body .hgc-step-head:first-child { margin-top: 0; }
-.hgc-sheet-footer { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 14px 20px 18px; background: #fbfcf8; border-top: 1px solid #eef1e6; }
-.hgc-sheet-footer-summary { flex: 1; font-size: 12px; color: var(--hgc-ink-soft); }
-.hgc-sheet-footer .hgc-button { flex: none; }
+.hgc-sheet-footer { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 20px 18px; background: #fbfcf8; border-top: 1px solid #eef1e6; }
+/* De samenvatting houdt haar eigen breedte en breekt niet af: met flex: 1 werd
+   ze naast een brede knop tot een paar tekens geperst, waardoor "2 personen"
+   over vier regels viel. Past de knop er niet naast, dan zakt hij naar een
+   eigen regel over de volle breedte. */
+.hgc-sheet-footer-summary { flex: 0 0 auto; font-size: 12px; color: var(--hgc-ink-soft); white-space: nowrap; }
+.hgc-sheet-footer .hgc-button { flex: 1 1 12rem; }
 
 @keyframes hgc-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes hgc-sheet-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }

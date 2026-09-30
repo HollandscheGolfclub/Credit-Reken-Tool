@@ -192,6 +192,7 @@ final class HGC_Calculator_Admin
                         </div>
                         <code><?php echo esc_html($reserveer_shortcode); ?></code>
                         <code>[hgc_restaurant_kiezer]</code>
+                        <code>[hgc_restaurant_knop]</code>
                         <code>[hgc_event_aanmelden event="wildavond-2026"]</code>
                     </article>
                 </div>

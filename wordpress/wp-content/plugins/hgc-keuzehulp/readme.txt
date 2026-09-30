@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.4
+Stable tag: 2.6.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,12 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.5 =
+* Nieuwe shortcode `[hgc_restaurant_knop]`: alleen een knop die het reserveerscherm opent, voor midden in een tekst of in de header van een parkpagina. Zonder `park` leidt de knop het park af uit de URL, zodat een gedeelde parkheader op elk park het juiste restaurant toont en op parken zonder restaurant niets laat zien. Met `park="almkreek"` zet je hem vast en met `label="..."` geef je hem een eigen opschrift.
+* De reserveerknop wordt voortaan zelf in de knoppenbalk van de parkheader gezet, tussen de knoppen die er al staan en met hun opmaak. De header hoeft daarvoor niet aangepast te worden. De knop komt voor de chatknop, zodat die de laatste van de rij blijft, en staat ook in het uitschuifmenu op mobiel. Uit te zetten met een vinkje bij Restaurant reserveren.
+* Het reserveerscherm kwam op mobiel achter de chatwidget terecht. Het scherm hing in de widget zelf, waardoor een omliggend thema-element met bijvoorbeeld een transform het opsloot in een eigen stapelcontext en de z-index niet verder reikte dan dat blokje. Het scherm hangt nu los in de pagina en komt overal bovenop.
+* In de balk onderin het reserveerscherm werd "2 personen" tot een paar tekens breed geperst en viel het over vier regels. De samenvatting houdt nu haar eigen breedte; past de knop er niet naast, dan zakt die naar een eigen regel.
 
 = 2.6.4 =
 * Online reserveren kan tot 24 uur van tevoren (instelbaar in Connect); voor eerdere tijden toont de widget het telefoonnummer van het restaurant.

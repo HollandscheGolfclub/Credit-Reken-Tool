@@ -137,6 +137,77 @@
    * toestemming). Beide gaan als eigen boolean naar Connect, zodat daar
    * vastligt waarmee de bezoeker op dat moment akkoord ging.
    */
+  /**
+   * De sheet hangt in document.body en niet in de widget zelf. Staat er in de
+   * pagina een element omheen dat een eigen stapelcontext maakt (een transform
+   * of filter van het thema bijvoorbeeld), dan blijft de sheet daarbinnen
+   * gevangen en komt bijvoorbeeld een chatwidget er op mobiel overheen, hoe
+   * hoog de z-index ook staat. De accentkleur staat als inline variabele op de
+   * widget, dus die gaat mee; de rest van de opmaak staat op .hgc-overlay zelf.
+   */
+  function mountOverlay(root, overlay) {
+    var accent = root.style.getPropertyValue('--hgc-accent');
+    if (accent) overlay.style.setProperty('--hgc-accent', accent);
+    document.body.appendChild(overlay);
+  }
+
+  /**
+   * De knoppenbalken in de parkheader. Er zijn er twee: die in de bovenbalk en
+   * dezelfde rij in het uitschuifmenu op mobiel. Ankerpunt is de Baanstatus-knop,
+   * die een eigen HGC-klasse heeft; die ligt vaster dan de klassen die het thema
+   * zelf genereert. Staat die knop er niet, dan valt het terug op de bovenste
+   * knoppenrij van de pagina.
+   */
+  function headerButtonRows() {
+    var rows = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.hgc-course-status-link'), function (el) {
+      var row = el.closest && el.closest('.wp-block-buttons');
+      if (row && rows.indexOf(row) === -1) rows.push(row);
+    });
+    if (!rows.length) {
+      var eerste = document.querySelector('.wp-block-buttons.is-horizontal.is-content-justification-right');
+      if (eerste) rows.push(eerste);
+    }
+    return rows;
+  }
+
+  /**
+   * Bouwt een knop met exact de klassen en inline stijl van een knop die al in
+   * die balk staat, zodat hij de kleuren en vormgeving van het thema volgt in
+   * plaats van die van deze plugin.
+   */
+  function headerButtonNode(row, label) {
+    var sample = row.querySelector('.wp-block-button.is-style-fill') || row.querySelector('.wp-block-button');
+    var sampleLink = sample && sample.querySelector('.wp-block-button__link');
+    if (!sampleLink) return null;
+    var wrap = document.createElement('div');
+    wrap.className = (sample.className.replace(/hgc-course-status-link/g, '').replace(/is-style-outline[^\s]*/g, 'is-style-fill').replace(/\s+/g, ' ').trim() + ' hgc-header-knop').trim();
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = sampleLink.className;
+    var stijl = sampleLink.getAttribute('style');
+    if (stijl) btn.setAttribute('style', stijl);
+    btn.textContent = label;
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
+  /**
+   * De chatknop hoort de laatste van de rij te blijven, dus de reserveerknop
+   * komt ervoor in plaats van erachter. Staat er geen chatknop, dan sluit hij
+   * gewoon achteraan aan.
+   */
+  function placeHeaderButton(row, node) {
+    var knoppen = row.querySelectorAll('.wp-block-button');
+    for (var i = 0; i < knoppen.length; i++) {
+      if (/chat/i.test(knoppen[i].textContent || '')) {
+        row.insertBefore(node, knoppen[i]);
+        return;
+      }
+    }
+    row.appendChild(node);
+  }
+
   function consentHtml(cfg) {
     // Zonder ingestelde URL geen link: een href="#" bracht de bezoeker terug
     // naar het beginscherm in plaats van naar de tekst.
@@ -384,11 +455,7 @@
       var overlay = document.createElement('div'); overlay.className = 'hgc-overlay';
       overlay.innerHTML = sheetHtml();
       overlay.addEventListener('click', function (event) { if (event.target === overlay) closeSheet(overlay); });
-      // Binnen root gehangen (niet document.body): zo erft de sheet de
-      // kleuren en box-sizing van .hgc-reservation gewoon over. position:fixed
-      // dekt nog steeds de hele viewport, ongeacht waar de widget in de
-      // pagina staat.
-      root.appendChild(overlay);
+      mountOverlay(root, overlay);
       document.body.style.overflow = 'hidden';
       overlay.querySelector('.hgc-sheet-close').addEventListener('click', function () { closeSheet(overlay); });
       overlay.querySelector('.hgc-sheet-form').addEventListener('submit', onSubmit);
@@ -406,7 +473,7 @@
       var progress = currentOverlay.querySelector('.hgc-sheet-progress > span'); if (progress) progress.style.width = state.time ? '100%' : '66%';
       renderStepsInto(currentOverlay.querySelector('.hgc-sheet-body'));
       var summary = currentOverlay.querySelector('.hgc-sheet-footer-summary');
-      if (summary) summary.textContent = (state.time ? state.time + ' · ' : '') + state.party + ' perso' + (state.party === 1 ? 'on' : 'nen');
+      if (summary) summary.textContent = (state.time ? state.time + ' · ' : '') + state.party + (state.party === 1 ? ' persoon' : ' personen');
       var btn = currentOverlay.querySelector('.hgc-sheet-footer .hgc-button');
       if (btn) { btn.disabled = !state.time; btn.textContent = state.time ? 'Reservering bevestigen' : 'Kies eerst een tijd'; }
     }
@@ -449,7 +516,57 @@
       });
     }
 
-    function render() { if (mq.matches) renderDesktop(); else renderTeaser(); }
+    /**
+     * Knop-modus: de knop staat al in de pagina (server-side gezet), hier komt
+     * alleen het gedrag erbij. De teaserkaart en de brede weergave blijven
+     * achterwege, want deze modus is bedoeld voor een knop in een tekst of in
+     * de header van een parkpagina.
+     */
+    function renderButton() {
+      var btn = app.querySelector('.hgc-knop');
+      if (!btn) {
+        app.innerHTML = '<button type="button" class="hgc-button hgc-knop">Tafel reserveren</button>';
+        btn = app.querySelector('.hgc-knop');
+      }
+      if (btn && !btn.dataset.hgcBound) {
+        btn.dataset.hgcBound = '1';
+        btn.addEventListener('click', openSheet);
+      }
+      reveal(root);
+      renderSheet();
+    }
+
+    /**
+     * Headervariant: de knop komt in de knoppenbalk van de parkheader te staan,
+     * niet in de widget zelf. Vindt hij die balk niet, dan valt hij terug op een
+     * gewone knop, zodat er altijd nog een werkende knop op de pagina staat.
+     */
+    function renderHeaderButton() {
+      var label = root.dataset.label || 'Tafel reserveren';
+      var rows = headerButtonRows();
+      if (!rows.length) {
+        root.hidden = false;
+        renderButton();
+        return;
+      }
+      rows.forEach(function (row) {
+        if (row.querySelector('.hgc-header-knop')) return;
+        var node = headerButtonNode(row, label);
+        if (!node) return;
+        node.querySelector('button').addEventListener('click', openSheet);
+        placeHeaderButton(row, node);
+      });
+      renderSheet();
+    }
+
+    var isButtonMode = root.dataset.mode === 'knop';
+    var isHeaderButton = isButtonMode && root.dataset.header === '1';
+    function render() {
+      if (isHeaderButton) renderHeaderButton();
+      else if (isButtonMode) renderButton();
+      else if (mq.matches) renderDesktop();
+      else renderTeaser();
+    }
     if (typeof mq.addEventListener === 'function') mq.addEventListener('change', render);
 
     render();
@@ -605,7 +722,7 @@
       var overlay = document.createElement('div'); overlay.className = 'hgc-overlay';
       overlay.innerHTML = sheetHtml();
       overlay.addEventListener('click', function (event) { if (event.target === overlay) closeSheet(overlay); });
-      root.appendChild(overlay);
+      mountOverlay(root, overlay);
       document.body.style.overflow = 'hidden';
       overlay.querySelector('.hgc-sheet-close').addEventListener('click', function () { closeSheet(overlay); });
       overlay.querySelector('.hgc-sheet-form').addEventListener('submit', onSubmit);
@@ -623,7 +740,7 @@
       var progress = currentOverlay.querySelector('.hgc-sheet-progress > span'); if (progress) progress.style.width = state.zittingId ? '100%' : '66%';
       renderStepsInto(currentOverlay.querySelector('.hgc-sheet-body'));
       var summary = currentOverlay.querySelector('.hgc-sheet-footer-summary');
-      if (summary) summary.textContent = state.party + ' perso' + (state.party === 1 ? 'on' : 'nen');
+      if (summary) summary.textContent = state.party + (state.party === 1 ? ' persoon' : ' personen');
       var btn = currentOverlay.querySelector('.hgc-sheet-footer .hgc-button');
       if (btn) { btn.disabled = !state.zittingId; btn.textContent = state.zittingId ? 'Aanmelding bevestigen' : 'Kies eerst een zitting'; }
     }
@@ -756,8 +873,11 @@
       var mode = root.dataset.mode || 'restaurant';
       var slug = root.dataset.slug || root.dataset.park;
       var ref = root.dataset.ref, token = root.dataset.token;
-      var profile = mode === 'restaurant' && globalCfg.locations && globalCfg.locations[slug] ? globalCfg.locations[slug] : (globalCfg.fallbackProfile || {});
-      var cfg = Object.assign({}, globalCfg, mode === 'restaurant' ? profile : {});
+      // De knop hoort bij één park en heeft dus hetzelfde locatieprofiel nodig
+      // als het volledige reserveerscherm: naam, adres en telefoonnummer.
+      var heeftLocatie = mode === 'restaurant' || mode === 'knop';
+      var profile = heeftLocatie && globalCfg.locations && globalCfg.locations[slug] ? globalCfg.locations[slug] : (globalCfg.fallbackProfile || {});
+      var cfg = Object.assign({}, globalCfg, heeftLocatie ? profile : {});
 
       if (ref && token) {
         initManage(root, mode, slug, ref, token, cfg);
@@ -775,7 +895,14 @@
       var controller = initWizard(root, slug, cfg);
       api({ action: 'publicInfo', slug: slug }, cfg)
         .then(function (info) { controller.applyInfo(info); })
-        .catch(function (error) { announce(app.querySelector('.hgc-wizard, .hgc-teaser') || app, error.message, true); });
+        .catch(function (error) {
+          // Bij de losse knop blijft een foutmelding achterwege: die zou in een
+          // header of midden in een tekst terechtkomen. De knop werkt met de
+          // standaardwaarden, en gaat er in het scherm zelf iets mis, dan staat
+          // de melding daar.
+          if (mode === 'knop') return;
+          announce(app.querySelector('.hgc-wizard, .hgc-teaser') || app, error.message, true);
+        });
     });
   });
 })();
