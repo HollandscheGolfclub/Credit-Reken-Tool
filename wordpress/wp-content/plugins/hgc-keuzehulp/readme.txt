@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.5
+Stable tag: 2.6.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.6 =
+* De zwevende "Tafel boeken"-knop viel op mobiel samen met de chatbubbel in dezelfde hoek. Op desktop stond de knop al hoger om die bubbel te ontwijken, maar de mobiele regel zette hem terug naar de onderrand. De knop staat nu ook op mobiel boven de bubbel, zodat allebei zichtbaar en aanklikbaar blijven.
 
 = 2.6.5 =
 * Nieuwe shortcode `[hgc_restaurant_knop]`: alleen een knop die het reserveerscherm opent, voor midden in een tekst of in de header van een parkpagina. Zonder `park` leidt de knop het park af uit de URL, zodat een gedeelde parkheader op elk park het juiste restaurant toont en op parken zonder restaurant niets laat zien. Met `park="almkreek"` zet je hem vast en met `label="..."` geef je hem een eigen opschrift.

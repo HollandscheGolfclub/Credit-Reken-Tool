@@ -303,7 +303,10 @@
 .hgc-table-modal:not(.is-open) .hgc-table-modal__close { display: none; }
 
 @media (max-width: 768px) {
-  .hgc-table-fab { right: 15px; bottom: 15px; }
+  /* Blijft boven de chatbubbel, die in dezelfde hoek staat. Op desktop doet
+     bottom: 100px hetzelfde; zonder deze waarde zou de mobiele regel de knop
+     terugzetten tot onder de bubbel. */
+  .hgc-table-fab { right: 15px; bottom: 90px; }
   .hgc-table-fab__button { width: 50px; height: 50px; }
   .hgc-table-fab__button svg { width: 26px; height: 26px; }
   .hgc-table-fab__label { font-size: 13px; padding: 7px 12px; }
