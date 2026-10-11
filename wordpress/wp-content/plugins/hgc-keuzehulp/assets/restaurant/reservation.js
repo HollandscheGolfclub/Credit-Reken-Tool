@@ -345,12 +345,17 @@
     }
     function buildTimeArea() {
       var wrap = document.createElement('div');
+      var lead = state.info.boekbaarVanafUren;
+      // Dagen vóór de eerste boekbare dag vallen helemaal binnen de vooraf-grens: altijd
+      // "bel ons", ook als Connect geen alleenTelefonisch meestuurt of toch tijden geeft.
+      var first = firstBookableDate(state.info);
+      if (state.date < first) { wrap.innerHTML = phoneOnlyHtml(cfg, lead, false); return wrap; }
       if (state.slotsLoading) { wrap.innerHTML = '<p class="hgc-time-empty">Tijden laden…</p>'; return wrap; }
       if (state.slotsError) { wrap.innerHTML = '<p class="hgc-time-empty">' + esc(state.slotsError) + '</p>'; return wrap; }
       var slots = state.slots || [];
-      var lead = state.info.boekbaarVanafUren;
-      if (!slots.length) { wrap.innerHTML = state.phoneOnly ? phoneOnlyHtml(cfg, lead, false) : '<p class="hgc-time-empty">Geen tijden beschikbaar op deze dag. Kies een andere dag.</p>'; return wrap; }
-      if (state.phoneOnly) wrap.insertAdjacentHTML('beforeend', phoneOnlyHtml(cfg, lead, true));
+      var phoneOnly = state.phoneOnly || (state.date === first && Number(lead) > 0);
+      if (!slots.length) { wrap.innerHTML = phoneOnly ? phoneOnlyHtml(cfg, lead, false) : '<p class="hgc-time-empty">Geen tijden beschikbaar op deze dag. Kies een andere dag.</p>'; return wrap; }
+      if (phoneOnly) wrap.insertAdjacentHTML('beforeend', phoneOnlyHtml(cfg, lead, true));
       var lunch = slots.filter(function (s) { return s.time < '15:00'; });
       var dinner = slots.filter(function (s) { return s.time >= '15:00'; });
       function group(label, list) {

@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.6
+Stable tag: 2.6.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.7 =
+* Wie vandaag (of binnen de vooraf-grens van 24 uur) een dag kiest, ziet nu altijd de melding dat reserveren alleen telefonisch kan, met het telefoonnummer van het restaurant. Voorheen hing die melding af van een signaal uit Connect en bleef het bij "Geen tijden beschikbaar" als dat ontbrak. Ook op de eerste boekbare dag staat de bel-regel boven de tijden, voor wie eerder op die dag wil komen.
 
 = 2.6.6 =
 * De zwevende "Tafel boeken"-knop viel op mobiel samen met de chatbubbel in dezelfde hoek. Op desktop stond de knop al hoger om die bubbel te ontwijken, maar de mobiele regel zette hem terug naar de onderrand. De knop staat nu ook op mobiel boven de bubbel, zodat allebei zichtbaar en aanklikbaar blijven.
