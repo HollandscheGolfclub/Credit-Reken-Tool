@@ -206,7 +206,17 @@
    volledige widget wel heeft. */
 .hgc-reservation--knop { max-width: none; margin: 0; }
 .hgc-reservation--knop .hgc-reservation__app { display: inline-block; }
-.hgc-knop { width: auto; }
+/* Oranje in plaats van de accentkleur van het reserveerscherm: deze knop is een
+   oproep tot actie en moet opvallen. Het is de oranje die de site ook voor
+   "HGC Doe Mee!" gebruikt. */
+.hgc-knop { width: auto; gap: 10px; background: #ff6600; font-size: 16px; min-height: 56px; padding: 15px 26px; }
+.hgc-knop:hover { background: #e85d00; }
+.hgc-knop svg { width: 22px; height: 22px; flex: 0 0 auto; }
+/* Per plaatsing in te stellen met grootte="klein" of grootte="groot". */
+.hgc-knop--klein { gap: 8px; font-size: 14.5px; min-height: 48px; padding: 12px 22px; }
+.hgc-knop--klein svg { width: 19px; height: 19px; }
+.hgc-knop--groot { gap: 12px; font-size: 18px; min-height: 66px; padding: 18px 32px; }
+.hgc-knop--groot svg { width: 26px; height: 26px; }
 
 /* De sheet hangt in document.body, zodat geen stapelcontext van het thema hem
    opsluit. Daarom staan de kleuren, het lettertype en box-sizing hier opnieuw:

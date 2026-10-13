@@ -530,7 +530,10 @@
     function renderButton() {
       var btn = app.querySelector('.hgc-knop');
       if (!btn) {
-        app.innerHTML = '<button type="button" class="hgc-button hgc-knop">Tafel reserveren</button>';
+        app.innerHTML = '<button type="button" class="hgc-button hgc-knop">'
+          + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+          + '<path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg>'
+          + '<span>' + esc(root.dataset.label || 'Tafel reserveren') + '</span></button>';
         btn = app.querySelector('.hgc-knop');
       }
       if (btn && !btn.dataset.hgcBound) {

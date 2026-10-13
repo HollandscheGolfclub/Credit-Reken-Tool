@@ -271,7 +271,7 @@ final class HGC_Restaurant
      */
     public function button_shortcode($atts): string
     {
-        $atts = shortcode_atts(array('park' => '', 'label' => ''), $atts, 'hgc_restaurant_knop');
+        $atts = shortcode_atts(array('park' => '', 'label' => '', 'grootte' => ''), $atts, 'hgc_restaurant_knop');
         if ($atts['park'] === '') {
             $atts['park'] = $this->park_from_url();
             if ($atts['park'] === '') {
@@ -597,11 +597,15 @@ final class HGC_Restaurant
                 $label = 'Tafel reserveren';
             }
             $in_header = !empty($atts['header']);
+            // Met grootte="klein" of "groot" stel je de knop per plaatsing in.
+            $maten = array('klein' => ' hgc-knop--klein', 'normaal' => '', 'groot' => ' hgc-knop--groot');
+            $maat = strtolower(trim((string) ($atts['grootte'] ?? '')));
+            $maat_klasse = $maten[$maat] ?? '';
             ?>
             <div class="hgc-reservation hgc-reservation--knop" data-mode="knop" data-slug="<?php echo esc_attr($slug); ?>" data-park="<?php echo esc_attr($slug); ?>" data-ref="<?php echo esc_attr($ref); ?>" data-token="<?php echo esc_attr($token); ?>" data-label="<?php echo esc_attr($label); ?>"<?php echo $in_header ? ' data-header="1" hidden' : ''; ?> style="--hgc-accent:<?php echo esc_attr($settings['accent']); ?>">
                 <div class="hgc-reservation__app">
                     <?php if (!$in_header) : ?>
-                        <button type="button" class="hgc-button hgc-knop"><?php echo esc_html($label); ?></button>
+                        <button type="button" class="hgc-button hgc-knop<?php echo esc_attr($maat_klasse); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg><span><?php echo esc_html($label); ?></span></button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -953,7 +957,7 @@ final class HGC_Restaurant
                 <p class="hgc-admin-hint">Huisregels en privacyverklaring staan als link in het verplichte vinkje onder het reserveringsformulier. Laat je een veld leeg, dan blijft het woord gewoon staan als tekst, zonder link.</p>
                 <label class="hgc-admin-check"><input type="checkbox" name="restaurant[header_button]" value="1" <?php checked(!empty($s['header_button'])); ?> /> Reserveerknop automatisch in de parkheader zetten</label>
                 <p class="hgc-admin-hint">Staat dit aan, dan plaatst de plugin de reserveerknop zelf tussen de knoppen in de headerbalk, op elke pagina van een park waarvoor hieronder een restaurantlocatie staat. De header hoeft daarvoor niet aangepast te worden, en op parken zonder restaurant verschijnt er niets. De knop neemt de opmaak over van de knoppen die er al staan. Valt hij verkeerd, zet dit dan uit en plaats hem met de shortcode hieronder.</p>
-                <p class="hgc-admin-hint">Met <code>[hgc_restaurant_knop]</code> plaats je alleen een knop die het reserveerscherm opent, bijvoorbeeld midden in een tekst of in de header van een parkpagina. Zonder <code>park</code> leidt de knop het park af uit de URL: op <code>/golfpark/almkreek</code> hoort hij bij Almkreek, en op een park zonder restaurantlocatie verschijnt er niets. Zo kun je hem één keer in een gedeelde parkheader zetten. Wil je hem vastzetten op één restaurant, gebruik dan <code>[hgc_restaurant_knop park="almkreek"]</code>, en een eigen opschrift met <code>label="Reserveer een tafel"</code>.</p>
+                <p class="hgc-admin-hint">Met <code>[hgc_restaurant_knop]</code> plaats je alleen een knop die het reserveerscherm opent, bijvoorbeeld midden in een tekst of in de header van een parkpagina. Zonder <code>park</code> leidt de knop het park af uit de URL: op <code>/golfpark/almkreek</code> hoort hij bij Almkreek, en op een park zonder restaurantlocatie verschijnt er niets. Zo kun je hem één keer in een gedeelde parkheader zetten. Wil je hem vastzetten op één restaurant, gebruik dan <code>[hgc_restaurant_knop park="almkreek"]</code>, en een eigen opschrift met <code>label="Reserveer een tafel"</code>. De omvang stel je per plaatsing in met <code>grootte="klein"</code> of <code>grootte="groot"</code>; laat je dat weg, dan krijg je de normale maat.</p>
                 <p class="hgc-admin-hint">De plugin stuurt elke 5 minuten automatisch een klein, gratis verzoek naar deze koppeling om de functie "warm" te houden, zodat bezoekers niet hoeven te wachten op een koude start.</p>
                 <p class="hgc-admin-hint">Client-ID en HMAC-secret zijn optioneel: samen ondertekent de plugin elk verzoek naar de backend, zodat die kan controleren dat het echt van deze site komt. Het HMAC-secret moet exact overeenkomen met <code>RESTAURANT_HMAC_SECRET</code> in de backend, en wordt alleen server-side gebruikt — nooit naar de browser gestuurd.</p>
                 <p class="hgc-admin-hint">Gebruik <code>[hgc_restaurant_reserveren park="almkreek"]</code> of het blok "HGC Restaurant Reserveren" voor tafelreserveringen, en <code>[hgc_event_aanmelden event="wildavond-2026"]</code> of het blok "HGC Event Aanmelden" voor een evenement (bv. een wildavond). Het evenement, de zittingen en eventuele aanvullende vragen op het formulier stel je samen in Connect.</p>

@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.7
+Stable tag: 2.6.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.8 =
+* De knop van [hgc_restaurant_knop] is oranje geworden, met een kalendericoon ervoor en een ruimere maat, zodat hij in een tekst duidelijker als oproep leest. De accentkleur van het reserveerscherm zelf verandert niet mee.
+* De omvang van die knop is per plaatsing in te stellen met grootte="klein" of grootte="groot"; zonder die opgave krijg je de normale maat.
 
 = 2.6.7 =
 * Wie vandaag (of binnen de vooraf-grens van 24 uur) een dag kiest, ziet nu altijd de melding dat reserveren alleen telefonisch kan, met het telefoonnummer van het restaurant. Voorheen hing die melding af van een signaal uit Connect en bleef het bij "Geen tijden beschikbaar" als dat ontbrak. Ook op de eerste boekbare dag staat de bel-regel boven de tijden, voor wie eerder op die dag wil komen.
