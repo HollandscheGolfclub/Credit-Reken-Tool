@@ -153,9 +153,8 @@
                   // Alleen routes die daadwerkelijk per ronde afrekenen hebben een
                   // prijs per ronde die maal het aantal rondes exact optelt tot de
                   // jaarlast. Bij een speelrecht is de prijs per ronde gebaseerd op
-                  // de credits die je koopt: koop je er meer dan je opmaakt, dan
-                  // ligt de jaarlast hoger dan die som, en speel je bij op greenfee,
-                  // dan juist lager. Dat hoort zo.
+                  // de credits die je opmaakt (het kleinste van gekocht en nodig),
+                  // bij herhaalaankopen over alle aankopen samen.
                   if (["handicap", "loyaltee"].includes(plan.type)) {
                     const reconstructed = largeRounds * Number(plan.largeRoundCost || 0) + smallRounds * Number(plan.smallRoundCost || 0);
                     const jaarlast = Number(plan.annualCost) + Number(plan.repeatExtraTotal || 0);
@@ -163,11 +162,15 @@
                       report("round-cost-total-mismatch", { ...context, group: plan.group, reconstructed, annualCost: plan.annualCost });
                     }
                   } else if (["credits", "shortgolf"].includes(plan.type) && !plan.group.startsWith("local-")) {
-                    const priceBasis = Number(plan.credits);
+                    // Bij herhaalaankopen maak je alle benodigde credits op.
+                    const priceBasis = Number(plan.repeatPurchases || 0) > 1
+                      ? Number(plan.requiredCredits)
+                      : Math.min(Number(plan.credits), Number(plan.requiredCredits));
+                    const betaald = Number(plan.price) + Number(plan.repeatExtraTotal || 0);
                     if (priceBasis > 0) {
                       if (plan.type === "credits") {
-                        const verwachtGroot = largeCourse.largeRate * (Number(plan.price) / priceBasis);
-                        const verwachtKlein = smallCourse.shortRate * (Number(plan.price) / priceBasis);
+                        const verwachtGroot = largeCourse.largeRate * (betaald / priceBasis);
+                        const verwachtKlein = smallCourse.shortRate * (betaald / priceBasis);
                         if (Math.abs(Number(plan.largeBaseCost) - verwachtGroot) > 0.001) {
                           report("basecost-op-credits-klopt-niet", { ...context, group: plan.group, baan: "groot", actual: plan.largeBaseCost, verwacht: verwachtGroot });
                         }
@@ -178,7 +181,7 @@
                         if (Number(plan.largeBaseCost) !== 0) {
                           report("shortgolf-largebasecost-niet-nul", { ...context, group: plan.group });
                         }
-                        const verwachtKlein = Number(smallCourse.shortGolfRate) * (Number(plan.price) / priceBasis);
+                        const verwachtKlein = Number(smallCourse.shortGolfRate) * (betaald / priceBasis);
                         if (Math.abs(Number(plan.smallBaseCost) - verwachtKlein) > 0.001) {
                           report("basecost-op-credits-klopt-niet", { ...context, group: plan.group, baan: "klein", actual: plan.smallBaseCost, verwacht: verwachtKlein });
                         }

@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.8
+Stable tag: 2.6.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,9 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.9 =
+* De prijs per ronde gaat weer uit van de rondes die je speelt, niet van de omvang van het pakket. Wie 100 rondes speelt met een speelrecht van 120 credits, ziet de prijs gedeeld door 100 in plaats van door 120: dat is wat een ronde je werkelijk kost. Dekt een speelrecht niet al je rondes, dan blijft de prijs verdeeld over de rondes die het wel dekt. Koop je hetzelfde speelrecht meerdere keren, dan telt het totaal van alle aankopen mee. Dit draait de wijziging uit 2.5.0 terug.
 
 = 2.6.8 =
 * De knop van [hgc_restaurant_knop] is oranje geworden, met een kalendericoon ervoor en een ruimere maat, zodat hij in een tekst duidelijker als oproep leest. De accentkleur van het reserveerscherm zelf verandert niet mee.

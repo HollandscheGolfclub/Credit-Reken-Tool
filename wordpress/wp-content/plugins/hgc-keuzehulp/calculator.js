@@ -339,11 +339,11 @@ function candidatePlans(context) {
       if (!shortfallFairlyPriced) {
         plan.availablePackages = choice.packages;
         plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
-        // De prijs per ronde spreidt altijd over de credits die je koopt, nooit
-        // over de credits die je nodig hebt. Zo staat er wat één ronde op deze
-        // baan kost, ongeacht of je het pakket helemaal opmaakt. Credits die je
-        // overhoudt zitten dus niet in dit bedrag.
-        const priceBasis = plan.credits;
+        // De prijs per ronde spreidt over de credits die je met dit pakket
+        // werkelijk opmaakt: de rondes die je speelt. Koop je 120 credits voor
+        // 100 rondes, dan deel je door 100. Dekt het pakket niet alles, dan
+        // deel je door de gekochte credits; de rest gaat apart op greenfee.
+        const priceBasis = Math.min(plan.credits, standardCredits);
         plan.largeBaseCost = priceBasis > 0 ? largeCourse.largeRate * (plan.price / priceBasis) : 0;
         plan.smallBaseCost = priceBasis > 0 ? smallCourse.shortRate * (plan.price / priceBasis) : 0;
         plan.detail = plan.coversRounds
@@ -384,10 +384,10 @@ function candidatePlans(context) {
         repeatPurchases: aankopen,
         repeatExtraTotal: (aankopen - 1) * price,
         coveredRounds: totalRounds * Math.min(1, credits / standardCredits),
-        // Ook hier de prijs van één ronde: elke aankoop kost evenveel per
-        // credit, dus het aantal aankopen verandert die prijs niet.
-        largeBaseCost: largeCourse.largeRate * (price / credits),
-        smallBaseCost: Number(smallCourse.shortRate) * (price / credits),
+        // Alle aankopen samen, gespreid over de credits die je opmaakt: de
+        // laatste aankoop gebruik je meestal maar voor een deel.
+        largeBaseCost: largeCourse.largeRate * (aankopen * price / standardCredits),
+        smallBaseCost: Number(smallCourse.shortRate) * (aankopen * price / standardCredits),
         detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het eerste deel van je rondes.`,
         instruction: `Koop een nieuw speelrecht van ${decimal.format(credits)} credits zodra deze op zijn. Zo betaal je alleen voor de credits die je gebruikt.`,
       };
@@ -467,9 +467,9 @@ function candidatePlans(context) {
       shortPlan.reducedGreenFeeTotal = greenFeeCost;
       shortPlan.uncoveredLargeRounds = payGreenFee ? 0 : largeRounds;
       shortPlan.largeBaseCost = 0;
-      // De prijs van één ronde op de kleine baan: het Shortgolf-tarief maal de
-      // prijs per gekochte credit, of het pakket nu alles dekt of niet.
-      shortPlan.smallBaseCost = shortGolfRate * (shortPlan.price / shortPlan.credits);
+      // De prijs per ronde op de kleine baan spreidt over de Shortgolf-credits
+      // die je werkelijk opmaakt, net als bij het gewone speelrecht.
+      shortPlan.smallBaseCost = shortGolfRate * (shortPlan.price / Math.min(shortPlan.credits, shortCredits));
       // Dekt het grootste Shortgolf-speelrecht de rondes niet, dan noemen we
       // hoeveel rondes het wél dekt in plaats van te doen alsof alles gedekt is.
       const coveredSmallRounds = Math.floor(shortPlan.credits / shortGolfRate);
@@ -550,7 +550,7 @@ function candidatePlans(context) {
       if (!plan) return;
       plan.availablePackages = choice.packages;
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
-      const localPriceBasis = plan.credits;
+      const localPriceBasis = Math.min(plan.credits, localCredits);
       plan.largeBaseCost = localPriceBasis > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.smallBaseCost = localPriceBasis > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.detail = plan.coversRounds
@@ -1132,10 +1132,10 @@ function renderSingleAdvice(result) {
   const greenFeeExtraRoundsNoReg = Number(best.greenFeeExtraRoundsNoReg ?? greenFeeExtraRounds);
   const hasGreenFeeExtraRounds = greenFeeExtraRounds > 0 || greenFeeExtraRoundsNoReg > 0;
   const perRondeRoute = ["handicap", "loyaltee"].includes(best.type);
-  // largeBaseCost/smallBaseCost spreiden de prijs altijd over de credits die
-  // je koopt, dus dit is de prijs van één ronde op die baan. Credits die je
-  // overhoudt en rondes die op greenfee gaan zitten er niet in; die staan
-  // apart onder "Wat je verder betaalt".
+  // largeBaseCost/smallBaseCost spreiden de prijs over de credits die je
+  // werkelijk opmaakt, dus dit is wat een gespeelde ronde je kost. Rondes die
+  // op greenfee gaan zitten er niet in; die staan apart onder "Wat je verder
+  // betaalt".
   // Bij shortgolf blijft largeBaseCost altijd 0 (Shortgolf-credits dekken de
   // grote baan nooit), dus die kaart blijft terecht verborgen.
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
