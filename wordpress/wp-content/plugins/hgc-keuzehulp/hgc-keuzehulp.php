@@ -3,7 +3,7 @@
  * Plugin Name: HGC - Interne WebsiteTechniek
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.6.9
+ * Version: 2.6.10
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.6.9');
+define('HGC_CALCULATOR_VERSION', '2.6.10');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -56,10 +56,13 @@ function hgc_calculator_config(): array
     }
     // Een baan die na het opslaan is toegevoegd aan de GitHub-standaard stond
     // nog nergens in een bestaand opgeslagen config; die moet ook verschijnen,
-    // niet alleen de velden van banen die al bekend waren.
+    // niet alleen de velden van banen die al bekend waren. Een baan die de
+    // beheerder zelf heeft verwijderd, blijft weg.
     $saved_course_ids = array_column($saved['courses'] ?? array(), 'id');
+    $removed_course_ids = (array) ($saved['removedCourses'] ?? array());
     foreach (($defaults['courses'] ?? array()) as $course) {
-        if (!in_array($course['id'] ?? '', $saved_course_ids, true)) {
+        $id = $course['id'] ?? '';
+        if (!in_array($id, $saved_course_ids, true) && !in_array($id, $removed_course_ids, true)) {
             $saved['courses'][] = $course;
         }
     }

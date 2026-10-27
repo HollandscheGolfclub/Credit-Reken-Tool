@@ -413,6 +413,10 @@ final class HGC_Calculator_Admin
         }
 
         $config['courses'] = $this->sanitize_courses($raw['courses'] ?? array());
+        // Een standaardbaan die de beheerder verwijdert, onthouden we; anders
+        // vult hgc_calculator_config() hem bij het laden weer aan.
+        $default_ids = array_column(hgc_calculator_default_config()['courses'] ?? array(), 'id');
+        $config['removedCourses'] = array_values(array_diff($default_ids, array_column($config['courses'], 'id')));
 
         foreach (array('benefits', 'shortGolfBenefits', 'localBenefits', 'handicapBenefits') as $key) {
             $lines = preg_split('/\r\n|\r|\n/', (string) ($raw[$key] ?? ''));

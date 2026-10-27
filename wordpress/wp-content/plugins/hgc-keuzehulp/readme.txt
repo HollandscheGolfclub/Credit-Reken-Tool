@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.9
+Stable tag: 2.6.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.6.10 =
+* Een standaardbaan die je onder Golfbanen verwijdert, blijft nu weg. De plugin vulde bij het laden elke standaardbaan aan die niet in de opgeslagen instellingen stond, waardoor een verwijderde baan (zoals De Purmer) na het opslaan meteen terugkwam. Banen die een latere update toevoegt, verschijnen nog steeds vanzelf.
+* Golfpark Reymerswael staat in de standaardinstellingen op 9 holes in plaats van 12. Een site met opgeslagen instellingen houdt zijn eigen waarde; pas die aan onder Golfbanen.
 
 = 2.6.9 =
 * De prijs per ronde gaat weer uit van de rondes die je speelt, niet van de omvang van het pakket. Wie 100 rondes speelt met een speelrecht van 120 credits, ziet de prijs gedeeld door 100 in plaats van door 120: dat is wat een ronde je werkelijk kost. Dekt een speelrecht niet al je rondes, dan blijft de prijs verdeeld over de rondes die het wel dekt. Koop je hetzelfde speelrecht meerdere keren, dan telt het totaal van alle aankopen mee. Dit draait de wijziging uit 2.5.0 terug.
