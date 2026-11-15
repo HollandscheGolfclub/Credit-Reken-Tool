@@ -457,7 +457,9 @@
       const coverage = card.querySelector(".advice-card-coverage").textContent;
       const note = card.querySelector(".advice-card-amount small").textContent;
       const amount = card.querySelector(".advice-card-amount .switchable").textContent;
-      const claimsCoverage = /\bdekt\b/.test(coverage);
+      // De overstapkaart noemt de prijs per credit (of ronde), niet de dekking;
+      // alle andere kaarten benoemen wat er wel of niet gedekt is.
+      const claimsCoverage = /\b(dekt|gedekt)\b/.test(coverage) || /^De prijs per (credit|ronde) in een speelrecht van/.test(coverage.trim());
 
       if (!claimsCoverage) {
         report("dekking-niet-benoemd", { ...context, coverage });
@@ -542,7 +544,7 @@
             }
             // Dekt het advies de rondes niet, dan hoort de uitvoer te zeggen hoe
             // de rest wordt afgerekend: een nieuw speelrecht, of per ronde greenfee.
-            const legtUit = /nieuw speelrecht aanschaffen/.test(shown) || /greenfeetarief/.test(shown) || /vrije rondes/.test(shown);
+            const legtUit = /nieuw speelrecht (aanschaffen|afnemen)/.test(shown) || /greenfeetarief/.test(shown) || /vrije rondes/.test(shown);
             if (result.best.coversRounds === false && !legtUit) {
               report("onvoldoende-dekking-niet-gemeld", context);
             }
@@ -611,18 +613,15 @@
     if (Number(westerparkResult.best.greenFeeExtraRounds) !== 9) {
       report("westerpark-met-registratie-geen-9-rondes", { ...westerparkContext, rounds: westerparkResult.best.greenFeeExtraRounds });
     }
+    // Sinds de opmerkingen van november 2026 noemt de tekst geen aantal
+    // resterende rondes meer, maar de algemene standaardtekst in credits.
     renderResult(westerparkResult);
-    const westerparkInstruction = resultContent.querySelector(".package-instruction");
-    applyRegistrationSwitch(false);
-    const westerparkWithoutRegistration = westerparkInstruction ? westerparkInstruction.textContent : "";
-    applyRegistrationSwitch(true);
-    const westerparkWithRegistration = westerparkInstruction ? westerparkInstruction.textContent : "";
-    applyRegistrationSwitch(handicapDefault());
-    if (!/11 rondes/.test(westerparkWithoutRegistration)) {
-      report("westerpark-tekst-zonder-registratie-onjuist", { ...westerparkContext, text: westerparkWithoutRegistration });
+    const westerparkText = resultContent.textContent;
+    if (!/Voor je keuze heb je 31 credits nodig\. Dus met het voorgestelde speelrecht worden niet alle credits gedekt\./.test(westerparkText)) {
+      report("westerpark-standaardtekst-ontbreekt", westerparkContext);
     }
-    if (!/9 rondes/.test(westerparkWithRegistration) || /11 rondes/.test(westerparkWithRegistration)) {
-      report("westerpark-tekst-met-registratie-onjuist", { ...westerparkContext, text: westerparkWithRegistration });
+    if (/\d+ rondes die je na|resterende rondes/.test(westerparkText)) {
+      report("westerpark-noemt-nog-resterende-rondes", westerparkContext);
     }
     return { cases, cardsChecked, errorCounts, errors };
   };

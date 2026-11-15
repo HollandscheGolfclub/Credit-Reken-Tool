@@ -33,9 +33,9 @@
             <div class="field-group">
               <div class="field-label-row">
                 <label for="large-rounds-number">Hoeveel rondes van 9 holes per 12 maanden?</label>
-                <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="20" inputmode="numeric" /><span>rondes</span></div>
+                <div class="number-suffix"><input id="large-rounds-number" type="number" min="0" max="400" value="0" inputmode="numeric" /><span>rondes</span></div>
               </div>
-              <input id="large-rounds" class="range" type="range" min="0" max="400" value="20" />
+              <input id="large-rounds" class="range" type="range" min="0" max="400" value="0" />
               <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
             </div>
             <div class="field-group field-group--last">
@@ -50,9 +50,9 @@
             <div class="field-group">
               <div class="field-label-row">
                 <label for="small-rounds-number">Hoeveel rondes per 12 maanden?</label>
-                <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="10" inputmode="numeric" /><span>rondes</span></div>
+                <div class="number-suffix"><input id="small-rounds-number" type="number" min="0" max="400" value="0" inputmode="numeric" /><span>rondes</span></div>
               </div>
-              <input id="small-rounds" class="range" type="range" min="0" max="400" value="10" />
+              <input id="small-rounds" class="range" type="range" min="0" max="400" value="0" />
               <div class="range-scale"><span>0</span><span>200</span><span>400</span></div>
             </div>
             <div class="field-group field-group--last">

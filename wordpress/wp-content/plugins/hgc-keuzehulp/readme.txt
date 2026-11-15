@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.6.10
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,15 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.7.0 =
+* Tarieven 2027 (vanaf 1 maart 2027) als standaard: speelrechten, Shortgolf, jeugd, lokale speelrechten De Breuninkhof en Land van Thorn (ook daluren) en de greenfees per golfpark. Opgeslagen instellingen van een eerder jaar krijgen bij het laden automatisch de speelrechtprijzen en greenfees van 2027; handmatig toegevoegde banen en overige instellingen blijven staan.
+* Golfpark De Purmer is uit de keuzehulp verwijderd, ook uit opgeslagen instellingen.
+* Lokale speelrechten tellen in rondes in plaats van credits, in de naam, de uitleg en de voordelen. De prijzen van lokale speelrechten komen altijd uit de plugin, zodat een eerder opgeslagen kopie ze niet meer overschrijft.
+* Eén standaardtekst als het speelrecht niet alle rondes dekt ("Voor je keuze heb je … credits nodig …"), overal gelijk. De losse teksten over resterende rondes op greenfee zijn vervallen. Een gedeeltelijk dekkend speelrecht staat niet meer als "Verwachte kosten per jaar".
+* De afweging welk speelrecht geadviseerd wordt, is ongewijzigd; die volgt na overleg met de coördinatoren.
+* Bij de overstap naar een groter speelrecht staat een vaste tekst met de prijs per credit (of per ronde bij lokaal); vanaf LoyalTee of handicapregistratie ook de introductie van flightgenoten en de dalurenvariant. Op de kaart "Speel je misschien vaker dan je nu opgaf?" staat geen prijs per ronde meer.
+* Het aantal rondes staat bij openen en na opnieuw beginnen op 0, zodat niemand per ongeluk een vooraf ingevuld aantal overneemt.
 
 = 2.6.10 =
 * Een standaardbaan die je onder Golfbanen verwijdert, blijft nu weg. De plugin vulde bij het laden elke standaardbaan aan die niet in de opgeslagen instellingen stond, waardoor een verwijderde baan (zoals De Purmer) na het opslaan meteen terugkwam. Banen die een latere update toevoegt, verschijnen nog steeds vanzelf.

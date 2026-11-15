@@ -3,7 +3,7 @@
  * Plugin Name: HGC - Interne WebsiteTechniek
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.6.10
+ * Version: 2.7.0
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.6.10');
+define('HGC_CALCULATOR_VERSION', '2.7.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -45,6 +45,33 @@ function hgc_calculator_config(): array
     $default_courses = array();
     foreach (($defaults['courses'] ?? array()) as $course) {
         $default_courses[$course['id'] ?? ''] = $course;
+    }
+    // Banen die niet meer bij de HGC horen, verdwijnen ook uit een opgeslagen
+    // config.
+    $retired_course_ids = array('de-purmer');
+    $saved['courses'] = array_values(array_filter(
+        $saved['courses'] ?? array(),
+        static fn($course) => !in_array($course['id'] ?? '', $retired_course_ids, true)
+    ));
+    // Een opgeslagen config van een eerder tariefjaar krijgt de tarieven van
+    // het nieuwe jaar: speelrechtprijzen en greenfees van de standaardbanen.
+    // Handmatig toegevoegde banen en overige instellingen blijven staan.
+    if ((int) ($saved['year'] ?? 0) < (int) ($defaults['year'] ?? 0)) {
+        $saved['year'] = $defaults['year'];
+        foreach (array('standardPackages', 'offPeakPackages', 'youthPackages', 'shortGolfPackages') as $key) {
+            if (isset($defaults[$key])) {
+                $saved[$key] = $defaults[$key];
+            }
+        }
+        foreach ($saved['courses'] as $index => $course) {
+            $id = $course['id'] ?? '';
+            if (!isset($default_courses[$id])) {
+                continue;
+            }
+            foreach (array('greenFee', 'greenFeeFull', 'shortGreenFee', 'shortGreenFeeFull') as $field) {
+                $saved['courses'][$index][$field] = $default_courses[$id][$field] ?? null;
+            }
+        }
     }
     foreach (($saved['courses'] ?? array()) as $index => $course) {
         $id = $course['id'] ?? '';
@@ -90,6 +117,12 @@ function hgc_calculator_config(): array
         if (empty($saved['links'][$key]) && !empty($value)) {
             $saved['links'][$key] = $value;
         }
+    }
+    // Lokale speelrechten zijn niet in het beheerscherm te wijzigen. Een eerder
+    // opgeslagen kopie zou de prijzen uit de plugin blijvend overschrijven,
+    // dus die komen altijd uit de standaardinstellingen.
+    if (isset($defaults['localPackages'])) {
+        $saved['localPackages'] = $defaults['localPackages'];
     }
     $saved = array_intersect_key($saved, $defaults);
     $saved['settings'] = array_intersect_key($saved['settings'] ?? array(), $defaults['settings'] ?? array());

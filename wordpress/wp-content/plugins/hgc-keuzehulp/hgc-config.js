@@ -7,7 +7,7 @@
  */
 
 window.hgcConfig = {
-  year: 2026,
+  year: 2027,
   settings: {
     // Staat handicapregistratie standaard in de getoonde bedragen? De bezoeker
     // kan hem in het advies zelf aanvinken.
@@ -29,7 +29,7 @@ window.hgcConfig = {
   },
   // Bij handicapregistratie horen twee gratis rondes van 9 holes per kalenderjaar.
   // Voor jeugd geldt op elk park hetzelfde vaste greenfeetarief van EUR 10 per ronde.
-  handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5, youthGreenFee: 10, vouchers: 2 },
+  handicapRegistration: { adultPrice: 59.5, youthPrice: 27.5, youthGreenFee: 12.5, vouchers: 2 },
 
   // LoyalTee geeft korting op de greenfee zonder speelrecht. Het gereduceerde
   // tarief per baan is het tarief mét die korting; het volle tarief leidt de
@@ -50,61 +50,60 @@ window.hgcConfig = {
     terms: "https://www.hollandschegolfclub.nl/wp-content/uploads/2026/01/HGC-Voorwaarden-Speelrechten-2026.pdf",
   },
   standardPackages: [
-    { credits: 20, price: 485, name: "Hollandsche Golfclub Speelrecht – 20 credits" },
-    { credits: 60, price: 1030, name: "Hollandsche Golfclub Speelrecht – 60 credits" },
-    { credits: 120, price: 1440, name: "Hollandsche Golfclub Speelrecht – 120 credits" },
-    { credits: 200, price: 1725, name: "Hollandsche Golfclub Speelrecht – 200 credits" },
+    { credits: 20, price: 500, name: "Hollandsche Golfclub Speelrecht – 20 credits" },
+    { credits: 60, price: 1070, name: "Hollandsche Golfclub Speelrecht – 60 credits" },
+    { credits: 120, price: 1495, name: "Hollandsche Golfclub Speelrecht – 120 credits" },
+    { credits: 200, price: 1795, name: "Hollandsche Golfclub Speelrecht – 200 credits" },
   ],
   offPeakPackages: [
-    { credits: 20, price: 385, name: "Hollandsche Golfclub Daluren – 20 credits" },
+    { credits: 20, price: 400, name: "Hollandsche Golfclub Daluren – 20 credits" },
   ],
   youthPackages: [
-    { credits: 20, price: 140, name: "Hollandsche Golfclub Jeugd – 20 credits" },
+    { credits: 20, price: 150, name: "Hollandsche Golfclub Jeugd – 20 credits" },
   ],
   shortGolfPackages: [
-    { credits: 20, price: 255, name: "Hollandsche Golfclub Shortgolf – 20 credits" },
-    { credits: 60, price: 585, name: "Hollandsche Golfclub Shortgolf – 60 credits" },
-    { credits: 120, price: 715, name: "Hollandsche Golfclub Shortgolf – 120 credits" },
+    { credits: 20, price: 265, name: "Hollandsche Golfclub Shortgolf – 20 credits" },
+    { credits: 60, price: 605, name: "Hollandsche Golfclub Shortgolf – 60 credits" },
+    { credits: 120, price: 740, name: "Hollandsche Golfclub Shortgolf – 120 credits" },
   ],
   localPackages: {
     "de-breuninkhof": {
       name: "Lokaal speelrecht De Breuninkhof",
       packages: [
-        { credits: 20, price: 420 }, { credits: 60, price: 950 },
-        { credits: 120, price: 1235 }, { credits: 200, price: 1475 },
+        { credits: 20, price: 435 }, { credits: 60, price: 990 },
+        { credits: 120, price: 1285 }, { credits: 200, price: 1535 },
       ],
-      offPeak: [{ credits: 20, price: 335 }],
+      offPeak: [{ credits: 20, price: 350 }],
       largeRoundRate: 1,
       shortRoundRate: 0.5,
     },
     "land-van-thorn": {
       name: "Lokaal speelrecht Land van Thorn",
       packages: [
-        { credits: 20, price: 375 }, { credits: 60, price: 830 },
-        { credits: 120, price: 1060 }, { credits: 200, price: 1255 },
+        { credits: 20, price: 390 }, { credits: 60, price: 865 },
+        { credits: 120, price: 1100 }, { credits: 200, price: 1305 },
       ],
-      offPeak: [{ credits: 20, price: 300 }],
+      offPeak: [{ credits: 20, price: 310 }],
       largeRoundRate: 1,
       shortRoundRate: null,
     },
   },
   courses: [
-    { id: "almkreek", name: "Golfpark Almkreek", location: "Almkerk", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, shortGolfRate: 1, greenFee: 24, greenFeeFull: 30, shortGreenFee: 11.2, shortGreenFeeFull: 14 },
-    { id: "de-berendonck", name: "Golfpark De Berendonck", location: "Wijchen", largeHoles: 9, largeRate: 1, shortRate: 0.4, shortGolfRate: 0.7, greenFee: 28, greenFeeFull: 35, shortGreenFee: 11.2, shortGreenFeeFull: 14 },
-    { id: "de-breuninkhof", name: "Golfpark De Breuninkhof", location: "Voorst", largeHoles: 9, largeRate: 0.85, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 23.6, greenFeeFull: 29.5, shortGreenFee: 12.4, shortGreenFeeFull: 15.5 },
-    { id: "de-haverleij", name: "Golfpark De Haverleij", location: "’s-Hertogenbosch", largeHoles: 9, largeRate: 1, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 28, greenFeeFull: 35, shortGreenFee: 11.2, shortGreenFeeFull: 14 },
-    { id: "de-kurenpolder", name: "Golfpark De Kurenpolder", location: "Hank", largeHoles: 9, largeRate: 0.6, shortRate: 0.3, shortGolfRate: 0.5, greenFee: 22, greenFeeFull: 27.5, shortGreenFee: 10.75, shortGreenFeeFull: 13.5 },
-    { id: "de-loonsche-duynen", name: "Golfpark De Loonsche Duynen", location: "De Moer", largeHoles: 9, largeRate: 1, shortRate: 0.6, shortGolfRate: 1, greenFee: 28, greenFeeFull: 35, shortGreenFee: 16.8, shortGreenFeeFull: 21 },
-    { id: "de-purmer", name: "Golfpark De Purmer", location: "Purmerend", largeHoles: 9, largeRate: 1, shortRate: 0.4, shortGolfRate: 0.7, greenFee: 28, greenFeeFull: 35, shortGreenFee: 11.2, shortGreenFeeFull: 14 },
-    { id: "gendersteyn", name: "Golfpark Gendersteyn", location: "Veldhoven", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 28, greenFeeFull: 35, shortGreenFee: null, shortGreenFeeFull: null },
-    { id: "land-van-thorn", name: "Golfpark Land van Thorn", location: "Hunsel", largeHoles: 9, largeRate: 0.75, shortRate: null, greenFee: 23.6, greenFeeFull: 29.5, shortGreenFee: null, shortGreenFeeFull: null },
-    { id: "maastricht", name: "Golfpark Maastricht International", location: "Maastricht", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 40, greenFeeFull: 50, shortGreenFee: null, shortGreenFeeFull: null, caveat: "bij Golfpark Maastricht International is in de keuzehulp rekening gehouden met de 9 holes gele en rode lus. Voor het spelen op de blauwe (Limburg Course) wordt een kleinere credit afgeschreven.", caveatCourse: "large" },
-    { id: "naarderbos", name: "Golfpark Naarderbos", location: "Naarden", largeHoles: 9, largeRate: 0.9, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 24, greenFeeFull: 30, shortGreenFee: null, shortGreenFeeFull: null },
-    { id: "reymerswael", name: "Golfpark Reymerswael", location: "Rilland-Bath", largeHoles: 9, largeRate: 1.2, shortRate: null, greenFee: 36, greenFeeFull: 45, shortGreenFee: null, shortGreenFeeFull: null, caveat: "op Golfpark Reymerswael zijn er twee lussen met een verschillende credit. Er is een lus van 12 holes voor 1,2 credit per ronde en een lus van 6 holes voor 0,6 credit per ronde. De uitkomst van de keuzehulp gaat uit van een ronde op de 12 holeslus.", caveatCourse: "large" },
-    { id: "rotterdam", name: "Golfpark Rotterdam", location: "Rotterdam", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, shortGolfRate: 1, greenFee: 20, greenFeeFull: 25, shortGreenFee: 16.8, shortGreenFeeFull: 21 },
-    { id: "shortgolf-utrecht", name: "ShortGolf Utrecht", location: "Nieuwegein", largeHoles: null, largeRate: null, shortRate: 0.5, shortGolfRate: 0.75, greenFee: null, greenFeeFull: null, shortGreenFee: 11, shortGreenFeeFull: 11, note: "Par 3/4-baan" },
-    { id: "sint-nyk", name: "Golfpark Sint Nyk", location: "Sint Nicolaasga", largeHoles: 9, largeRate: 0.9, shortRate: null, greenFee: 24, greenFeeFull: 30, shortGreenFee: null, shortGreenFeeFull: null },
-    { id: "westerpark", name: "Golfpark Westerpark", location: "Zoetermeer", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 28, greenFeeFull: 35, shortGreenFee: null, shortGreenFeeFull: null },
+    { id: "almkreek", name: "Golfpark Almkreek", location: "Almkerk", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, shortGolfRate: 1, greenFee: 25.2, greenFeeFull: 31.5, shortGreenFee: 12, shortGreenFeeFull: 15},
+    { id: "de-berendonck", name: "Golfpark De Berendonck", location: "Wijchen", largeHoles: 9, largeRate: 1, shortRate: 0.4, shortGolfRate: 0.7, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: 12, shortGreenFeeFull: 15},
+    { id: "de-breuninkhof", name: "Golfpark De Breuninkhof", location: "Voorst", largeHoles: 9, largeRate: 0.85, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 24.8, greenFeeFull: 31, shortGreenFee: 12.8, shortGreenFeeFull: 16},
+    { id: "de-haverleij", name: "Golfpark De Haverleij", location: "’s-Hertogenbosch", largeHoles: 9, largeRate: 1, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: 12, shortGreenFeeFull: 15},
+    { id: "de-kurenpolder", name: "Golfpark De Kurenpolder", location: "Hank", largeHoles: 9, largeRate: 0.6, shortRate: 0.3, shortGolfRate: 0.5, greenFee: 23.2, greenFeeFull: 29, shortGreenFee: 11.2, shortGreenFeeFull: 14},
+    { id: "de-loonsche-duynen", name: "Golfpark De Loonsche Duynen", location: "De Moer", largeHoles: 9, largeRate: 1, shortRate: 0.6, shortGolfRate: 1, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: 17.6, shortGreenFeeFull: 22},
+    { id: "gendersteyn", name: "Golfpark Gendersteyn", location: "Veldhoven", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: null, shortGreenFeeFull: null},
+    { id: "land-van-thorn", name: "Golfpark Land van Thorn", location: "Hunsel", largeHoles: 9, largeRate: 0.75, shortRate: null, greenFee: 24.8, greenFeeFull: 31, shortGreenFee: null, shortGreenFeeFull: null},
+    { id: "maastricht", name: "Golfpark Maastricht International", location: "Maastricht", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: null, shortGreenFeeFull: null, caveat: "bij Golfpark Maastricht International is in de keuzehulp rekening gehouden met de 9 holes gele en rode lus. Voor het spelen op de blauwe (Limburg Course) wordt een kleinere credit afgeschreven.", caveatCourse: "large" },
+    { id: "naarderbos", name: "Golfpark Naarderbos", location: "Naarden", largeHoles: 9, largeRate: 0.9, shortRate: 0.5, shortGolfRate: 0.75, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: 17.6, shortGreenFeeFull: 22},
+    { id: "reymerswael", name: "Golfpark Reymerswael", location: "Rilland-Bath", largeHoles: 9, largeRate: 1.2, shortRate: null, greenFee: 25.2, greenFeeFull: 31.5, shortGreenFee: null, shortGreenFeeFull: null, caveat: "op Golfpark Reymerswael zijn er twee lussen met een verschillende credit. Er is een lus van 12 holes voor 1,2 credit per ronde en een lus van 6 holes voor 0,6 credit per ronde. De uitkomst van de keuzehulp gaat uit van een ronde op de 12 holeslus.", caveatCourse: "large" },
+    { id: "rotterdam", name: "Golfpark Rotterdam", location: "Rotterdam", largeHoles: 9, largeRate: 0.9, shortRate: 0.6, shortGolfRate: 1, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: 17.6, shortGreenFeeFull: 22},
+    { id: "shortgolf-utrecht", name: "ShortGolf Utrecht", location: "Nieuwegein", largeHoles: null, largeRate: null, shortRate: 0.5, shortGolfRate: 0.75, greenFee: null, greenFeeFull: null, shortGreenFee: 12.5, shortGreenFeeFull: 12.5, note: "Par 3/4-baan" },
+    { id: "sint-nyk", name: "Golfpark Sint Nyk", location: "Sint Nicolaasga", largeHoles: 9, largeRate: 0.9, shortRate: null, greenFee: 25.2, greenFeeFull: 31.5, shortGreenFee: null, shortGreenFeeFull: null},
+    { id: "westerpark", name: "Golfpark Westerpark", location: "Zoetermeer", largeHoles: 9, largeRate: 1, shortRate: null, greenFee: 29.2, greenFeeFull: 36.5, shortGreenFee: null, shortGreenFeeFull: null},
   ],
   benefits: [
     "Credits gebruiken op de aangesloten golfparken van de Hollandsche Golfclub",
@@ -134,9 +133,9 @@ window.hgcConfig = {
     "Onderdeel van de getoonde advieskosten",
   ],
   localBenefits: [
-    "Lokale credits gebruiken op het gekozen golfpark",
+    "Je rondes spelen op het gekozen golfpark",
     "Een lokaal speelrecht afgestemd op jouw verwachte rondes",
-    "Na opgebruikte credits kun je een nieuw speelrecht kiezen",
+    "Na opgebruikte rondes kun je een nieuw speelrecht kiezen",
     "Meedoen aan activiteiten op de golfparken van Hollandsche Golfclub",
   ],
 };

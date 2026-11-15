@@ -209,7 +209,51 @@ function connectRange(range, number) {
   });
 }
 
-function packagePlan(packages, requiredCredits, productName, group) {
+// Lokale speelrechten tellen in rondes, de andere speelrechten in credits.
+function unitWord(unit, count) {
+  if (unit === "rondes") return count === 1 ? "ronde" : "rondes";
+  return count === 1 ? "credit" : "credits";
+}
+
+function unitAmount(count, unit) {
+  return `${decimal.format(count)} ${unitWord(unit, count)}`;
+}
+
+function usablePackages(packages) {
+  return (Array.isArray(packages) ? packages : [])
+    .filter((item) => Number(item.credits) > 0 && Number.isFinite(Number(item.price)))
+    .map((item) => ({ ...item, credits: Number(item.credits), price: Number(item.price) }))
+    .sort((a, b) => a.credits - b.credits);
+}
+
+// Standaardtekst wanneer een speelrecht niet alle rondes dekt.
+function shortfallText(requiredCredits, unit, subject = "het voorgestelde speelrecht") {
+  return `Voor je keuze heb je ${unitAmount(requiredCredits, unit)} nodig. Dus met ${subject} worden niet alle ${unitWord(unit, 2)} gedekt. Als je speelrecht ‘op’ is kun je altijd een nieuw speelrecht afnemen of je kunt rondes los afrekenen met een greenfee (gereduceerd bedrag).`;
+}
+
+// Standaardtekst bij een overgang naar een groter speelrecht.
+function transitionText(target, { fromFeeRoute = false } = {}) {
+  const unit = target.unit || "credits";
+  const prijs = Number(target.packagePrice ?? target.price);
+  const perEenheid = Number(target.credits) > 0 ? prijs / Number(target.credits) : 0;
+  let tekst = `De prijs per ${unitWord(unit, 1)} in een speelrecht van ${unitAmount(Number(target.credits), unit)} is ${euro.format(perEenheid)}. Als je verwacht toch meer te spelen dan je inschatting, is dit al snel voordeliger per ronde.`;
+  if (fromFeeRoute) {
+    tekst += " Daarbij kun je met een speelrecht flightgenoten met korting introduceren.";
+    if (Number(target.offPeakPrice) > 0 && Number(target.offPeakCredits) > 0) {
+      tekst += ` Er is ook een dalurenvariant waarbij je slechts ${euro.format(Number(target.offPeakPrice) / Number(target.offPeakCredits))} per ${unitWord(unit, 1)} betaalt.`;
+    }
+  }
+  return tekst;
+}
+
+// Een dalurenvariant met hetzelfde aantal credits noemen we bij de overstap
+// vanaf LoyalTee of handicapregistratie.
+function withUnit(plan, unit, offPeakPackages) {
+  const offPeak = usablePackages(offPeakPackages).find((item) => item.credits === Number(plan.credits)) || null;
+  return { ...plan, unit, offPeakPackages: offPeakPackages || null, offPeakPrice: offPeak ? offPeak.price : null, offPeakCredits: offPeak ? offPeak.credits : null };
+}
+
+function packagePlan(packages, requiredCredits, productName, group, unit = "credits") {
   if (!Array.isArray(packages) || !packages.length || requiredCredits <= 0) return null;
   const usable = packages
     .filter((item) => Number(item.credits) > 0 && Number.isFinite(Number(item.price)))
@@ -253,8 +297,8 @@ function packagePlan(packages, requiredCredits, productName, group) {
   const chosen = { price: chosenPackage.price, count: 1, items: [chosenPackage], credits: chosenPackage.credits };
   const coversRounds = chosen.credits + 1e-8 >= requiredCredits;
   const instruction = coversRounds
-    ? `Met ${decimal.format(chosen.credits)} credits heb je voldoende ruimte voor jouw verwachte rondes.`
-    : `Er bestaat geen groter speelrecht dan ${decimal.format(chosen.credits)} credits. Zodra die credits op zijn, kun je een nieuw speelrecht aanschaffen.`;
+    ? `Met ${unitAmount(chosen.credits, unit)} heb je voldoende ruimte voor jouw verwachte rondes.`
+    : shortfallText(requiredCredits, unit);
 
   // Zijn meerdere kleinere speelrechten samen goedkoper, dan tonen we die route
   // niet; ze bepaalt alleen dat het kleinere speelrecht als tweede advies komt.
@@ -269,7 +313,8 @@ function packagePlan(packages, requiredCredits, productName, group) {
   return {
     type: "credits",
     group,
-    name: chosen.items[0].name || `${productName} – ${chosen.credits} credits`,
+    unit,
+    name: chosen.items[0].name || `${productName} – ${unitAmount(chosen.credits, unit)}`,
     productName,
     price: chosen.price,
     credits: chosen.credits,
@@ -314,7 +359,7 @@ function candidatePlans(context) {
   const packageChoices = youth
     ? [{ packages: hgcConfig.youthPackages, name: "Hollandsche Golfclub Jeugd-speelrecht", group: "youth" }]
     : [
-        { packages: hgcConfig.standardPackages, name: "Hollandsche Golfclub Speelrecht", group: "standard" },
+        { packages: hgcConfig.standardPackages, name: "Hollandsche Golfclub Speelrecht", group: "standard", offPeakPackages: hgcConfig.offPeakPackages },
         ...(canPlayOffPeak ? [{ packages: hgcConfig.offPeakPackages, name: "Hollandsche Golfclub Daluren-speelrecht", group: "offpeak" }] : []),
       ];
   // greenfeebedrag weegt via selectionCost mee en blijft buiten de prijs.
@@ -349,7 +394,7 @@ function candidatePlans(context) {
         plan.detail = plan.coversRounds
           ? `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
           : `${decimal.format(standardCredits)} credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
-        candidates.push(addRegistration(plan, handicapPrice));
+        candidates.push(addRegistration(withUnit(plan, "credits", choice.offPeakPackages), handicapPrice));
       }
     }
   });
@@ -389,9 +434,9 @@ function candidatePlans(context) {
         largeBaseCost: largeCourse.largeRate * (aankopen * price / standardCredits),
         smallBaseCost: Number(smallCourse.shortRate) * (aankopen * price / standardCredits),
         detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het eerste deel van je rondes.`,
-        instruction: `Koop een nieuw speelrecht van ${decimal.format(credits)} credits zodra deze op zijn. Zo betaal je alleen voor de credits die je gebruikt.`,
+        instruction: shortfallText(standardCredits, "credits"),
       };
-      candidates.push(addRegistration(plan, handicapPrice));
+      candidates.push(addRegistration(withUnit(plan, "credits", choice.offPeakPackages), handicapPrice));
     });
   });
 
@@ -413,10 +458,6 @@ function candidatePlans(context) {
         // het volledige tekort tegen greenfee staan.
         const registrationRounds = Math.min(extraRounds, vouchers);
         const extraRoundsWithRegistration = Math.max(0, extraRounds - registrationRounds);
-        const instructionWithRegistration = extraRoundsWithRegistration > 0
-          ? `Na ${decimal.format(credits)} credits worden ${roundWord(registrationRounds)} gedekt door je handicapregistratie. De overige ${roundWord(extraRoundsWithRegistration)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`
-          : `Na ${decimal.format(credits)} credits ${registrationRounds === 1 ? "wordt de resterende ronde" : "worden de resterende rondes"} gedekt door je handicapregistratie. Je betaalt daarvoor geen greenfee.`;
-        const instructionWithoutRegistration = `De ${roundWord(extraRounds)} die je na ${decimal.format(credits)} credits nog op de grote baan speelt, reken je per ronde af tegen het gereduceerde greenfeetarief voor speelrechthouders; dat bedrag zit niet in de genoemde prijs.`;
         const plan = {
           type: "credits",
           group: `${choice.group}-greenfee-${credits}`,
@@ -441,10 +482,9 @@ function candidatePlans(context) {
           largeBaseCost: largeRate * (price / credits),
           smallBaseCost: Number(smallCourse.shortRate) * (price / credits),
           detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het grootste deel van je rondes.`,
-          instruction: instructionWithRegistration,
-          instructionNoReg: instructionWithoutRegistration,
+          instruction: shortfallText(standardCredits, "credits"),
         };
-        candidates.push(addRegistration(plan, handicapPrice));
+        candidates.push(addRegistration(withUnit(plan, "credits", choice.offPeakPackages), handicapPrice));
       });
     });
   }
@@ -494,7 +534,7 @@ function candidatePlans(context) {
       const topShortfallFairlyPriced = !shortPlan.coversRounds && Number.isFinite(smallFee) && smallFee > 0
         && Math.ceil(topShortfall / shortGolfRate - 1e-8) <= smallRounds + 1e-8;
       if (!topShortfallFairlyPriced) {
-        candidates.push(addRegistration(shortPlan, handicapPrice));
+        candidates.push(addRegistration(withUnit(shortPlan, "credits", null), handicapPrice));
       }
       if (Number.isFinite(smallFee) && smallFee > 0) {
         hgcConfig.shortGolfPackages.forEach((item) => {
@@ -528,9 +568,9 @@ function candidatePlans(context) {
             // de rondes die daarna nog op greenfee gaan.
             smallBaseCost: shortGolfRate * (price / credits),
             detail: `${decimal.format(credits)} Shortgolf-credits dekken ${Math.floor(credits / shortGolfRate)} van je ${smallRounds} rondes op de kleine baan.`,
-            instruction: `Je ${roundWord(extraRounds)} op de kleine baan na die credits reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs. Of je koopt een nieuw speelrecht van ${decimal.format(credits)} credits.`,
+            instruction: shortfallText(shortCredits, "credits"),
           };
-          candidates.push(addRegistration(plan, handicapPrice));
+          candidates.push(addRegistration(withUnit(plan, "credits", null), handicapPrice));
         });
       }
     }
@@ -542,11 +582,11 @@ function candidatePlans(context) {
   if (!youth && local) {
     const localCredits = largeRounds * Number(local.largeRoundRate || 0) + smallRounds * Number(local.shortRoundRate || 0);
     const localChoices = [
-      { packages: local.packages, name: local.name, group: `local-${localId}` },
+      { packages: local.packages, name: local.name, group: `local-${localId}`, offPeakPackages: local.offPeak },
       ...(canPlayOffPeak && local.offPeak?.length ? [{ packages: local.offPeak, name: `${local.name} daluren`, group: `local-${localId}-offpeak` }] : []),
     ];
     localChoices.forEach((choice) => {
-      const plan = packagePlan(choice.packages, localCredits, choice.name, choice.group);
+      const plan = packagePlan(choice.packages, localCredits, choice.name, choice.group, "rondes");
       if (!plan) return;
       plan.availablePackages = choice.packages;
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
@@ -554,9 +594,9 @@ function candidatePlans(context) {
       plan.largeBaseCost = localPriceBasis > 0 ? Number(local.largeRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.smallBaseCost = localPriceBasis > 0 ? Number(local.shortRoundRate || 0) * (plan.price / localPriceBasis) : 0;
       plan.detail = plan.coversRounds
-        ? `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
-        : `${decimal.format(localCredits)} lokale credits nodig; ${decimal.format(plan.credits)} credits geadviseerd. Dit speelrecht dekt een deel van je opgegeven rondes.`;
-      candidates.push(addRegistration(plan, handicapPrice));
+        ? `${unitAmount(localCredits, "rondes")} nodig; ${unitAmount(plan.credits, "rondes")} geadviseerd. Dit speelrecht dekt al je opgegeven rondes.`
+        : shortfallText(localCredits, "rondes");
+      candidates.push(addRegistration(withUnit(plan, "rondes", choice.offPeakPackages), handicapPrice));
     });
   }
 
@@ -790,31 +830,22 @@ function nextLargerCreditOption(plan, handicapPrice) {
   if (!next) return null;
 
   const totalPrice = next.price + Number(plan.nonPackageCost || 0);
-  // Relevanter dan het aantal extra credits of de meerprijs (die staat al bij
-  // het bedrag hierboven): dekt dit grotere speelrecht in één keer al je
-  // opgegeven rondes, in plaats van het gedeeltelijke dat het geadviseerde
-  // speelrecht dekt?
-  const coversRounds = next.credits + 1e-8 >= Number(plan.requiredCredits);
-  // Dekt het geadviseerde speelrecht de rondes al, dan zou "in plaats van een
-  // deel" onjuist zijn: dit speelrecht voegt dan speelruimte toe, het vult geen
-  // tekort aan.
-  const planCoversRounds = Number(plan.credits) + 1e-8 >= Number(plan.requiredCredits);
-  const extraCredits = next.credits - Number(plan.credits);
+  const unit = plan.unit || "credits";
+  const offPeak = usablePackages(plan.offPeakPackages).find((item) => item.credits === next.credits) || null;
   return {
     type: plan.type,
     group: `${plan.group}-upgrade-${next.credits}`,
-    name: next.name || `${plan.productName} – ${decimal.format(next.credits)} credits`,
+    unit,
+    offPeakPrice: offPeak ? offPeak.price : null,
+    offPeakCredits: offPeak ? offPeak.credits : null,
+    name: next.name || `${plan.productName} – ${unitAmount(next.credits, unit)}`,
     productName: plan.productName,
     credits: next.credits,
     price: totalPrice,
     registrationPrice: handicapPrice,
     annualCost: totalPrice + handicapPrice,
     isUpgradeOption: true,
-    detail: planCoversRounds
-      ? `Je opgegeven rondes worden al gedekt door het speelrecht hierboven. Dit speelrecht geeft je daar ${decimal.format(extraCredits)} credits extra speelruimte bovenop.`
-      : coversRounds
-        ? "Dit speelrecht dekt al je opgegeven rondes volledig, in plaats van een deel."
-        : "Dit speelrecht dekt een groter deel van je opgegeven rondes.",
+    detail: transitionText({ unit, credits: next.credits, price: next.price }),
   };
 }
 
@@ -830,17 +861,19 @@ function nextSmallerCreditOption(plan, handicapPrice) {
   const shortfall = Number(plan.requiredCredits) - previous.credits;
   const saving = Number(plan.packageBasePrice ?? plan.price) - previous.price;
   const totalPrice = previous.price + Number(plan.nonPackageCost || 0);
+  const unit = plan.unit || "credits";
   return {
     type: plan.type,
     group: `${plan.group}-starter-${previous.credits}`,
-    name: previous.name || `${plan.productName} – ${decimal.format(previous.credits)} credits`,
+    unit,
+    name: previous.name || `${plan.productName} – ${unitAmount(previous.credits, unit)}`,
     productName: plan.productName,
     credits: previous.credits,
     price: totalPrice,
     registrationPrice: handicapPrice,
     annualCost: totalPrice + handicapPrice,
     isSmallerOption: true,
-    detail: `Je start met ${decimal.format(fewerCredits)} credits minder en betaalt ${euro.format(saving)} minder voor het speelrecht. ${shortfall > 0 ? `Dat dekt niet al je opgegeven rondes: je komt ${decimal.format(shortfall)} credits tekort.` : "Dat dekt niet al je opgegeven rondes."} Zodra die credits op zijn, kun je een nieuw speelrecht aanschaffen.`,
+    detail: `Je start met ${unitAmount(fewerCredits, unit)} minder en betaalt ${euro.format(saving)} minder voor het speelrecht. ${shortfall > 0 ? shortfallText(Number(plan.requiredCredits), unit, "dit speelrecht") : ""}`.trim(),
   };
 }
 
@@ -1006,8 +1039,8 @@ function choiceCard(plan, options) {
       <h4>${brandText(plan.name)}</h4>
       <p class="advice-card-amount">${planAmount(plan)}<small>${options.amountNote}</small></p>
       <p class="advice-card-coverage">${options.coverage}</p>
-      ${roundPriceLine(plan, options.registrationShare)}
-      ${plan.coversRounds ? "" : `<p class="advice-card-instruction">${cardInstruction(plan)}</p>`}
+      ${options.hideRoundPrice ? "" : roundPriceLine(plan, options.registrationShare)}
+      ${plan.coversRounds || options.hideInstruction ? "" : `<p class="advice-card-instruction">${cardInstruction(plan)}</p>`}
       <a class="button ${options.buttonClass} button--cta-tracked" href="${planLink(plan)}">Kies dit speelrecht <span>→</span></a>
     </article>
   `;
@@ -1079,11 +1112,13 @@ function renderRouteChoice(result) {
     const rondes = result.largeRounds + result.smallRounds;
     return rondes > 0 ? Number(plan.registrationPrice || 0) / rondes : 0;
   };
-  const ruimte = Math.round((Number(ruim.credits) - Number(ruim.requiredCredits)) * 10) / 10;
-  // Deze route dekt de rondes niet helemaal; noem dat hier al, anders spreekt
-  // deze tekst de toelichting over greenfee eronder tegen.
-  const totaalRondes = result.largeRounds + result.smallRounds;
-  const gedekteRondes = Math.floor(Number(zuinig.coveredRounds || 0));
+  const unit = zuinig.unit || "credits";
+  // Shortgolf dekt de grote baan niet; die rondes noemen we op beide kaarten.
+  const groteBaanApart = Number(zuinig.reducedGreenFeeRounds || 0) > 0
+    ? ` Je ${roundWord(result.largeRounds)} op de grote baan reken je per ronde af tegen het gereduceerde greenfeetarief; dat bedrag zit niet in de genoemde prijs.`
+    : Number(zuinig.uncoveredLargeRounds || 0) > 0
+      ? ` Je ${roundWord(result.largeRounds)} op de grote baan ${result.largeRounds === 1 ? "valt" : "vallen"} buiten dit speelrecht.`
+      : "";
 
   resultContent.innerHTML = `
     ${resultHeader(result)}
@@ -1097,18 +1132,20 @@ function renderRouteChoice(result) {
         variant: "credits",
         question: "Weet je zeker dat je niet vaker speelt?",
         product: brandText(zuinig.productName),
-        amountNote: "voor het speelrecht · greenfee komt hierbij",
+        amountNote: "voor dit speelrecht",
         registrationShare: deelPerRonde(zuinig),
-        coverage: `Dit speelrecht dekt ${roundWord(gedekteRondes)} van je ${totaalRondes}. Je koopt dus geen credits die je niet gebruikt, maar je bent er nog niet mee klaar: de rondes die overblijven reken je per ronde af of vul je aan met een nieuw speelrecht.`,
+        coverage: shortfallText(Number(zuinig.requiredCredits), unit) + groteBaanApart,
+        hideInstruction: true,
         buttonClass: "button--primary",
       })}
       ${choiceCard(ruim, {
         variant: "credits",
         question: "Speel je misschien vaker dan je nu opgaf?",
         product: brandText(ruim.productName),
-        amountNote: "voor al je rondes",
-        registrationShare: deelPerRonde(ruim),
-        coverage: `Dit speelrecht dekt al je opgegeven rondes en houdt ${decimal.format(ruimte)} credits over voor rondes die je nu nog niet inplant.`,
+        amountNote: groteBaanApart ? "voor dit speelrecht" : "voor al je rondes",
+        coverage: transitionText(ruim) + groteBaanApart,
+        hideRoundPrice: true,
+        hideInstruction: true,
         buttonClass: "button--primary",
       })}
     </div>
@@ -1141,7 +1178,7 @@ function renderSingleAdvice(result) {
   const showLargeRoundCost = result.largeRounds > 0 && !uncoveredLargeRounds && !greenFeeRounds;
   const showSmallRoundCost = result.smallRounds > 0 && !perRondeRoute;
   const herhaalt = Number(best.repeatPurchases || 0) > 1;
-  const rondesBuitenPrijs = hasGreenFeeExtraRounds || greenFeeRounds > 0 || uncoveredLargeRounds > 0;
+  const rondesBuitenPrijs = hasGreenFeeExtraRounds || greenFeeRounds > 0 || uncoveredLargeRounds > 0 || (!perRondeRoute && !best.coversRounds);
   const totalCostLabel = herhaalt || rondesBuitenPrijs ? "Wat je vooraf betaalt" : "Verwachte kosten per jaar";
   const totalCostNote = herhaalt
     ? `per aankoop van ${decimal.format(best.credits)} credits`
@@ -1156,7 +1193,7 @@ function renderSingleAdvice(result) {
     ? { tone: "best", text: `★ Goedkoopste keuze voor jouw ${roundWord(totalRounds)}` }
     : herhaalt
       ? { tone: "steps", text: "Stapsgewijs · je koopt bij wanneer je credits op zijn" }
-      : { tone: "steps", text: "Let op: gedeeltelijke dekking · de rest reken je per ronde af" };
+      : { tone: "steps", text: "Let op: dit speelrecht dekt niet al je rondes" };
   resultContent.innerHTML = `
     ${resultHeader(result, { showSwitch: best.type !== "handicap" })}
 
@@ -1193,12 +1230,7 @@ function renderSingleAdvice(result) {
       label: "Meer speelruimte",
       plan: result.coveringAlternative,
       amountNote: "per golfjaar · alle rondes inbegrepen",
-      note: `
-        <ul class="advice-alt-list">
-          <li>Plus extra credits om nog vaker te spelen.</li>
-          <li>Plus de mogelijkheid om onbeperkt flightgenoten te introduceren tegen het gereduceerde greenfeetarief.</li>
-        </ul>
-      `,
+      note: transitionText(result.coveringAlternative, { fromFeeRoute: true }),
     }) : ""}
 
     ${alternative ? adviceAlt({
@@ -1245,10 +1277,12 @@ form.addEventListener("submit", (event) => {
 
 calculatorRoot.querySelector("[data-back]").addEventListener("click", () => showStep(1));
 calculatorRoot.querySelector("#restart").addEventListener("click", () => {
-  largeRoundsNumber.value = 20;
-  largeRoundsRange.value = 20;
-  smallRoundsNumber.value = 10;
-  smallRoundsRange.value = 10;
+  // Opnieuw beginnen zet de rondes op nul, net als bij het openen: een vooraf
+  // ingevuld aantal kan iemand per ongeluk overnemen.
+  largeRoundsNumber.value = 0;
+  largeRoundsRange.value = 0;
+  smallRoundsNumber.value = 0;
+  smallRoundsRange.value = 0;
   ageCategory.value = "adult";
   offPeak.checked = false;
   roundsError.hidden = true;
