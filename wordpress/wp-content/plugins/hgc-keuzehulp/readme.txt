@@ -3,7 +3,7 @@ Contributors: hollandschegolfclub
 Tags: golf, calculator, speelrecht, credits
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 2.7.0
+Stable tag: 2.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,19 @@ Een release moet een bestand met exact deze naam bevatten:
 De meegeleverde GitHub Actions-workflow bouwt en publiceert dat bestand automatisch bij een tag zoals `v1.0.1`.
 
 == Changelog ==
+
+= 2.8.0 =
+* Nieuw: advies per mail. Onder het advies vult de bezoeker zijn e-mailadres in (en eventueel een voornaam). Met een apart vinkje, standaard uit, kiest hij ook voor opvolgmails. De aanvraag gaat naar HGC Connect (Marketing › Keuzehulp); Connect bepaalt wanneer welke mail gaat en verstuurt via Laposta. WordPress verstuurt zelf geen mail.
+* Het advies in de mail bouwt de plugin zelf op uit de eigen prijzen; de browser stuurt alleen de invoer en welk speelrecht het advies was. Zo kan niemand via het formulier eigen tekst laten mailen.
+* De link in de mail opent de keuzehulp met dezelfde invoer en toont meteen het advies, met de prijzen van dat moment.
+* Is Connect even niet bereikbaar, dan bewaart de plugin de aanvraag en probeert het tot vijf keer opnieuw.
+* Persoonlijke opvolging: wie het vinkje voor opvolgmails aanzet, krijgt een willekeurige volgcode in een cookie (60 dagen). Een klein script op elke pagina meldt dan de bekeken pagina's (adres zonder campagnecodes, en titel) aan Connect, zodat de opvolgmail kan ingaan op bijvoorbeeld het golfpark of Toptracer-arrangement dat iemand bekeek. Zonder vinkje is er geen volgcode en wordt er niets gevolgd. De volgcode zit ook in de links in de mail (en verdwijnt daarna uit de adresbalk); met ?hgc_kh=uit stopt het volgen in die browser. Vermeld dit in de privacyverklaring.
+* Instellen onder Instellingen › HGC Interne WebsiteTechniek › Advies per mail: aan/uit (standaard uit), de URL van de Connect-functie, de sleutel (KEUZEHULP_KEY) en de teksten. Met de testknop gaat een testaanvraag naar je eigen e-mailadres.
+
+= 2.7.1 =
+* Rekenfout opgelost: een speelrecht dat niet alle rondes dekt, kon het advies winnen terwijl de rest van de rondes niet werd meegeteld. Bij De Breuninkhof en Land van Thorn met daluren werd zo bij elk aantal vanaf 21 rondes "20 rondes daluren" geadviseerd. De vervolgaankopen tellen nu altijd mee, of het tekort wordt met greenfee beprijsd.
+* Jeugd rekent het tekort na het jeugdspeelrecht af tegen het jeugdgreenfeetarief (EUR 12,50) in plaats van het gereduceerde tarief voor volwassenen, en kan dat tekort ook op de kleine baan bijspelen.
+* Bij een lokaal speelrecht dat je stapsgewijs bijkoopt, staat in de kop en bij de prijs "rondes" in plaats van "credits".
 
 = 2.7.0 =
 * Tarieven 2027 (vanaf 1 maart 2027) als standaard: speelrechten, Shortgolf, jeugd, lokale speelrechten De Breuninkhof en Land van Thorn (ook daluren) en de greenfees per golfpark. Opgeslagen instellingen van een eerder jaar krijgen bij het laden automatisch de speelrechtprijzen en greenfees van 2027; handmatig toegevoegde banen en overige instellingen blijven staan.

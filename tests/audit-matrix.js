@@ -199,8 +199,10 @@
                     const betaaldGroot = largeRounds - vrijGroot;
                     const betaaldKlein = smallRounds - vrijKlein;
                     const vol = plan.type === "handicap";
-                    const tariefGroot = Number(vol ? largeCourse.greenFeeFull : largeCourse.greenFee);
-                    const tariefKlein = Number(vol ? smallCourse.shortGreenFeeFull : smallCourse.shortGreenFee);
+                    // Jeugd betaalt op elk park het vaste jeugdtarief.
+                    const jeugdTarief = Number(hgcConfig.handicapRegistration.youthGreenFee);
+                    const tariefGroot = context.youth ? jeugdTarief : Number(vol ? largeCourse.greenFeeFull : largeCourse.greenFee);
+                    const tariefKlein = context.youth ? jeugdTarief : Number(vol ? smallCourse.shortGreenFeeFull : smallCourse.shortGreenFee);
                     if (largeRounds > 0 && !Number.isFinite(tariefGroot)) {
                       report("per-ronde-route-zonder-tarief-grote-baan", { ...context, group: plan.group });
                     }
@@ -249,9 +251,13 @@
                       // Een Shortgolf-speelrecht rekent het tekort af op de kleine
                       // baan, de overige speelrechten op de grote. In beide gevallen
                       // nooit meer rondes dan de bezoeker daar speelt.
+                      // Jeugd speelt het tekort tegen het jeugdtarief bij, op
+                      // beide baantypes.
                       const opKleine = plan.type === "shortgolf";
-                      const bijRondes = opKleine ? smallRounds : largeRounds;
-                      const bijTarief = Number(opKleine ? smallCourse.shortGreenFee : largeCourse.greenFee);
+                      const bijRondes = context.youth ? largeRounds + smallRounds : opKleine ? smallRounds : largeRounds;
+                      const bijTarief = context.youth
+                        ? Number(hgcConfig.handicapRegistration.youthGreenFee)
+                        : Number(opKleine ? smallCourse.shortGreenFee : largeCourse.greenFee);
                       if (extraRounds > bijRondes + 1e-8) {
                         report("greenfee-bijspelen-meer-rondes-dan-gespeeld", { ...context, group: plan.group, extraRounds, bijRondes });
                       }
@@ -282,8 +288,10 @@
                       if (covers) {
                         report("herhaalroute-terwijl-alles-gedekt-is", { ...context, group: plan.group });
                       }
-                    } else if (!covers) {
+                    } else if (!covers && !(Number(plan.greenFeeExtraRoundsNoReg || 0) > 0)) {
                       // Zonder die route hoort dit het grootste speelrecht te zijn.
+                      // Valt het tekort binnen de gratis rondes van de
+                      // handicapregistratie, dan is het wel een greenfee-route.
                       const largest = Math.max(...(Array.isArray(plan.availablePackages) ? plan.availablePackages : []).map((item) => Number(item.credits)));
                       if (Number(plan.credits) !== largest) {
                         report("advies-dekt-niet-en-is-niet-het-grootste", { ...context, group: plan.group, credits: plan.credits, largest, nodig: plan.requiredCredits });
@@ -324,7 +332,8 @@
                   if (plan.type === "shortgolf" && window.hgcCalculatorAudit.playProfile(largeRounds, smallRounds).zone === "credits") {
                     report("shortgolf-outside-profile", { ...context, group: plan.group });
                   }
-                  if (youth && !String(plan.group).startsWith("youth")) report("adult-plan-for-youth", { ...context, group: plan.group });
+                  // Handicapregistratie bestaat ook voor jeugd (tegen het jeugdtarief).
+                  if (youth && !String(plan.group).startsWith("youth") && plan.group !== "handicap") report("adult-plan-for-youth", { ...context, group: plan.group });
                   if (!canPlayOffPeak && String(plan.group).includes("offpeak")) report("offpeak-without-selection", { ...context, group: plan.group });
                 }
               }
@@ -477,7 +486,9 @@
 
       const shown = [...card.querySelectorAll(".advice-card-benefits li")].map((item) => item.textContent.replace(/^✓/, ""));
       const belongs = planBenefits(plan);
-      if (shown.join("|") !== belongs.join("|")) {
+      // Sinds v1.32.0 staan er geen vinkjeslijsten met voordelen meer op de
+      // kaarten; staat er wel een lijst, dan moet die bij het speelrecht horen.
+      if (shown.length && shown.join("|") !== belongs.join("|")) {
         report("voordelen-horen-niet-bij-speelrecht", { ...context, shown: shown.join("|"), expected: belongs.join("|") });
       }
     }
@@ -514,9 +525,8 @@
             if (result.choice) {
 
             const registrationRows = [...resultContent.querySelectorAll("li")].filter((item) => /handicapregistratie/i.test(item.textContent));
-            if (!registrationRows.length) {
-              report("registratie-voordeel-ontbreekt", context);
-            }
+            // De voordelenlijst (met de registratieregel) is in v1.32.0 van de
+            // kaarten gehaald; is er geen regel, dan valt er niets te volgen.
             if (registrationRows.some((item) => !item.hasAttribute("data-registration-row"))) {
               report("registratie-voordeel-volgt-schakelaar-niet", context);
             }

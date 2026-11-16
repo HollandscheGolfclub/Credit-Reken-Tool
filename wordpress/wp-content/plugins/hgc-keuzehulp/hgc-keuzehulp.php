@@ -3,7 +3,7 @@
  * Plugin Name: HGC - Interne WebsiteTechniek
  * Plugin URI: https://www.hollandschegolfclub.nl/
  * Description: Speelrechtkeuzehulp op basis van credits van de Hollandsche Golfclub, met restaurantreservering via HGC Connect.
- * Version: 2.7.0
+ * Version: 2.8.0
  * Author: Jesse Weevers | Hollandsche Golfclub
  * Author URI: https://www.hollandschegolfclub.nl/
  * Update URI: https://github.com/HollandscheGolfclub/Credit-Reken-Tool
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('HGC_CALCULATOR_VERSION', '2.7.0');
+define('HGC_CALCULATOR_VERSION', '2.8.0');
 define('HGC_CALCULATOR_FILE', __FILE__);
 define('HGC_CALCULATOR_DIR', plugin_dir_path(__FILE__));
 define('HGC_CALCULATOR_URL', plugin_dir_url(__FILE__));
@@ -152,6 +152,10 @@ if (is_admin()) {
 require_once HGC_CALCULATOR_DIR . 'includes/class-hgc-restaurant.php';
 $GLOBALS['hgc_restaurant'] = new HGC_Restaurant();
 
+// Advies per mail: AJAX voor bezoekers, dus ook altijd laden.
+require_once HGC_CALCULATOR_DIR . 'includes/class-hgc-advies-mail.php';
+$GLOBALS['hgc_advies_mail'] = new HGC_Advies_Mail();
+
 /**
  * Laadt de assets pas zodra de shortcode daadwerkelijk op een pagina staat.
  */
@@ -190,6 +194,14 @@ function hgc_calculator_shortcode(array $atts = array()): string
         'window.hgcConfig = ' . wp_json_encode(hgc_calculator_config(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';',
         'after'
     );
+    $advies_mail = HGC_Advies_Mail::front_config();
+    if ($advies_mail) {
+        wp_add_inline_script(
+            'hgc-calculator-config',
+            'window.hgcAdviesMail = ' . wp_json_encode($advies_mail, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';',
+            'after'
+        );
+    }
     $scripts = array('calculator.js');
     $dependencies = array('hgc-calculator-config');
     foreach ($scripts as $script) {
@@ -416,4 +428,7 @@ register_activation_hook(__FILE__, static function (): void {
     delete_site_transient('hgc_calculator_github_release');
 });
 
-register_deactivation_hook(__FILE__, array('HGC_Restaurant', 'deactivate_cleanup'));
+register_deactivation_hook(__FILE__, static function (): void {
+    HGC_Restaurant::deactivate_cleanup();
+    HGC_Advies_Mail::deactivate_cleanup();
+});

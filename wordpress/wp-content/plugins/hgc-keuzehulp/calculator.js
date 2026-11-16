@@ -21,6 +21,10 @@ const roundsError = calculatorRoot.querySelector("#rounds-error");
 const resultContent = calculatorRoot.querySelector("#result-content");
 
 let currentStep = 1;
+// Advies per mail: alleen als de plugin het aanzet (WordPress zet dan
+// window.hgcAdviesMail). Het laatste advies bewaren we voor het formulier.
+const adviesMail = window.hgcAdviesMail || null;
+let lastResult = null;
 
 function track(eventName, details = {}) {
   window.dataLayer = window.dataLayer || [];
@@ -327,6 +331,31 @@ function packagePlan(packages, requiredCredits, productName, group, unit = "cred
   };
 }
 
+// Maakt van een speelrecht dat niet alle rondes dekt een herhaalde aankoop:
+// zodra de credits op zijn koop je hetzelfde speelrecht opnieuw. De
+// vervolgaankopen wegen mee in selectionCost; de getoonde prijs is die van één
+// aankoop, net als bij de andere herhaalroutes.
+function asRepeatPlan(plan, requiredCredits, largeRate, smallRate, totalRounds) {
+  const credits = Number(plan.credits);
+  const price = Number(plan.price);
+  const unit = plan.unit || "credits";
+  const aankopen = Math.max(1, Math.ceil((requiredCredits - 1e-8) / credits));
+  const rounds = Number.isFinite(totalRounds) ? totalRounds : Number(plan.coveredRounds || 0);
+  return {
+    ...plan,
+    group: `${plan.group}-herhaal-${credits}`,
+    coversRounds: false,
+    count: 1,
+    repeatPurchases: aankopen,
+    repeatExtraTotal: (aankopen - 1) * price,
+    coveredRounds: rounds * Math.min(1, credits / requiredCredits),
+    largeBaseCost: largeRate * (aankopen * price / requiredCredits),
+    smallBaseCost: smallRate * (aankopen * price / requiredCredits),
+    detail: `${unitAmount(requiredCredits, unit)} nodig; ${unitAmount(credits, unit)} geadviseerd. Daarmee dek je het eerste deel van je rondes.`,
+    instruction: shortfallText(requiredCredits, unit),
+  };
+}
+
 // Bepaalt of de bezoeker duidelijk op één baantype speelt of een gemengd beeld
 // laat zien. Overheerst de kleine baan, dan is een Shortgolf-speelrecht het
 // advies omdat Shortgolf-credits daar voordeliger zijn. Bij een gemengd beeld
@@ -363,11 +392,31 @@ function candidatePlans(context) {
         ...(canPlayOffPeak ? [{ packages: hgcConfig.offPeakPackages, name: "Hollandsche Golfclub Daluren-speelrecht", group: "offpeak" }] : []),
       ];
   // greenfeebedrag weegt via selectionCost mee en blijft buiten de prijs.
-  const largeGreenFee = Number(largeCourse && largeCourse.greenFee);
+  // Jeugd betaalt op elk park het vaste jeugdgreenfeetarief, niet het
+  // gereduceerde tarief voor volwassenen.
+  const largeGreenFee = youth
+    ? Number(hgcConfig.handicapRegistration.youthGreenFee)
+    : Number(largeCourse && largeCourse.greenFee);
   const largeRate = Number(largeCourse && largeCourse.largeRate);
-  const canPlayOnGreenFee = largeRounds > 0 && standardCredits > 0
+  const smallRate = Number(smallCourse && smallCourse.shortRate);
+  // Volwassenen spelen het tekort bij op de grote baan, want alleen daar staat
+  // een tarief vast. Jeugd betaalt overal hetzelfde jeugdtarief en kan het
+  // tekort dus ook op de kleine baan bijspelen.
+  const canPlayOnGreenFee = standardCredits > 0
     && Number.isFinite(largeGreenFee) && largeGreenFee > 0
-    && Number.isFinite(largeRate) && largeRate > 0;
+    && (youth || (largeRounds > 0 && Number.isFinite(largeRate) && largeRate > 0));
+  // Aantal rondes op greenfee om een tekort aan credits te overbruggen, of
+  // null als dat niet in de opgegeven rondes past. Eerst de grote baan: daar
+  // scheelt één ronde de meeste credits.
+  const greenFeeRoundsFor = (shortfall) => {
+    if (shortfall <= 1e-8) return 0;
+    const fromLarge = largeRate > 0 ? Math.min(largeRounds, Math.ceil(shortfall / largeRate - 1e-8)) : 0;
+    const rest = shortfall - fromLarge * (largeRate > 0 ? largeRate : 0);
+    if (rest <= 1e-8) return fromLarge;
+    if (!youth || !(smallRate > 0)) return null;
+    const fromSmall = Math.ceil(rest / smallRate - 1e-8);
+    return fromSmall <= smallRounds + 1e-8 ? fromLarge + fromSmall : null;
+  };
 
   packageChoices.forEach((choice) => {
     const plan = packagePlan(choice.packages, standardCredits, choice.name, choice.group);
@@ -380,8 +429,12 @@ function candidatePlans(context) {
       // ten onrechte gratis lijkt.
       const shortfall = standardCredits - plan.credits;
       const shortfallFairlyPriced = !plan.coversRounds && canPlayOnGreenFee
-        && Math.ceil(shortfall / largeRate - 1e-8) <= largeRounds + 1e-8;
-      if (!shortfallFairlyPriced) {
+        && greenFeeRoundsFor(shortfall) !== null;
+      // Dekt het grootste pakket niet en is het tekort niet via greenfee te
+      // beprijzen, dan telt de rest hier niet mee en zou dit pakket ten onrechte
+      // winnen. Dezelfde credits staan hieronder als herhaalde aankoop, met de
+      // vervolgaankopen wel meegeteld.
+      if (!shortfallFairlyPriced && plan.coversRounds) {
         plan.availablePackages = choice.packages;
         plan.coveredRounds = standardCredits > 0 ? totalRounds * Math.min(1, plan.credits / standardCredits) : totalRounds;
         // De prijs per ronde spreidt over de credits die je met dit pakket
@@ -451,8 +504,8 @@ function candidatePlans(context) {
         // Het tekort rekenen we af op de grote baan, want alleen daar staat een
         // tarief vast. Past het tekort niet in de grote rondes, dan kunnen we
         // deze route niet eerlijk beprijzen en bieden we hem niet aan.
-        const extraRounds = Math.ceil(shortfall / largeRate - 1e-8);
-        if (extraRounds > largeRounds + 1e-8) return;
+        const extraRounds = greenFeeRoundsFor(shortfall);
+        if (extraRounds === null) return;
         // De gratis rondes uit de handicapregistratie worden eerst gebruikt
         // voor het tekort na de gekochte credits. Zonder registratie blijft
         // het volledige tekort tegen greenfee staan.
@@ -479,7 +532,7 @@ function candidatePlans(context) {
           // Op basis van de credits: de prijs per ronde spreidt over de credits
           // die je koopt, niet over de rondes die je daarna nog op greenfee
           // bijspeelt. Anders lijkt die prijs lager dan hij is.
-          largeBaseCost: largeRate * (price / credits),
+          largeBaseCost: (largeRate > 0 ? largeRate : 0) * (price / credits),
           smallBaseCost: Number(smallCourse.shortRate) * (price / credits),
           detail: `${decimal.format(standardCredits)} credits nodig; ${decimal.format(credits)} credits geadviseerd. Daarmee dek je het grootste deel van je rondes.`,
           instruction: shortfallText(standardCredits, "credits"),
@@ -534,7 +587,12 @@ function candidatePlans(context) {
       const topShortfallFairlyPriced = !shortPlan.coversRounds && Number.isFinite(smallFee) && smallFee > 0
         && Math.ceil(topShortfall / shortGolfRate - 1e-8) <= smallRounds + 1e-8;
       if (!topShortfallFairlyPriced) {
-        candidates.push(addRegistration(withUnit(shortPlan, "credits", null), handicapPrice));
+        // Zonder greenfeetarief voor het tekort tellen we de vervolgaankopen
+        // mee, anders lijkt een niet-dekkend pakket goedkoper dan het is.
+        const plan = shortPlan.coversRounds
+          ? shortPlan
+          : { ...asRepeatPlan(shortPlan, shortCredits, 0, shortGolfRate, smallRounds), detail: shortPlan.detail };
+        candidates.push(addRegistration(withUnit(plan, "credits", null), handicapPrice));
       }
       if (Number.isFinite(smallFee) && smallFee > 0) {
         hgcConfig.shortGolfPackages.forEach((item) => {
@@ -586,8 +644,19 @@ function candidatePlans(context) {
       ...(canPlayOffPeak && local.offPeak?.length ? [{ packages: local.offPeak, name: `${local.name} daluren`, group: `local-${localId}-offpeak` }] : []),
     ];
     localChoices.forEach((choice) => {
-      const plan = packagePlan(choice.packages, localCredits, choice.name, choice.group, "rondes");
-      if (!plan) return;
+      const packaged = packagePlan(choice.packages, localCredits, choice.name, choice.group, "rondes");
+      if (!packaged) return;
+      if (!packaged.coversRounds) {
+        // Dekt het grootste lokale speelrecht niet, dan tellen de
+        // vervolgaankopen mee in de prijs; anders zou bijvoorbeeld 20 rondes
+        // daluren bij 100 rondes als goedkoopste advies verschijnen.
+        packaged.availablePackages = choice.packages;
+        candidates.push(addRegistration(withUnit(
+          asRepeatPlan(packaged, localCredits, Number(local.largeRoundRate || 0), Number(local.shortRoundRate || 0), totalRounds),
+          "rondes", choice.offPeakPackages), handicapPrice));
+        return;
+      }
+      const plan = packaged;
       plan.availablePackages = choice.packages;
       plan.coveredRounds = localCredits > 0 ? totalRounds * Math.min(1, plan.credits / localCredits) : totalRounds;
       const localPriceBasis = Math.min(plan.credits, localCredits);
@@ -1181,7 +1250,7 @@ function renderSingleAdvice(result) {
   const rondesBuitenPrijs = hasGreenFeeExtraRounds || greenFeeRounds > 0 || uncoveredLargeRounds > 0 || (!perRondeRoute && !best.coversRounds);
   const totalCostLabel = herhaalt || rondesBuitenPrijs ? "Wat je vooraf betaalt" : "Verwachte kosten per jaar";
   const totalCostNote = herhaalt
-    ? `per aankoop van ${decimal.format(best.credits)} credits`
+    ? `per aankoop van ${unitAmount(Number(best.credits), best.unit || "credits")}`
     : rondesBuitenPrijs
       ? "niet alle rondes worden door dit speelrecht gedekt"
       : "per golfjaar";
@@ -1192,7 +1261,7 @@ function renderSingleAdvice(result) {
   const advieslabel = perRondeRoute || (best.coversRounds && !herhaalt && !rondesBuitenPrijs)
     ? { tone: "best", text: `★ Goedkoopste keuze voor jouw ${roundWord(totalRounds)}` }
     : herhaalt
-      ? { tone: "steps", text: "Stapsgewijs · je koopt bij wanneer je credits op zijn" }
+      ? { tone: "steps", text: `Stapsgewijs · je koopt bij wanneer je ${unitWord(best.unit || "credits", 2)} op zijn` }
       : { tone: "steps", text: "Let op: dit speelrecht dekt niet al je rondes" };
   resultContent.innerHTML = `
     ${resultHeader(result, { showSwitch: best.type !== "handicap" })}
@@ -1253,7 +1322,150 @@ function renderResult(result) {
   } else {
     renderSingleAdvice(result);
   }
+  lastResult = result;
+  if (adviesMail) resultContent.insertAdjacentHTML("beforeend", adviesMailBlock());
   applyRegistrationSwitch(handicapDefault());
+}
+
+/* ---------- advies per mail ---------- */
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+// Welk soort speelrecht een plan is. De server zoekt daarmee zelf naam en
+// prijs op; de browser stuurt geen teksten mee.
+function planFamily(plan) {
+  const group = String(plan?.group || "");
+  const localId = Object.keys(hgcConfig.localPackages || {}).find((id) => group.startsWith(`local-${id}`));
+  if (localId) return group.startsWith(`local-${localId}-offpeak`) ? `local:${localId}:offpeak` : `local:${localId}`;
+  return ["standard", "offpeak", "youth", "shortgolf", "handicap", "loyaltee"].find((family) => group.startsWith(family)) || null;
+}
+
+function mailPlans(result) {
+  const plans = result.choice
+    ? [result.choice.credits, result.choice.shortGolf]
+    : result.routeChoice
+      ? [result.routeChoice.greenFee, result.routeChoice.covering]
+      : [result.best, result.alternative || result.coveringAlternative];
+  return plans.filter(Boolean).map((plan) => ({
+    family: planFamily(plan),
+    credits: Number(plan.credits) || 0,
+    repeat: Number(plan.repeatPurchases || 1),
+    greenFeeRounds: Number(plan.greenFeeExtraRounds || 0),
+    covers: Boolean(plan.coversRounds),
+  })).filter((plan) => plan.family);
+}
+
+function adviesMailBlock() {
+  const privacy = adviesMail.privacyUrl
+    ? `<a href="${escapeHtml(adviesMail.privacyUrl)}" target="_blank" rel="noopener">privacyverklaring</a>`
+    : "privacyverklaring";
+  return `
+    <section class="advies-mail" data-advies-mail aria-labelledby="advies-mail-title">
+      <h3 id="advies-mail-title">${escapeHtml(adviesMail.titel)}</h3>
+      <p class="advies-mail-intro">${escapeHtml(adviesMail.intro)}</p>
+      <div class="advies-mail-fields">
+        <label class="advies-mail-field"><span>Voornaam <small>(optioneel)</small></span><input type="text" name="advies-voornaam" autocomplete="given-name" maxlength="60" data-advies-mail-input /></label>
+        <label class="advies-mail-field"><span>E-mailadres</span><input type="email" name="advies-email" autocomplete="email" required data-advies-mail-input /></label>
+      </div>
+      <label class="advies-mail-website" aria-hidden="true">Website<input type="text" name="advies-website" tabindex="-1" autocomplete="off" /></label>
+      <label class="advies-mail-check"><input type="checkbox" name="advies-opvolging" /> <span>${escapeHtml(adviesMail.vinkje)}</span></label>
+      <p class="advies-mail-privacy">We gebruiken je gegevens alleen om je dit advies te sturen. Zet je het vinkje aan, dan onthouden we met een cookie welke pagina's je daarna op onze website bekijkt, om de berichten daarop af te stemmen. Lees onze ${privacy}.</p>
+      <div class="advies-mail-actions">
+        <button class="button button--primary" type="button" data-advies-mail-send>${escapeHtml(adviesMail.knop)} <span>→</span></button>
+      </div>
+      <p class="advies-mail-status" role="status" aria-live="polite" hidden></p>
+    </section>
+  `;
+}
+
+async function sendAdviesMail(block) {
+  const status = block.querySelector(".advies-mail-status");
+  const button = block.querySelector("[data-advies-mail-send]");
+  const emailInput = block.querySelector('[name="advies-email"]');
+  const show = (text, tone) => { status.hidden = false; status.textContent = text; status.dataset.tone = tone; };
+  if (!lastResult) return;
+  if (!emailInput.value.trim() || !emailInput.checkValidity()) {
+    show("Vul een geldig e-mailadres in.", "error");
+    emailInput.focus();
+    return;
+  }
+  const opvolging = block.querySelector('[name="advies-opvolging"]').checked;
+  const body = {
+    email: emailInput.value.trim(),
+    voornaam: block.querySelector('[name="advies-voornaam"]').value.trim(),
+    website: block.querySelector('[name="advies-website"]').value,
+    opvolgToestemming: opvolging,
+    paginaUrl: window.location.href,
+    invoer: {
+      l: lastResult.largeRounds,
+      s: lastResult.smallRounds,
+      lc: lastResult.largeCourse?.id || "",
+      sc: lastResult.smallCourse?.id || "",
+      y: ageCategory.value === "youth",
+      op: offPeak.checked,
+    },
+    plannen: mailPlans(lastResult),
+  };
+  button.disabled = true;
+  show("Bezig met versturen…", "busy");
+  try {
+    const response = await fetch(adviesMail.ajaxUrl, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json().catch(() => null);
+    if (response.ok && data?.success) {
+      // De volgcode (alleen met vinkje) onthoudt welke pagina's je daarna
+      // bekijkt; het script in de voettekst van elke pagina meldt die.
+      const volgToken = data.data?.volgToken;
+      if (/^[a-f0-9]{32}$/.test(volgToken || "")) {
+        const dagen = Number(data.data?.volgDagen) || 60;
+        document.cookie = `hgc_kh=${volgToken}; Max-Age=${dagen * 86400}; path=/; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+      }
+      show(data.data?.message || adviesMail.bedankt, "ok");
+      block.querySelector(".advies-mail-fields").hidden = true;
+      block.querySelector(".advies-mail-check").hidden = true;
+      button.hidden = true;
+      track("calculator_advice_emailed", { follow_up: opvolging });
+      return;
+    }
+    show(data?.data?.message || "Versturen lukte niet. Probeer het later nog eens.", "error");
+  } catch {
+    show("Versturen lukte niet. Controleer je verbinding en probeer het opnieuw.", "error");
+  }
+  button.disabled = false;
+}
+
+// De link in de mail opent de keuzehulp met dezelfde invoer en toont meteen
+// het advies, met de prijzen van dat moment.
+function applyLinkInput() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has("hgc_l") && !params.has("hgc_s")) return false;
+  const rounds = (key) => String(normaliseRounds(params.get(key) || 0));
+  largeRoundsNumber.value = rounds("hgc_l");
+  largeRoundsRange.value = largeRoundsNumber.value;
+  smallRoundsNumber.value = rounds("hgc_s");
+  smallRoundsRange.value = smallRoundsNumber.value;
+  const pick = (select, id) => {
+    if (id && [...select.options].some((option) => option.value === id)) select.value = id;
+  };
+  pick(largeCourseSelect, params.get("hgc_lc"));
+  pick(smallCourseSelect, params.get("hgc_sc"));
+  ageCategory.value = params.get("hgc_y") === "1" ? "youth" : "adult";
+  offPeak.checked = params.get("hgc_op") === "1";
+  largeCoursePicker.render();
+  smallCoursePicker.render();
+  updateCourseHelp();
+  updateRangeFill(largeRoundsRange);
+  updateRangeFill(smallRoundsRange);
+  if (Number(largeRoundsNumber.value) + Number(smallRoundsNumber.value) < 1) return false;
+  track("calculator_opened_from_email");
+  form.requestSubmit();
+  return true;
 }
 
 form.addEventListener("submit", (event) => {
@@ -1294,6 +1506,17 @@ calculatorRoot.querySelector("#restart").addEventListener("click", () => {
 resultContent.addEventListener("click", (event) => {
   if (event.target.closest(".button--cta-tracked")) track("calculator_product_clicked");
 });
+resultContent.addEventListener("click", (event) => {
+  const send = event.target.closest("[data-advies-mail-send]");
+  if (send) sendAdviesMail(send.closest("[data-advies-mail]"));
+});
+// Enter in het mailformulier verstuurt het advies, niet het rekenformulier
+// eromheen.
+resultContent.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || !event.target.matches("[data-advies-mail-input]")) return;
+  event.preventDefault();
+  sendAdviesMail(event.target.closest("[data-advies-mail]"));
+});
 resultContent.addEventListener("change", (event) => {
   if (event.target.id !== "handicap-switch") return;
   applyRegistrationSwitch(event.target.checked);
@@ -1311,4 +1534,5 @@ if (new URLSearchParams(window.location.search).has("hgc-audit")) {
   window.hgcCalculatorAudit = Object.freeze({ packagePlan, candidatePlans, recommendationFor, calculate, playProfile, renderResult, resultContent, planBenefits, applyRegistrationSwitch, handicapDefault });
 }
 track("calculator_opened");
+applyLinkInput();
 })();

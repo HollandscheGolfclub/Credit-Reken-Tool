@@ -519,6 +519,30 @@
   .hgc-calculator .included-benefits { padding: 24px 20px; }
 }
 
+/* Advies per mail, onder het advies. */
+.hgc-calculator .advies-mail { margin-top: 28px; padding: 22px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: #f7faed; }
+.hgc-calculator .advies-mail h3 { margin: 0 0 6px; font-size: 18px; }
+.hgc-calculator .advies-mail-intro { margin: 0 0 16px; color: var(--ink-soft); font-size: 14px; }
+.hgc-calculator .advies-mail-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 14px; }
+.hgc-calculator .advies-mail-field span { display: block; margin-bottom: 6px; font-weight: 700; font-size: 14px; }
+.hgc-calculator .advies-mail-field small { font-weight: 500; color: var(--ink-soft); }
+.hgc-calculator .advies-mail-field input { width: 100%; min-height: 46px; padding: 10px 14px; border: 1px solid #cfd8c4; border-radius: 6px; background: #fff; color: var(--ink); }
+.hgc-calculator .advies-mail-website { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.hgc-calculator .advies-mail-check { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 8px; font-size: 14px; cursor: pointer; }
+.hgc-calculator .advies-mail-check input { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 2px; accent-color: var(--green); }
+.hgc-calculator .advies-mail-privacy { margin: 0 0 16px; color: var(--ink-soft); font-size: 12.5px; }
+.hgc-calculator .advies-mail-privacy a { color: var(--green-deep); text-decoration: underline; }
+.hgc-calculator .advies-mail-actions { display: flex; justify-content: flex-start; }
+.hgc-calculator .advies-mail-status { margin: 12px 0 0; font-size: 14px; font-weight: 600; }
+.hgc-calculator .advies-mail-status[data-tone="ok"] { color: var(--green-deep); }
+.hgc-calculator .advies-mail-status[data-tone="error"] { color: #b3261e; }
+.hgc-calculator .advies-mail-status[data-tone="busy"] { color: var(--ink-soft); }
+@media (max-width: 640px) {
+  .hgc-calculator .advies-mail { padding: 18px 16px; }
+  .hgc-calculator .advies-mail-fields { grid-template-columns: 1fr; }
+  .hgc-calculator .advies-mail-actions .button { width: 100%; justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hgc-calculator, .hgc-calculator *, .hgc-calculator *::before, .hgc-calculator *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }

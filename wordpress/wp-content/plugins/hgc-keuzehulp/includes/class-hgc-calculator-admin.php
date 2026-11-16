@@ -93,6 +93,7 @@ final class HGC_Calculator_Admin
                 <a href="#hgc-products">Pakketten</a>
                 <a href="#hgc-courses">Golfbanen</a>
                 <a href="#hgc-benefits">Voordelen</a>
+                <a href="#hgc-advies-mail">Advies per mail</a>
                 <a href="#hgc-restaurant">Restaurant</a>
             </nav>
 
@@ -349,6 +350,10 @@ final class HGC_Calculator_Admin
                 <?php wp_nonce_field('hgc_calculator_reset'); ?>
                 <button class="button button-link-delete" type="submit">Alle calculatorinstellingen terugzetten naar GitHub-standaardwaarden</button>
             </form>
+
+            <?php if (isset($GLOBALS['hgc_advies_mail'])) : ?>
+                <?php $GLOBALS['hgc_advies_mail']->render_admin_section(); ?>
+            <?php endif; ?>
 
             <?php if (isset($GLOBALS['hgc_restaurant'])) : ?>
                 <?php $GLOBALS['hgc_restaurant']->render_admin_section(); ?>
